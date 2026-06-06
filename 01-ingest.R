@@ -74,7 +74,7 @@ psid <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low-clock CP
 )
 
 # attach variable labels as a column attribute (visible via attr(psid$VAR,"label"))
-for (nm in names(psid)) attr(psid[[nm]], "label") <- unname(labels[nm])
+#for (nm in names(psid)) attr(psid[[nm]], "label") <- unname(labels[nm])
 
 message("Loaded: ", nrow(psid), " rows x ", ncol(psid), " columns")
 message(elapsed(t3))
