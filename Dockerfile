@@ -1,5 +1,5 @@
-# syntax=docker/dockerfile:1.4
-FROM rocker/tidyverse:4.6
+
+FROM rocker/tidyverse:4.5
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -44,47 +44,6 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 # =========================
-# SSH setup
-# =========================
-RUN mkdir -p /var/run/sshd && \
-    ssh-keygen -A
-
-# =========================
-# Create user (SAFE: no UID/GID conflicts)
-# =========================
-ARG USERNAME=developer
-
-RUN useradd -m -s /bin/bash ${USERNAME} && \
-    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
-    chmod 0440 /etc/sudoers.d/${USERNAME}
-
-# =========================
-# SSH directory setup
-# =========================
-RUN mkdir -p /home/${USERNAME}/.ssh && \
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh && \
-    chmod 700 /home/${USERNAME}/.ssh
-
-# =========================
-# SSH configuration
-# =========================
-RUN printf '%s\n' \
-'Port 22' \
-'PermitRootLogin no' \
-'PubkeyAuthentication yes' \
-'PasswordAuthentication no' \
-'KbdInteractiveAuthentication no' \
-'ChallengeResponseAuthentication no' \
-'UsePAM yes' \
-'AllowTcpForwarding yes' \
-'AllowAgentForwarding yes' \
-'X11Forwarding no' \
-'AuthorizedKeysFile .ssh/authorized_keys' \
-'ClientAliveInterval 60' \
-'ClientAliveCountMax 3' \
-> /etc/ssh/sshd_config
-
-# =========================
 # R packages
 #  - NO repos= override: use rocker's preconfigured P3M binary repo
 #  - Ncpus: compile any source fallbacks in parallel
@@ -115,10 +74,22 @@ RUN --mount=type=cache,target=/root/.cache/R/pkgcache \
       ))"
 
 # =========================
-# Workspace
+# SSH server (login as root, for Positron Remote SSH)
 # =========================
-WORKDIR /workspace
+ARG SSH_PUBKEY=""
 
-EXPOSE 22
+RUN mkdir -p /run/sshd /root/.ssh && \
+    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config && \
+    sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/'   /etc/ssh/sshd_config && \
+    if [ -n "${SSH_PUBKEY}" ]; then \
+      echo "${SSH_PUBKEY}" > /root/.ssh/authorized_keys && \
+      chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys ; \
+    fi
 
-CMD ["/usr/sbin/sshd", "-D", "-e"]
+# run sshd as an s6 service so it starts automatically with /init
+RUN mkdir -p /etc/services.d/sshd && \
+    printf '#!/bin/sh\nmkdir -p /run/sshd\nexec /usr/sbin/sshd -D -e\n' \
+      > /etc/services.d/sshd/run && \
+    chmod +x /etc/services.d/sshd/run
+
+EXPOSE 22 8787
