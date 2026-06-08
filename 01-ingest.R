@@ -96,21 +96,3 @@ message(elapsed(t4))
 message(sprintf("\n  Total elapsed: %.1f s", as.numeric(difftime(Sys.time(), t_total, units = "secs"))))
 
 # `psid` is now in memory. Variable labels: attr(psid$ER30001, "label")
-
-# =====================================================================
-# LOW-RAM ALTERNATIVE (no full load): the LaF package memory-maps the
-# fixed-width file and reads columns on demand.
-#   install.packages("LaF")
-#   library(LaF)
-#   d <- laf_open_fwf(dat_file,
-#                     column_types  = rep("double", nrow(positions)),
-#                     column_names  = positions$name,
-#                     column_widths = positions$end - positions$begin + 1L)
-#   wt  <- d[, "ER34902"]          # pull one column
-#   blk <- d[1:1000, ]            # or a block of rows
-#
-# ONE-LINER WITH LABELS (slower, heavier): asciiSetupReader reads the .txt
-# + .sas pair directly and applies value labels from the formats file too.
-#   install.packages("asciiSetupReader")
-#   psid <- asciiSetupReader::read_ascii_setup(dat_file, sas_file)
-# =====================================================================
