@@ -82,6 +82,8 @@ psid_abridged <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low
 # attach variable labels as a column attribute (visible via attr(psid$VAR,"label"))
 #for (nm in names(psid)) attr(psid[[nm]], "label") <- unname(labels[nm])
 
+psid_abridged$ID <- psid_abridged$ER30001 * 1000 + psid_abridged$ER30002
+
 message("Loaded: ", nrow(psid_abridged), " rows x ", ncol(psid_abridged), " columns")
 message(elapsed(t3))
 
