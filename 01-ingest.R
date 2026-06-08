@@ -23,7 +23,7 @@ elapsed <- function(t) sprintf("  [%.1f s]", as.numeric(difftime(Sys.time(), t, 
 
 t_total <- Sys.time()
 
-banner("1 / 4  Paths & validation")
+banner("1 / 3  Paths & validation")
 t1 <- Sys.time()
 # ---- 1. paths -------------------------------------------------------
 # Folder that contains the ./ascii subfolder. Edit if you move the script.
@@ -37,7 +37,7 @@ fst_out   <- file.path(base_dir, "J362500.fst")
 pq_out    <- file.path(base_dir, "J362500.parquet")
 
 message(elapsed(t1))
-banner("2 / 4  Parse SAS setup file")
+banner("2 / 3  Parse SAS setup file")
 t2 <- Sys.time()
 # ---- 2. parse the SAS setup file -----------------------------------
 sas <- paste(readLines(sas_file, warn = FALSE), collapse = "\n")
@@ -58,7 +58,7 @@ lab <- str_match_all(sas, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
 labels <- setNames(str_squish(lab[, 3]), lab[, 2])
 
 message(elapsed(t2))
-banner("3 / 4  Read fixed-width ASCII data")
+banner("3 / 3  Read fixed-width ASCII data")
 t3 <- Sys.time()
 # ---- 3. read ALL columns -------------------------------------------
 # All PSID vars in this extract are numeric; read as double (177 vars are
@@ -66,7 +66,7 @@ t3 <- Sys.time()
 col_pos <- fwf_positions(positions$begin, positions$end, positions$name)
 
 message("Reading ", nrow(positions), " columns from ", basename(dat_file), " ...")
-psid <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low-clock CPUs
+psid_abridged <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low-clock CPUs
   dat_file,                        # (ALTREP: columns parsed lazily on first access)
   col_positions = col_pos,
   col_types     = cols(.default = col_double()),
@@ -78,6 +78,6 @@ psid <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low-clock CP
 
 message("Loaded: ", nrow(psid), " rows x ", ncol(psid), " columns")
 message(elapsed(t3))
-banner("4 / 4  Cache to binary formats")
-t4 <- Sys.time()
+banner("Done! Total elapsed time:")
+message(elapsed(t_total))
 
