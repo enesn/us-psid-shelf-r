@@ -112,9 +112,11 @@ mh <- vroom::vroom_fwf(
 mh[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), mh, unname(labels_mh[names(mh)]))
 
 # Pivot MH to wide: one row per person, columns named MAR{n}_MH{col}
-# matching the shelf-abridged naming convention
+# matching the shelf-abridged naming convention (MAR1–MAR8 only).
+# MH9 values 98/99 are PSID missing codes (DK / not ascertained);
+# orders >8 are 3 individuals — dropped to match shelf.
 mh_wide <- pivot_wider(
-  mh,
+  filter(mh, MH9 %in% 1:8),
   id_cols     = c(MH2, MH3),
   names_from  = MH9,
   values_from = setdiff(names(mh), c("MH2", "MH3", "MH9")),
