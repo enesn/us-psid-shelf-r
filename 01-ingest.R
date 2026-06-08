@@ -123,6 +123,15 @@ mh_wide <- pivot_wider(
   names_glue  = "MAR{MH9}_{.value}"
 )
 
+# MH2, MH3, MH9 were used as pivot keys so they were dropped from values.
+# Re-derive them per marriage slot to match shelf (NA where that marriage doesn't exist).
+for (n in 1:8) {
+  has_n <- !is.na(mh_wide[[sprintf("MAR%d_MH1", n)]])
+  mh_wide[[sprintf("MAR%d_MH2", n)]] <- ifelse(has_n, mh_wide$MH2,     NA_real_)
+  mh_wide[[sprintf("MAR%d_MH3", n)]] <- ifelse(has_n, mh_wide$MH3,     NA_real_)
+  mh_wide[[sprintf("MAR%d_MH9", n)]] <- ifelse(has_n, as.double(n),    NA_real_)
+}
+
 # Join key: ER30001 = 1968 interview number, ER30002 = person number
 #           MH2     = 1968 interview number, MH3     = person number
 psid_abridged <- left_join(
