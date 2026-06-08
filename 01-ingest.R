@@ -1,20 +1,25 @@
 # =====================================================================
-# 01-ingest.R  --  Read a full PSID Data Center extract (ALL columns)
+# 01-ingest.R  --  Read PSID main extract + Marriage History supplement
 #
-# Inputs (in ./ascii):
-#   J362500.txt           fixed-width ASCII data (84,120 x 6,880, LRECL 15713)
-#   J362500.sas           SAS setup: ATTRIB labels + INPUT column positions
-#   J362500_formats.sas   value labels (optional, not applied here)
+# Inputs:
+#   raw-data/downloaded-from-psid/ascii/J362500.{txt,sas}
+#     fixed-width ASCII data (84,120 x 6,880, LRECL 15713)
+#   raw-data/downloaded-from-psid/mh85_23/MH85_23.{txt,sas}
+#     Marriage History 1985-2023 (65,226 x 20, one row per marriage)
 #
-# Strategy: parse the SAS file once for column positions + labels, read the
-# whole thing with readr::read_fwf, then cache to .fst / .parquet so future
-# loads take seconds. Expect ~4-5 GB RAM while reading all columns.
+# Outputs:
+#   psid_abridged  -- main extract (84,120 rows)
+#   mh             -- marriage history long file (65,226 rows)
+#   psid_mh        -- psid_abridged left-joined with mh on ER30001+ER30002
+#                     (persons with multiple marriages expand to multiple rows)
 # =====================================================================
 
 # ---- 0. packages ----------------------------------------------------
 # install.packages(c("readr", "stringr", "fst", "arrow"))  # run once
 library(readr)
 library(stringr)
+library(dplyr)
+library(tidyr)
 
 banner <- function(msg) {
   message(sprintf("\n%s\n  %s\n%s", strrep("─", 60), msg, strrep("─", 60)))
@@ -23,21 +28,22 @@ elapsed <- function(t) sprintf("  [%.1f s]", as.numeric(difftime(Sys.time(), t, 
 
 t_total <- Sys.time()
 
-banner("1 / 3  Paths & validation")
+banner("1 / 4  Paths & validation")
 t1 <- Sys.time()
 # ---- 1. paths -------------------------------------------------------
 # Folder that contains the ./ascii subfolder. Edit if you move the script.
-base_dir <- "raw-data/downloaded-from-psid"
+base_dir  <- "raw-data/downloaded-from-psid"
 ascii_dir <- file.path(base_dir, "ascii")
-stopifnot(dir.exists(ascii_dir))  # fails fast if the path is wrong
+mh_dir    <- file.path(base_dir, "mh85_23")
+stopifnot(dir.exists(ascii_dir), dir.exists(mh_dir))
 
 sas_file  <- file.path(ascii_dir, "J362500.sas")
 dat_file  <- file.path(ascii_dir, "J362500.txt")
-fst_out   <- file.path(base_dir, "J362500.fst")
-pq_out    <- file.path(base_dir, "J362500.parquet")
+mh_sas    <- file.path(mh_dir,   "MH85_23.sas")
+mh_dat    <- file.path(mh_dir,   "MH85_23.txt")
 
 message(elapsed(t1))
-banner("2 / 3  Parse SAS setup file")
+banner("2 / 4  Parse SAS setup file")
 t2 <- Sys.time()
 # ---- 2. parse the SAS setup file -----------------------------------
 sas <- paste(readLines(sas_file, warn = FALSE), collapse = "\n")
@@ -58,7 +64,7 @@ lab <- str_match_all(sas, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
 labels <- setNames(str_squish(lab[, 3]), lab[, 2])
 
 message(elapsed(t2))
-banner("3 / 3  Read fixed-width ASCII data")
+banner("3 / 4  Read main extract (J362500)")
 t3 <- Sys.time()
 # ---- 3. read ALL columns -------------------------------------------
 # All PSID vars in this extract are numeric; read as double (177 vars are
@@ -78,6 +84,59 @@ psid_abridged <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low
 
 message("Loaded: ", nrow(psid_abridged), " rows x ", ncol(psid_abridged), " columns")
 message(elapsed(t3))
-banner("Done! Total elapsed time:")
-message(elapsed(t_total))
-rm(col_pos, lab, pos, positions, ascii_dir,base_dir,dat_file,fst_out,input_block)
+
+# ── 4. Marriage History supplement ───────────────────────────────────
+banner("4 / 4  Read & merge Marriage History (MH85_23)")
+t4 <- Sys.time()
+
+sas_mh      <- paste(readLines(mh_sas, warn = FALSE), collapse = "\n")
+ib_mh       <- str_match(sas_mh, "(?s)\\bINPUT\\b(.*?);")[, 2]
+pos_mh      <- str_match_all(ib_mh, "([A-Za-z_]\\w*)\\s+(\\d+)\\s*-\\s*(\\d+)")[[1]]
+positions_mh <- data.frame(
+  name  = pos_mh[, 2],
+  begin = as.integer(pos_mh[, 3]),
+  end   = as.integer(pos_mh[, 4]),
+  stringsAsFactors = FALSE
+)
+lab_mh   <- str_match_all(sas_mh, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
+labels_mh <- setNames(str_squish(lab_mh[, 3]), lab_mh[, 2])
+
+mh <- vroom::vroom_fwf(
+  mh_dat,
+  col_positions = fwf_positions(positions_mh$begin, positions_mh$end, positions_mh$name),
+  col_types     = cols(.default = col_double()),
+  progress      = TRUE
+)
+mh[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), mh, unname(labels_mh[names(mh)]))
+
+# Pivot MH to wide: one row per person, columns named MAR{n}_MH{col}
+# matching the shelf-abridged naming convention
+mh_wide <- pivot_wider(
+  mh,
+  id_cols     = c(MH2, MH3),
+  names_from  = MH9,
+  values_from = setdiff(names(mh), c("MH2", "MH3", "MH9")),
+  names_glue  = "MAR{MH9}_{.value}"
+)
+
+# Join key: ER30001 = 1968 interview number, ER30002 = person number
+#           MH2     = 1968 interview number, MH3     = person number
+psid_abridged <- left_join(
+  psid_abridged,
+  rename(mh_wide, ER30001 = MH2, ER30002 = MH3),
+  by = c("ER30001", "ER30002")
+)
+
+message(sprintf("  mh       : %d rows × %d cols (one row per marriage)",
+                nrow(mh), ncol(mh)))
+message(sprintf("  mh_wide  : %d rows × %d cols (pivoted MAR{n}_MH{col})",
+                nrow(mh_wide), ncol(mh_wide)))
+message(sprintf("  persons with MH records: %d / %d",
+                sum(psid_abridged$ER30001 %in% mh$MH2), nrow(psid_abridged)))
+message(elapsed(t4))
+
+message(sprintf("\n  Total elapsed: %.1f s",
+                as.numeric(difftime(Sys.time(), t_total, units = "secs"))))
+
+rm(col_pos, lab, pos, positions, input_block,
+   sas_mh, ib_mh, pos_mh, positions_mh, lab_mh)
