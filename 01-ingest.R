@@ -80,4 +80,4 @@ message("Loaded: ", nrow(psid_abridged), " rows x ", ncol(psid_abridged), " colu
 message(elapsed(t3))
 banner("Done! Total elapsed time:")
 message(elapsed(t_total))
-
+rm(col_pos, lab, pos, positions, ascii_dir,base_dir,dat_file,fst_out,input_block)
