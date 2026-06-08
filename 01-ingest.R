@@ -80,19 +80,4 @@ message("Loaded: ", nrow(psid), " rows x ", ncol(psid), " columns")
 message(elapsed(t3))
 banner("4 / 4  Cache to binary formats")
 t4 <- Sys.time()
-# ---- 4. cache to a fast binary format ------------------------------
 
-# .parquet -> portable (Python/Stata/Spark) and columnar
-if (requireNamespace("arrow", quietly = TRUE)) {
-  arrow::write_parquet(psid, pq_out)
-  message("Wrote ", pq_out)
-  # Lazy, out-of-memory access to selected columns:
-  #   library(arrow)
-  #   ds <- open_dataset("J362500.parquet")
-  #   df <- dplyr::select(ds, ER30001, ER30002) |> dplyr::collect()
-}
-
-message(elapsed(t4))
-message(sprintf("\n  Total elapsed: %.1f s", as.numeric(difftime(Sys.time(), t_total, units = "secs"))))
-
-# `psid` is now in memory. Variable labels: attr(psid$ER30001, "label")
