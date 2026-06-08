@@ -76,7 +76,7 @@ psid_abridged <- vroom::vroom_fwf(          # ~5-10x faster than read_fwf on low
 # attach variable labels as a column attribute (visible via attr(psid$VAR,"label"))
 #for (nm in names(psid)) attr(psid[[nm]], "label") <- unname(labels[nm])
 
-message("Loaded: ", nrow(psid), " rows x ", ncol(psid), " columns")
+message("Loaded: ", nrow(psid_abridged), " rows x ", ncol(psid_abridged), " columns")
 message(elapsed(t3))
 banner("Done! Total elapsed time:")
 message(elapsed(t_total))
