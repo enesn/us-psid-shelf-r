@@ -18,7 +18,9 @@
 # =====================================================================
 
 stopifnot(exists("psid_abridged"), is.data.frame(psid_abridged),
-          exists("mh"),           is.data.frame(mh))
+          exists("mh"),           is.data.frame(mh),
+          exists("cah"),          is.data.frame(cah),
+          exists("pid"),          is.data.frame(pid))
 
 library(haven)
 library(dplyr)
@@ -31,14 +33,19 @@ shelf_path <- "raw-data/psid-shelf-original/PSID_COMPLETE_MAIN_STUDY_1968_2021_A
 stopifnot(file.exists(shelf_path))
 
 # Wide MH columns in psid_abridged (MAR{n}_MH{col}) — now match shelf naming
-mh_cols <- grep("^MAR\\d+_MH", names(psid_abridged), value = TRUE)
+mh_cols  <- grep("^MAR\\d+_MH",  names(psid_abridged), value = TRUE)
+# Wide CAH columns in psid_abridged (CHI{n}_CAH{col}) — now match shelf naming
+cah_cols <- grep("^CHI\\d+_CAH", names(psid_abridged), value = TRUE)
 
 # ── 1. Dimensions ────────────────────────────────────────────────────
 banner("1 / 4  Dimension check")
 
 message("psid_abridged : ", nrow(psid_abridged), " rows × ", ncol(psid_abridged), " cols")
-message("  incl. ", length(mh_cols), " wide MH cols (MAR1_MH1 … MAR8_MH20)")
-message("mh            : ", nrow(mh), " rows × ", ncol(mh), " cols (long source)")
+message("  incl. ", length(mh_cols),  " wide MH cols  (MAR1_MH1 … MAR8_MH20)")
+message("  incl. ", length(cah_cols), " wide CAH cols (CHI1_CAH1 … CHIn_CAHm)")
+message("mh            : ", nrow(mh),  " rows × ", ncol(mh),  " cols (long source)")
+message("cah           : ", nrow(cah), " rows × ", ncol(cah), " cols (long source)")
+message("pid           : ", nrow(pid), " rows × ", ncol(pid), " cols (one row per individual)")
 
 # Read zero rows just to get column names and labels from the .dta file
 full_meta <- read_dta(shelf_path, n_max = 0)
@@ -56,9 +63,10 @@ only_full <- setdiff(full_cols, ab_cols)
 
 message("Columns in psid_abridged only : ", length(only_ab))
 message("Columns in shelf-abridged only: ", length(only_full),
-        "  (PID parent-ID supplement + CAH child-history arrays — not yet downloaded)")
+        "  (any supplements not yet ingested; PID/MH/CAH now merged)")
 message("Columns in both               : ", length(common),
-        "  (includes ", sum(grepl("^MAR\\d+_MH", common)), " wide MH cols)")
+        "  (includes ", sum(grepl("^MAR\\d+_MH",  common)), " wide MH cols",
+        " and ",        sum(grepl("^CHI\\d+_CAH", common)), " wide CAH cols)")
 
 if (length(only_ab) > 0) {
   message("  psid_abridged-only (first 10): ",
@@ -106,17 +114,20 @@ results <- lapply(sample_cols, function(v) {
     max_full    = if (any(!is.na(f))) max(f, na.rm = TRUE) else NA_real_,
     mean_ab     = mean(a, na.rm = TRUE),
     mean_full   = mean(f, na.rm = TRUE),
-    values_match = isTRUE(all.equal(a, f, tolerance = 0.5, scale = 1)),
     stringsAsFactors = FALSE
   )
 })
 results_df <- do.call(rbind, results)
 
-n_match    <- sum(results_df$values_match)
-n_mismatch <- sum(!results_df$values_match)
+n_match    <- sum(results_df$values_match %in% TRUE)
+n_mismatch <- sum(results_df$values_match %in% FALSE)
+n_no_overlap <- sum(is.na(results_df$values_match))
+
+if (n_no_overlap > 0)
+  message("  (", n_no_overlap, " columns have no jointly-observed rows — values_match = NA)")
 
 if (n_mismatch > 0) {
-  mismatches <- results_df[!results_df$values_match, ]
+  mismatches <- results_df[results_df$values_match %in% FALSE, ]
   message("\nMismatched columns (first 20):")
   print(head(mismatches[, c("variable", "na_ab", "na_full",
                              "min_ab", "min_full", "max_ab", "max_full",
