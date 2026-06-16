@@ -9,9 +9,6 @@
 #
 # Outputs:
 #   psid_abridged  -- main extract (84,120 rows)
-#   mh             -- marriage history long file (65,226 rows)
-#   psid_mh        -- psid_abridged left-joined with mh on ER30001+ER30002
-#                     (persons with multiple marriages expand to multiple rows)
 # =====================================================================
 
 # ---- 0. packages ----------------------------------------------------
@@ -28,7 +25,7 @@ elapsed <- function(t) sprintf("  [%.1f s]", as.numeric(difftime(Sys.time(), t, 
 
 t_total <- Sys.time()
 
-banner("1 / 4  Paths & validation")
+banner("1 / 6   Paths & validation")
 t1 <- Sys.time()
 # ---- 1. paths -------------------------------------------------------
 # Folder that contains the ./ascii subfolder. Edit if you move the script.
@@ -43,7 +40,7 @@ mh_sas    <- file.path(mh_dir,   "MH85_23.sas")
 mh_dat    <- file.path(mh_dir,   "MH85_23.txt")
 
 message(elapsed(t1))
-banner("2 / 4  Parse SAS setup file")
+banner("2 / 6  Parse SAS setup file")
 t2 <- Sys.time()
 # ---- 2. parse the SAS setup file -----------------------------------
 sas <- paste(readLines(sas_file, warn = FALSE), collapse = "\n")
@@ -64,7 +61,7 @@ lab <- str_match_all(sas, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
 labels <- setNames(str_squish(lab[, 3]), lab[, 2])
 
 message(elapsed(t2))
-banner("3 / 4  Read main extract (J362500)")
+banner("3 / 6  Read main extract (J362500)")
 t3 <- Sys.time()
 # ---- 3. read ALL columns -------------------------------------------
 # All PSID vars in this extract are numeric; read as double (177 vars are
@@ -88,7 +85,7 @@ message("Loaded: ", nrow(psid_abridged), " rows x ", ncol(psid_abridged), " colu
 message(elapsed(t3))
 
 # ── 4. Marriage History supplement ───────────────────────────────────
-banner("4 / 4  Read & merge Marriage History (MH85_23)")
+banner("4 / 6  Read & merge Marriage History (MH85_23)")
 t4 <- Sys.time()
 
 sas_mh      <- paste(readLines(mh_sas, warn = FALSE), collapse = "\n")
@@ -148,8 +145,124 @@ message(sprintf("  persons with MH records: %d / %d",
                 sum(psid_abridged$ER30001 %in% mh$MH2), nrow(psid_abridged)))
 message(elapsed(t4))
 
+rm(col_pos, lab, pos, positions, input_block,
+   sas_mh, ib_mh, pos_mh, positions_mh, lab_mh)
+
+
+# ── 5. Child Assessment History (CAH85_23) ──────────────────────────────────
+banner("5 / 6  Read & merge Child Assessment History (CAH85_23)")
+t5 <- Sys.time()
+
+cah_dir <- file.path(base_dir, "cah85_23")
+stopifnot(dir.exists(cah_dir))
+cah_sas <- file.path(cah_dir, "CAH85_23.sas")
+cah_dat <- file.path(cah_dir, "CAH85_23.txt")
+
+sas_cah       <- paste(readLines(cah_sas, warn = FALSE), collapse = "\n")
+ib_cah        <- str_match(sas_cah, "(?s)\\bINPUT\\b(.*?);")[, 2]
+pos_cah       <- str_match_all(ib_cah, "([A-Za-z_]\\w*)\\s+(\\d+)\\s*-\\s*(\\d+)")[[1]]
+positions_cah <- data.frame(
+  name  = pos_cah[, 2],
+  begin = as.integer(pos_cah[, 3]),
+  end   = as.integer(pos_cah[, 4]),
+  stringsAsFactors = FALSE
+)
+lab_cah    <- str_match_all(sas_cah, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
+labels_cah <- setNames(str_squish(lab_cah[, 3]), lab_cah[, 2])
+
+cah <- vroom::vroom_fwf(
+  cah_dat,
+  col_positions = fwf_positions(positions_cah$begin, positions_cah$end, positions_cah$name),
+  col_types     = cols(.default = col_double()),
+  progress      = TRUE
+)
+cah[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), cah, unname(labels_cah[names(cah)]))
+
+# Pivot CAH to wide: one row per parent, columns named CHI{n}_CAH{col}
+# CAH3 = 1968 interview number of parent, CAH4 = person number of parent
+# CAH9 = birth order; 98/99 are PSID missing codes (DK / not ascertained)
+cah_wide <- pivot_wider(
+  filter(cah, !CAH9 %in% c(98, 99)),
+  id_cols     = c(CAH3, CAH4),
+  names_from  = CAH9,
+  values_from = setdiff(names(cah), c("CAH3", "CAH4", "CAH9")),
+  names_glue  = "CHI{CAH9}_{.value}"
+)
+
+# CAH3, CAH4, CAH9 were used as pivot keys so they were dropped from values.
+# Re-derive them per child slot to match shelf naming convention.
+birth_orders <- sort(unique(filter(cah, !CAH9 %in% c(98, 99))$CAH9))
+for (n in birth_orders) {
+  has_n <- !is.na(cah_wide[[sprintf("CHI%d_CAH1", n)]])
+  cah_wide[[sprintf("CHI%d_CAH3", n)]] <- ifelse(has_n, cah_wide$CAH3, NA_real_)
+  cah_wide[[sprintf("CHI%d_CAH4", n)]] <- ifelse(has_n, cah_wide$CAH4, NA_real_)
+  cah_wide[[sprintf("CHI%d_CAH9", n)]] <- ifelse(has_n, as.double(n),  NA_real_)
+}
+
+# Join key: ER30001 = 1968 interview number, ER30002 = person number of parent
+#           CAH3    = 1968 interview number, CAH4    = person number of parent
+psid_abridged <- left_join(
+  psid_abridged,
+  rename(cah_wide, ER30001 = CAH3, ER30002 = CAH4),
+  by = c("ER30001", "ER30002")
+)
+
+message(sprintf("  cah      : %d rows × %d cols (one row per child)",
+                nrow(cah), ncol(cah)))
+message(sprintf("  cah_wide : %d rows × %d cols (pivoted CHI{n}_CAH{col})",
+                nrow(cah_wide), ncol(cah_wide)))
+message(sprintf("  parents with CAH records: %d / %d",
+                sum(psid_abridged$ER30001 %in% cah$CAH3), nrow(psid_abridged)))
+message(elapsed(t5))
+
+rm(sas_cah, ib_cah, pos_cah, positions_cah, lab_cah, birth_orders)
+
+
+# ── 6. Parent Identification (PID23) ────────────────────────────────────────
+banner("6 / 6  Read & merge Parent Identification (PID23)")
+t6 <- Sys.time()
+
+pid_dir <- file.path(base_dir, "pid23")
+stopifnot(dir.exists(pid_dir))
+pid_sas <- file.path(pid_dir, "PID23.sas")
+pid_dat <- file.path(pid_dir, "PID23.txt")
+
+sas_pid       <- paste(readLines(pid_sas, warn = FALSE), collapse = "\n")
+ib_pid        <- str_match(sas_pid, "(?s)\\bINPUT\\b(.*?);")[, 2]
+pos_pid       <- str_match_all(ib_pid, "([A-Za-z_]\\w*)\\s+(\\d+)\\s*-\\s*(\\d+)")[[1]]
+positions_pid <- data.frame(
+  name  = pos_pid[, 2],
+  begin = as.integer(pos_pid[, 3]),
+  end   = as.integer(pos_pid[, 4]),
+  stringsAsFactors = FALSE
+)
+lab_pid    <- str_match_all(sas_pid, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
+labels_pid <- setNames(str_squish(lab_pid[, 3]), lab_pid[, 2])
+
+# PID is already one row per individual — no pivot needed.
+# Join key: ER30001 = 1968 interview number, ER30002 = person number
+#           PID2    = 1968 interview number, PID3    = person number
+pid <- vroom::vroom_fwf(
+  pid_dat,
+  col_positions = fwf_positions(positions_pid$begin, positions_pid$end, positions_pid$name),
+  col_types     = cols(.default = col_double()),
+  progress      = TRUE
+)
+pid[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), pid, unname(labels_pid[names(pid)]))
+
+psid_abridged <- left_join(
+  psid_abridged,
+  rename(pid, ER30001 = PID2, ER30002 = PID3),
+  by = c("ER30001", "ER30002")
+)
+
+message(sprintf("  pid      : %d rows × %d cols (one row per individual)",
+                nrow(pid), ncol(pid)))
+message(sprintf("  individuals with PID records: %d / %d",
+                sum(psid_abridged$ER30001 %in% pid$PID2), nrow(psid_abridged)))
+message(elapsed(t6))
+
 message(sprintf("\n  Total elapsed: %.1f s",
                 as.numeric(difftime(Sys.time(), t_total, units = "secs"))))
 
-rm(col_pos, lab, pos, positions, input_block,
-   sas_mh, ib_mh, pos_mh, positions_mh, lab_mh)
+rm(sas_pid, ib_pid, pos_pid, positions_pid, lab_pid)
