@@ -1,0 +1,14 @@
+newvar,input_var
+id,ER30001
+lineage,ER30001
+pnum,ER30002
+sample,ER30001
+sampstat_ext,ER32006
+panel_rein_elig_ind,ER33418
+stratum,ER31996
+cluster,ER31997
+demo_sex,ER32000
+demo_death_year_psid,ER32050
+nhlth_birth_wght,ER32014
+rel_mar_tot,TBD
+rel_mar_rep,TBD

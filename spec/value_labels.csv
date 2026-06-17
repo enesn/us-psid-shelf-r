@@ -1,0 +1,868 @@
+label_set,value,label
+ccondiagany_gen_2cat,0,"No, never had condition (confirmed by physician or health professional)"
+ccondiagany_gen_2cat,1,"Yes, ever had condition (confirmed by physician or health professional)"
+ccondiagany_hatt_2cat,0,"No, never had heart attack (confirmed by physician or health professional)"
+ccondiagany_hatt_2cat,1,"Yes, ever had heart attack (confirmed by physician or health professional)"
+ccondiag2nd_hatt_2cat,0,"No, never had 2nd heart attack (confirmed by physician or health professional)"
+ccondiag2nd_hatt_2cat,1,"Yes, ever had 2nd heart attack (confirmed by physician or health professional)"
+ccondiagany_stro_2cat,0,"No, never had stroke (confirmed by physician or health professional)"
+ccondiagany_stro_2cat,1,"Yes, ever had stroke (confirmed by physician or health professional)"
+ccondiag2nd_stro_2cat,0,"No, never had 2nd stroke (confirmed by physician or health professional)"
+ccondiag2nd_stro_2cat,1,"Yes, ever had 2nd stroke (confirmed by physician or health professional)"
+ccondiagage_gen_2005_2015_1cat,1,1 or under
+ccondiagage_gen_2017_2099_1cat,0,Less than 1 year old
+ccondegr_gen_4cat,0,Not at all
+ccondegr_gen_4cat,1,Just a little
+ccondegr_gen_4cat,2,Somewhat
+ccondegr_gen_4cat,3,A lot
+cconcare_arth_2cat,0,"No, not currently taking medication or receiving treatment for arthritis or rheumatism"
+cconcare_arth_2cat,1,"Yes, currently taking medication or receiving treatment for arthritis or rheumatism"
+cconcare_asth_2cat,0,"No, not currently taking or carrying medication/inhaler to treat or control asthma"
+cconcare_asth_2cat,1,"Yes, currently taking or carrying medication/inhaler to treat or control asthma"
+cconstat_canc_4cat,0,Currently doing nothing (incl. can't afford insurance to get treatment)
+cconstat_canc_4cat,1,Currently receiving treatment
+cconstat_canc_4cat,2,Remission
+cconstat_canc_4cat,3,Cured
+cconcare_diab_2cat,0,"No, not currently taking medication or using insulin shots/pump to treat or control diabetes"
+cconcare_diab_2cat,1,"Yes, currently taking medication or using insulin shots/pump to treat or control diabetes"
+cconcare_emop_2cat,0,"No, not currently taking tranquilizers, antidepressants, or pills for nerves?"
+cconcare_emop_2cat,1,"Yes, currently taking tranquilizers, antidepressants, or pills for nerves?"
+cconcare_hatt_2cat,0,"No, not currently taking or carrying medication because of heart attack"
+cconcare_hatt_2cat,1,"Yes, currently taking or carrying medication because of heart attack"
+cconcare_hdis_2cat,0,"No, not currently taking or carrying medication because of coronary heart disease, angina or congestive heart failure"
+cconcare_hdis_2cat,1,"Yes, currently taking or carrying medication because of coronary heart disease, angina or congestive heart failure"
+cconcare_hibp_2cat,0,"No, not currently taking medication to lower blood pressure"
+cconcare_hibp_2cat,1,"Yes, currently taking medication to lower blood pressure"
+cconcare_ldis_2cat,0,"No, not currently taking medication or receiving treatment to help with learning disorder"
+cconcare_ldis_2cat,1,"Yes, currently taking medication or receiving treatment to help with learning disorder"
+cconcare_lmem_2cat,0,"No, not currently taking medication prescribed by physician to help with memory problem"
+cconcare_lmem_2cat,1,"Yes, currently taking medication prescribed by physician to help with memory problem"
+cconcare_lung_2cat,0,"No, not currently taking medication or receiving oxygen/other treatment for lung condition"
+cconcare_lung_2cat,1,"Yes, currently taking medication or receiving oxygen/other treatment for lung condition"
+cconcare_stro_2cat,0,"No, not currently taking medication because of stroke or its complications"
+cconcare_stro_2cat,1,"Yes, currently taking medication because of stroke or its complications"
+cconcare_ocon_2cat,0,"No, not currently taking medication for condition"
+cconcare_ocon_2cat,1,"Yes, currently taking medication for condition"
+ccontype_canc_12cat,1,Bladder cancer
+ccontype_canc_12cat,2,Breast cancer
+ccontype_canc_12cat,3,Cervical cancer
+ccontype_canc_12cat,4,Colon cancer
+ccontype_canc_12cat,5,Lung cancer
+ccontype_canc_12cat,6,"Lymphoma, leukemia"
+ccontype_canc_12cat,7,Ovarian cancer
+ccontype_canc_12cat,8,Prostate cancer
+ccontype_canc_12cat,9,Skin cancer (melanoma)
+ccontype_canc_12cat,10,Skin cancer (nonmelanoma; incl. basal cell)
+ccontype_canc_12cat,11,Skin cancer (unknown subtype)
+ccontype_canc_12cat,12,Thyroid cancer
+ccontype_canc_12cat,13,Uterine cancer
+ccontype_canc_12cat,80,Other cancer
+ccontype_emop_13cat,1,Depression
+ccontype_emop_13cat,2,Bipolar disorder (mania)
+ccontype_emop_13cat,3,Schizophrenia (psychosis)
+ccontype_emop_13cat,4,Anxiety (panic)
+ccontype_emop_13cat,5,Phobias
+ccontype_emop_13cat,6,Alcohol use/abuse (alcoholism)
+ccontype_emop_13cat,7,Drug use/abuse (drug addiction)
+ccontype_emop_13cat,8,Obsessive compulsive disorder
+ccontype_emop_13cat,9,PTSD (Post-Traumatic Stress Disorder)
+ccontype_emop_13cat,10,"ADHD, ADD (Attention Deficit/Hyperactivity Disorder, Attention Deficit Disorder)"
+ccontype_emop_13cat,11,ODD (Oppositional Defiant Disorder or Conduct Disorder)
+ccontype_emop_13cat,12,"Autism, Asperger's Disorder, Pervasive Development Disorder, or other autism spectrum disorder"
+ccontype_emop_13cat,80,Other emotional/psychiatric problem
+ccontype_ocon_18cat,1,Seizures
+ccontype_ocon_18cat,2,"Bone disorder, arthritis, scoliosis, joint disoder"
+ccontype_ocon_18cat,3,Kidney disease
+ccontype_ocon_18cat,4,Coronary problem
+ccontype_ocon_18cat,5,Anemia
+ccontype_ocon_18cat,6,Allergies
+ccontype_ocon_18cat,7,"Autoimmune disorder (incl. celiac disease, Chron's, Graves', Guillain-Barre, lupus, myasthenia gravis, psoriasis, scleroderma)"
+ccontype_ocon_18cat,8,Nerve disorder (incl. Parkinson's)
+ccontype_ocon_18cat,9,Thyroid
+ccontype_ocon_18cat,10,"Inflammation, infection (incl. MS, sarcoidosis, eczema)"
+ccontype_ocon_18cat,20,Eye/ear problems
+ccontype_ocon_18cat,21,"Fibromyalgia, chronic fatigue syndrome"
+ccontype_ocon_18cat,22,"Circulatory/blood problem (incl. arterial/venous disorders, blood clots, Factor Vleiden, PAD, polysythemia vera)"
+ccontype_ocon_18cat,23,"Sleep apnea, sleep disorder"
+ccontype_ocon_18cat,24,"Migraines, chronic headaches"
+ccontype_ocon_18cat,25,High cholesterol
+ccontype_ocon_18cat,26,"Digestive disorder, gastrointestinal disease (incl. acid reflux, chronic intestinal problems, colitis, gastritis, GERD, IBS, ulcers)"
+ccontype_ocon_18cat,80,"Other condition (incl. cysts, dementia, fibroid tumors, hernia, hypoglycemia, prostate problems, Reynaud syndrome, weight problems)"
+covid_rep_2cat,0,"No, missing response"
+covid_rep_2cat,1,"Yes, nonmissing response"
+covid_symp_2cat,0,"No, has not had symptoms of COVID-19"
+covid_symp_2cat,1,"Yes, has had symptoms of COVID-19"
+covid_sev_4cat,1,Mild
+covid_sev_4cat,2,Moderate
+covid_sev_4cat,3,Severe
+covid_sev_4cat,4,Very severe
+covid_hosp_any_2cat,0,"No, not hospitalized for COVID-19"
+covid_hosp_any_2cat,1,"Yes, hospitalized for COVID-19"
+covid_month_16cat,1,January
+covid_month_16cat,2,February
+covid_month_16cat,3,March
+covid_month_16cat,4,April
+covid_month_16cat,5,May
+covid_month_16cat,6,June
+covid_month_16cat,7,July
+covid_month_16cat,8,August
+covid_month_16cat,9,September
+covid_month_16cat,10,October
+covid_month_16cat,11,November
+covid_month_16cat,12,December
+covid_month_16cat,21,Winter
+covid_month_16cat,22,Spring
+covid_month_16cat,23,Summer
+covid_month_16cat,24,Fall
+covid_posi_any_2cat,0,"No, has not had COVID-19 (diag or presumed)"
+covid_posi_any_2cat,1,"Yes, has had COVID-19 (diag or presumed)"
+covid_vacc_2cat,0,"No, has not received vaccine"
+covid_vacc_2cat,1,"Yes, has received vaccine"
+covid_test_2cat,0,"No, has not received test"
+covid_test_2cat,1,"Yes, has received test"
+covid_medi_talk_any_2cat,0,"No, has not talked to medical pro about COVID-19"
+covid_medi_talk_any_2cat,1,"Yes, has talked to medical pro about COVID-19"
+covid_medi_talk_opi_5cat,1,Definitely did not have COVID-19
+covid_medi_talk_opi_5cat,2,Probably did not have COVID-19
+covid_medi_talk_opi_5cat,3,Might have had COVID-19
+covid_medi_talk_opi_5cat,4,Probably had COVID-19
+covid_medi_talk_opi_5cat,5,Definitely had COVID-19
+covid_medi_nodi_sym_2cat,0,"No, has not had symptoms or exposure to COVID-19"
+covid_medi_nodi_sym_2cat,1,"Yes, has had symptoms or exposure to COVID-19"
+covid_check_test_3cat,1,"No test, diagnosis, or symptoms"
+covid_check_test_3cat,2,Indication but has not had test or diagnosis
+covid_check_test_3cat,3,Has had test or diagnosis
+covid_test_rece_typ_2cat,1,Viral test for current infection (incl swab of nose or mouth)
+covid_test_rece_typ_2cat,2,Antibody test for past infection (incl blood test)
+covid_test_rece_res_3cat,0,Negative for COVID-19
+covid_test_rece_res_3cat,1,Positive for COVID-19
+covid_test_rece_res_3cat,9,Waiting for the test result
+covid_test_ling_any_2cat,0,"No, has not had lingering effects of COVID-19"
+covid_test_ling_any_2cat,1,"Yes, has had lingering effects of COVID-19"
+covid_test_ling_typ_3cat,1,Physical effects
+covid_test_ling_typ_3cat,2,Mental effects
+covid_test_ling_typ_3cat,3,Both physical and mental effects
+covid_check_diag_3cat,1,"No test, diagnosis, or symptoms"
+covid_check_diag_3cat,2,"No confirmed diagnosed but has had test, diagnosis, or indication"
+covid_check_diag_3cat,3,Confirmed diagnosis
+covid_treat_icu_2cat,0,"No, not treated in ICU for COVID-19"
+covid_treat_icu_2cat,1,"Yes, treated in ICU for COVID-19"
+covid_treat_oxy_2cat,0,"No, not treated with oxygen for COVID-19"
+covid_treat_oxy_2cat,1,"Yes, treated with oxygen for COVID-19"
+covid_treat_ven_2cat,0,"No, not treated with ventilator for COVID-19"
+covid_treat_ven_2cat,1,"Yes, treated with ventilator for COVID-19"
+covid_treat_oth_2cat,0,"No, has not received other treatment for COVID-19 (excl ICU, oxy, vent)"
+covid_treat_oth_2cat,1,"Yes, has received other treatment for COVID-19 (excl ICU, oxy, vent)"
+covid_univ_4cat,0,Not in universe
+covid_univ_4cat,1,In universe: RP
+covid_univ_4cat,2,In universe: SP
+covid_univ_4cat,3,In universe: OFUM
+covid_posi_2cat,0,No positive (diag or presumed)
+covid_posi_2cat,1,Positive (diag or presumed)
+covid_medi_7cat,0,Never talked to med pro about COVID-19
+covid_medi_7cat,1,Med pro: Definitely not COVID-19
+covid_medi_7cat,2,Med pro: Probably not COVID-19
+covid_medi_7cat,3,Med pro: Might be COVID-19
+covid_medi_7cat,4,Med pro: Probably COVID-19
+covid_medi_7cat,5,Med pro: Definitely COVID-19
+covid_medi_7cat,9,Med pro: Opinion not reported
+covid_diag_2cat,0,No confirmed diag (by med pro or test)
+covid_diag_2cat,1,Confirmed diag (by med pro or test)
+covid_ling_type_4cat,0,No lingering effects
+covid_ling_type_4cat,1,Lingering effects: Physical
+covid_ling_type_4cat,2,Lingering effects: Mental
+covid_ling_type_4cat,3,Lingering effects: Both physical and mental
+covid_ling_sev_5cat,0,No lingering effects
+covid_ling_sev_5cat,1,Lingering effects: Mild
+covid_ling_sev_5cat,2,Lingering effects: Moderate
+covid_ling_sev_5cat,3,Lingering effects: Severe
+covid_ling_sev_5cat,4,Lingering effects: Very severe
+dmntcutoff_2cat,0,"No, fewer than two problems endorsed"
+dmntcutoff_2cat,1,"Yes, two or more problems endorsed"
+dmntelig_2cat,0,"No, 64 years of age or younger (incl don't know, refused)"
+dmntelig_2cat,1,"Yes, 65 years of age or older"
+dmntprob_2cat,0,"No, no change"
+dmntprob_2cat,1,"Yes, a change"
+agerep_1cat,1,1 or newborn
+agegenpsid_2cat,1,1 or newborn
+agegenpsid_2cat,98,98 or older
+sex_2cat,1,Male
+sex_2cat,2,Female
+month_12cat,1,January
+month_12cat,2,February
+month_12cat,3,March
+month_12cat,4,April
+month_12cat,5,May
+month_12cat,6,June
+month_12cat,7,July
+month_12cat,8,August
+month_12cat,9,September
+month_12cat,10,October
+month_12cat,11,November
+month_12cat,12,December
+deathyearpsid_2cat,0,Not deceased
+deathyearpsid_2cat,9999,NA death year
+deathyear_1cat,0,Not deceased
+demo_death_rep_2cat,0,"No, a death has never been reported"
+demo_death_rep_2cat,1,"Yes, a death has been reported"
+depfreq_5cat,0,None of the time
+depfreq_5cat,1,A little of the time
+depfreq_5cat,2,Some of the time
+depfreq_5cat,3,Most of the time
+depfreq_5cat,4,All of the time
+depchange_3cat,1,Less often than usual
+depchange_3cat,2,About the same
+depchange_3cat,3,More often than usual
+depdegmore_3cat,1,A little more
+depdegmore_3cat,2,Somewhat more
+depdegmore_3cat,3,A lot more
+depdegless_3cat,1,A little less
+depdegless_3cat,2,Somewhat less
+depdegless_3cat,3,A lot less
+depinterfere_4cat,0,Not at all
+depinterfere_4cat,1,A little
+depinterfere_4cat,2,Some
+depinterfere_4cat,3,A lot
+depcutoff_2cat,0,"No, scored lower than 13 [0–12]"
+depcutoff_2cat,1,"Yes, scored 13 or higher [13–24]"
+discutoff_2cat,0,"No, no difficulty endorsed for any activities"
+discutoff_2cat,1,"Yes, difficulty endorsed for 1+ activities"
+disanyhelp_2cat,0,"No, does not receive help with any activities"
+disanyhelp_2cat,1,"Yes, receives help with 1+ activities"
+adlprob_2cat,0,"No, no difficulty endorsed with activity"
+adlprob_2cat,1,"Yes, difficulty endorsed with activity"
+adlhelp_2cat,0,"No, someone does not usually help with activity"
+adlhelp_2cat,1,"Yes, someone usually helps with activity"
+iadlprob_3cat,0,"No, no difficulty endorsed with activity"
+iadlprob_3cat,1,"Yes, difficulty endorsed with activity"
+iadlprob_3cat,9,"N/A, does not do activity"
+iadlnahealth_2cat,0,"Not due to health/physical problem (N/A, does not do activity)"
+iadlnahealth_2cat,1,"Due to health/physical problem (N/A, does not do activity)"
+incval_general,0,Zero dollars
+incval_general_negs,0,Zero dollars or negative income
+incval_general_ones,1,One dollar or zero dollars
+incval_general_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc99996,0,Zero dollars
+incval_tc99996,9999999,"99,996 dollars or more"
+incval_tc99997,0,Zero dollars
+incval_tc99997,9999999,"99,997 dollars or more"
+incval_tc99998,0,Zero dollars
+incval_tc99998,9999999,"99,998 dollars or more"
+incval_tc99999,0,Zero dollars
+incval_tc99999,9999999,"99,999 dollars or more"
+incval_tc99996_negs,0,Zero dollars or negative income
+incval_tc99996_negs,9999999,"99,996 dollars or more"
+incval_tc99997_negs,0,Zero dollars or negative income
+incval_tc99997_negs,9999999,"99,997 dollars or more"
+incval_tc99998_negs,0,Zero dollars or negative income
+incval_tc99998_negs,9999999,"99,998 dollars or more"
+incval_tc99999_negs,0,Zero dollars or negative income
+incval_tc99999_negs,9999999,"99,999 dollars or more"
+incval_tc99996_ones,1,One dollar or zero dollars
+incval_tc99996_ones,9999999,"99,996 dollars or more"
+incval_tc99997_ones,1,One dollar or zero dollars
+incval_tc99997_ones,9999999,"99,997 dollars or more"
+incval_tc99998_ones,1,One dollar or zero dollars
+incval_tc99998_ones,9999999,"99,998 dollars or more"
+incval_tc99999_ones,1,One dollar or zero dollars
+incval_tc99999_ones,9999999,"99,999 dollars or more"
+incval_tc99996_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc99996_ones_negs,9999999,"99,996 dollars or more"
+incval_tc99997_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc99997_ones_negs,9999999,"99,997 dollars or more"
+incval_tc99998_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc99998_ones_negs,9999999,"99,998 dollars or more"
+incval_tc99999_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc99999_ones_negs,9999999,"99,999 dollars or more"
+incval_tc999996,0,Zero dollars
+incval_tc999996,9999999,"999,996 dollars or more"
+incval_tc999997,0,Zero dollars
+incval_tc999997,9999999,"999,997 dollars or more"
+incval_tc999998,0,Zero dollars
+incval_tc999998,9999999,"999,998 dollars or more"
+incval_tc999999,0,Zero dollars
+incval_tc999999,9999999,"999,999 dollars or more"
+incval_tc999996_negs,0,Zero dollars or negative income
+incval_tc999996_negs,9999999,"999,996 dollars or more"
+incval_tc999997_negs,0,Zero dollars or negative income
+incval_tc999997_negs,9999999,"999,997 dollars or more"
+incval_tc999998_negs,0,Zero dollars or negative income
+incval_tc999998_negs,9999999,"999,998 dollars or more"
+incval_tc999999_negs,0,Zero dollars or negative income
+incval_tc999999_negs,9999999,"999,999 dollars or more"
+incval_tc999996_ones,1,One dollar or zero dollars
+incval_tc999996_ones,9999999,"999,996 dollars or more"
+incval_tc999997_ones,1,One dollar or zero dollars
+incval_tc999997_ones,9999999,"999,997 dollars or more"
+incval_tc999998_ones,1,One dollar or zero dollars
+incval_tc999998_ones,9999999,"999,998 dollars or more"
+incval_tc999999_ones,1,One dollar or zero dollars
+incval_tc999999_ones,9999999,"999,999 dollars or more"
+incval_tc999996_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc999996_ones_negs,9999999,"999,996 dollars or more"
+incval_tc999997_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc999997_ones_negs,9999999,"999,997 dollars or more"
+incval_tc999998_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc999998_ones_negs,9999999,"999,998 dollars or more"
+incval_tc999999_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc999999_ones_negs,9999999,"999,999 dollars or more"
+incval_tc9999996,0,Zero dollars
+incval_tc9999996,9999999,"9,999,996 dollars or more"
+incval_tc9999997,0,Zero dollars
+incval_tc9999997,9999999,"9,999,997 dollars or more"
+incval_tc9999998,0,Zero dollars
+incval_tc9999998,9999999,"9,999,998 dollars or more"
+incval_tc9999999,0,Zero dollars
+incval_tc9999999,9999999,"9,999,999 dollars or more"
+incval_tc9999996_negs,0,Zero dollars or negative income
+incval_tc9999996_negs,9999999,"9,999,996 dollars or more"
+incval_tc9999997_negs,0,Zero dollars or negative income
+incval_tc9999997_negs,9999999,"9,999,997 dollars or more"
+incval_tc9999998_negs,0,Zero dollars or negative income
+incval_tc9999998_negs,9999999,"9,999,998 dollars or more"
+incval_tc9999999_negs,0,Zero dollars or negative income
+incval_tc9999999_negs,9999999,"9,999,999 dollars or more"
+incval_tc9999996_ones,1,One dollar or zero dollars
+incval_tc9999996_ones,9999999,"9,999,996 dollars or more"
+incval_tc9999997_ones,1,One dollar or zero dollars
+incval_tc9999997_ones,9999999,"9,999,997 dollars or more"
+incval_tc9999998_ones,1,One dollar or zero dollars
+incval_tc9999998_ones,9999999,"9,999,998 dollars or more"
+incval_tc9999999_ones,1,One dollar or zero dollars
+incval_tc9999999_ones,9999999,"9,999,999 dollars or more"
+incval_tc9999996_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc9999996_ones_negs,9999999,"9,999,996 dollars or more"
+incval_tc9999997_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc9999997_ones_negs,9999999,"9,999,997 dollars or more"
+incval_tc9999998_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc9999998_ones_negs,9999999,"9,999,998 dollars or more"
+incval_tc9999999_ones_negs,1,"One dollar, zero dollars, or negative income"
+incval_tc9999999_ones_negs,9999999,"9,999,999 dollars or more"
+eaco_ranges_9cat,0,No earnings
+eaco_ranges_9cat,1,1 to 499 dollars
+eaco_ranges_9cat,2,500 to 999 dollars
+eaco_ranges_9cat,3,1000 to 1999 dollars
+eaco_ranges_9cat,4,2000 to 2999 dollars
+eaco_ranges_9cat,5,3000 to 4999 dollars
+eaco_ranges_9cat,6,5000 to 7499 dollars
+eaco_ranges_9cat,7,7500 to 9999 dollars
+eaco_ranges_9cat,8,"10,000 dollars or more"
+farmincnetsha_10cat,0,Neither RP or SP are farmers
+farmincnetsha_10cat,1,Only RP is farmer
+farmincnetsha_10cat,2,Only SP is farmer
+farmincnetsha_10cat,3,Both RP and SP are farmers
+farmincnetsha_10cat,4,SP does not have income from farming OR does not have zero earningsome
+farmincnetsha_10cat,5,SP has income from farming AND zero earningsome
+farmincnetsha_10cat,6,SP may have income from farming despite having positive earningsome
+farmincnetsha_10cat,7,SP did not have income from unspecified business that RP shares
+farmincnetsha_10cat,8,SP has income from work on unspecified business that RP shares
+farmincnetsha_10cat,9,No response or not applicable
+educomprep_9cat,0,"0–5 grades, has difficulty reading or writing"
+educomprep_9cat,1,"0–5 grades, no difficulty reading or writing"
+educomprep_9cat,2,6–8 grades
+educomprep_9cat,3,9–11 grades
+educomprep_9cat,4,"12 grades, completed high school"
+educomprep_9cat,5,"12 grades, completed high school and nonacademic training"
+educomprep_9cat,6,"College, no degree"
+educomprep_9cat,7,"College, bachelor's degree"
+educomprep_9cat,8,"College, advanced or professional degree"
+eduhsgradrep_3cat,0,No high school diploma and no GED
+eduhsgradrep_3cat,1,Has a high school diploma
+eduhsgradrep_3cat,2,Has a GED
+eduanycolrep_2cat,0,Has not attended college
+eduanycolrep_2cat,1,Has attended college
+educollnum_5cat,1,1 year completed
+educollnum_5cat,2,2 years completed
+educollnum_5cat,3,3 years completed
+educollnum_5cat,4,4 years completed
+educollnum_5cat,5,5 or more years completed
+educollgra_2cat,0,No bachelor's degree (incl associate's degree)
+educollgra_2cat,1,Has a bachelor's degree
+edudegreerep_8cat,1,Associate's degree (AA)
+edudegreerep_8cat,2,"Bachelor's degree (BA, BS)"
+edudegreerep_8cat,3,"Master's degree (MA, MS, MBA)"
+edudegreerep_8cat,4,Doctoral degree (PhD)
+edudegreerep_8cat,5,"Law degree (LLB, JD)"
+edudegreerep_8cat,6,"Medical degree (MD, DDS, DVM, DO)"
+edudegreerep_8cat,7,"Other degree, honorary"
+edudegreerep_8cat,8,"Other degree, unspecified"
+edufinstrep_4cat,1,US only
+edufinstrep_4cat,2,Outside US only
+edufinstrep_4cat,3,Both US and outside US
+edufinstrep_4cat,4,No education
+edufdegreerep_7cat,1,Did not attend high school
+edufdegreerep_7cat,2,Attended high school but no diploma
+edufdegreerep_7cat,3,High school diploma
+edufdegreerep_7cat,4,Associate's degree
+edufdegreerep_7cat,5,"Bachelor's degree (BA, BS)"
+edufdegreerep_7cat,6,"Master's degree (MA, MS, MBA)"
+edufdegreerep_7cat,7,"Doctoral or medical degree (PhD, MD, DDS)"
+edugrde_9cat,0,"0–5 grades, has difficulty reading or writing"
+edugrde_9cat,1,"0–5 grades, no difficulty reading or writing"
+edugrde_9cat,2,6–8 grades
+edugrde_9cat,3,9–11 grades
+edugrde_9cat,4,"12 grades, completed high school"
+edugrde_9cat,5,"12 grades, completed high school and nonacademic training"
+edugrde_9cat,6,"College, no degree"
+edugrde_9cat,7,"College, bachelor's degree"
+edugrde_9cat,8,"College, advanced or professional degree"
+eduhsch_3cat,0,No high school diploma and no GED
+eduhsch_3cat,1,Has a high school diploma
+eduhsch_3cat,2,Has a GED
+educollatt_2cat,0,Has not attended college
+educollatt_2cat,1,Has attended college
+educolldeg_8cat,1,Associate's degree (AA)
+educolldeg_8cat,2,"Bachelor's degree (BA, BS)"
+educolldeg_8cat,3,"Master's degree (MA, MS, MBA)"
+educolldeg_8cat,4,Doctoral degree (PhD)
+educolldeg_8cat,5,"Law degree (LLB, JD)"
+educolldeg_8cat,6,"Medical degree (MD, DDS, DVM, DO)"
+educolldeg_8cat,7,"Other degree, honorary"
+educolldeg_8cat,8,"Other degree, unspecified"
+eduicolatt_4cat,1,US only
+eduicolatt_4cat,2,Outside US only
+eduicolatt_4cat,3,Both US and outside US
+eduicolatt_4cat,4,No education
+eduicoldeg_7cat,1,Did not attend high school
+eduicoldeg_7cat,2,Attended high school but no diploma
+eduicoldeg_7cat,3,High school diploma
+eduicoldeg_7cat,4,Associate's degree
+eduicoldeg_7cat,5,"Bachelor's degree (BA, BS)"
+eduicoldeg_7cat,6,"Master's degree (MA, MS, MBA)"
+eduicoldeg_7cat,7,"Doctoral or medical degree (PhD, MD, DD)"
+edulevel_5cat,0,Did not complete high school
+edulevel_5cat,1,"Completed high school, did not attend college"
+edulevel_5cat,2,"Attended college, no bachelor's degree"
+edulevel_5cat,3,"Bachelor's degree, no postgraduate degree"
+edulevel_5cat,4,Postgraduate degree
+empstat_8cat,8,"Other, ""workfare"", in prison or jail"
+empstat_8cat,1,Employed: Working now
+empstat_8cat,2,"Not employed: Temporarily laid off, sick leave, parental leave"
+empstat_8cat,3,Not employed: Looking for work
+empstat_8cat,4,Not employed: Retired
+empstat_8cat,5,"Not employed: Permanently disabled, temporarily disabled"
+empstat_8cat,6,Not employed: Keeping house (incl. unemployed/not looking for work)
+empstat_8cat,7,Not employed: Student
+empwork_2cat,0,Not currently working
+empwork_2cat,1,Currently working
+imputeflag_2cat,0,Not imputed
+imputeflag_2cat,1,Imputed
+famchild_lab_,0,No children
+famchild_lab_,9,9 or more children
+famparstat_6cat,1,RP has current SP in FU: Married or currently cohabiting [1]
+famparstat_6cat,2,"RP does not have current SP in FU: Separated/not living with spouse, and not currently cohabiting [5]"
+famparstat_6cat,3,RP does not have current SP in FU: Divorced/annulled and not currently cohabiting [4]
+famparstat_6cat,4,RP does not have current SP in FU: Widowed and not currently cohabiting [3]
+famparstat_6cat,5,RP does not have current SP in FU: Single/never married and not currently cohabiting [2]
+famparstat_6cat,80,RP does not have current SP in FU: Married but spouse absent [8]
+fammarstat_5cat,1,RP is legally married: Married/not separated [1]
+fammarstat_5cat,2,RP is legally married: Separated [5]
+fammarstat_5cat,3,RP is not legally married: Divorced/annulled and not remarried [4]
+fammarstat_5cat,4,RP is not legally married: Widowed and not remarried [3]
+fammarstat_5cat,5,RP has never legally married [2]
+fampartype_5cat,0,RP does not have current spouse/partner in FU [5]
+fampartype_5cat,1,RP has current spouse/partner in FU: Legal spouse [1]
+fampartype_5cat,2,RP has current spouse/partner in FU: Cohabiting partner [2]
+fampartype_5cat,3,RP has current spouse/partner in FU: Uncooperative spouse (FU has female RP) [3]
+fampartype_5cat,4,RP has new partner who moved into FU: First-year cohabitor [4]
+famyoung_4cat,0,No children under 18 in FU
+famyoung_4cat,806,Between 6 and 8
+famyoung_4cat,809,Between 9 and 13
+famyoung_4cat,814,Between 14 and 17
+fampartner_2cat,0,"No, RP has no SP who lives in FU"
+fampartner_2cat,1,"Yes, RP has a SP who lives in FU"
+fammarried_2cat,0,"No, RP is not legally married or RP has no SP who lives in FU"
+fammarried_2cat,1,"Yes, RP is legally married to SP who lives in FU"
+birthwght_2cat,980,"Don't know exact weight, but less than 88 ounces"
+birthwght_2cat,981,"Don't know exact weight, but 88 ounces or more"
+bodyhghtunime_2cat,0,0.60 meters or less
+bodyhghtunime_2cat,997,2.10 meters or more
+bodywghtunilb_2cat,0,50 pounds or less
+bodywghtunilb_2cat,997,400 pounds or more
+bodywghtunikg_2cat,0,36.0 kilograms or less
+bodywghtunikg_2cat,997,180.0 kilograms or more
+hlthstat_scale_5cat,1,Poor
+hlthstat_scale_5cat,2,Fair
+hlthstat_scale_5cat,3,Good
+hlthstat_scale_5cat,4,Very good
+hlthstat_scale_5cat,5,Excellent
+hlthstat_good_2cat,0,"No, not in good health"
+hlthstat_good_2cat,1,"Yes, in good health"
+hlthstat_poor_2cat,0,"No, not in poor health"
+hlthstat_poor_2cat,1,"Yes, in poor health"
+hlthchng_3cat,1,Worse than two years ago
+hlthchng_3cat,2,About the same as two years ago
+hlthchng_3cat,3,Better than two years ago
+hospany_2cat,0,"No, not admitted to hospital in the prev year"
+hospany_2cat,1,"Yes, admitted to hospital at least once in the prev year"
+lifesat_5cat,0,Not at all satisfied
+lifesat_5cat,1,Not very satisfied
+lifesat_5cat,2,Somewhat satisfied
+lifesat_5cat,3,Very satisfied
+lifesat_5cat,4,Completely satisfied
+hlthpoor_comb_2cat,0,"No, not in poor health"
+hlthpoor_comb_2cat,1,"Yes, in poor (or not-good) health"
+bodyhghtcm_2cat,0,Less than 60 cm (23.5 in)
+bodyhghtcm_2cat,997,More than 210 cm (82.5 in)
+bodyhghtin_2cat,0,Less than 60 cm (23.5 in)
+bodyhghtin_2cat,997,More than 210 cm (82.5 in)
+bodywghtlb_2cat,0,Less than 50 lb (22.5 kg) or 36 kg (79.5 lb)
+bodywghtlb_2cat,997,More than 400 lb (181.5 kg) or 180 kg (397.0 lb)
+bodywghtkg_2cat,0,Less than 50 lb (22.5 kg) or 36 kg (79.5 lb)
+bodywghtkg_2cat,997,More than 400 lb (181.5 kg) or 180 kg (397.0 lb)
+geostate_58cat,1,Alabama
+geostate_58cat,2,Arizona
+geostate_58cat,3,Arkansas
+geostate_58cat,4,California
+geostate_58cat,5,Colorado
+geostate_58cat,6,Connecticut
+geostate_58cat,7,Delaware
+geostate_58cat,8,District of Columbia
+geostate_58cat,9,Florida
+geostate_58cat,10,Georgia
+geostate_58cat,11,Idaho
+geostate_58cat,12,Illinois
+geostate_58cat,13,Indiana
+geostate_58cat,14,Iowa
+geostate_58cat,15,Kansas
+geostate_58cat,16,Kentucky
+geostate_58cat,17,Louisiana
+geostate_58cat,18,Maine
+geostate_58cat,19,Maryland
+geostate_58cat,20,Massachusetts
+geostate_58cat,21,Michigan
+geostate_58cat,22,Minnesota
+geostate_58cat,23,Mississippi
+geostate_58cat,24,Missouri
+geostate_58cat,25,Montana
+geostate_58cat,26,Nebraska
+geostate_58cat,27,Nevada
+geostate_58cat,28,New Hampshire
+geostate_58cat,29,New Jersey
+geostate_58cat,30,New Mexico
+geostate_58cat,31,New York
+geostate_58cat,32,North Carolina
+geostate_58cat,33,North Dakota
+geostate_58cat,34,Ohio
+geostate_58cat,35,Oklahoma
+geostate_58cat,36,Oregon
+geostate_58cat,37,Pennsylvania
+geostate_58cat,38,Rhode Island
+geostate_58cat,39,South Carolina
+geostate_58cat,40,South Dakota
+geostate_58cat,41,Tennessee
+geostate_58cat,42,Texas
+geostate_58cat,43,Utah
+geostate_58cat,44,Vermont
+geostate_58cat,45,Virginia
+geostate_58cat,46,Washington
+geostate_58cat,47,West Virginia
+geostate_58cat,48,Wisconsin
+geostate_58cat,49,Wyoming
+geostate_58cat,50,Alaska
+geostate_58cat,51,Hawaii
+geostate_58cat,800,US territory or country outside the United States
+geostate_58cat,801,"English-speaking British Commonwealth country (incl AU, CA, NZ, UK)"
+geostate_58cat,802,"Northern European country (incl AT, CH, CZ, DE, FR, PL, RU, SE)"
+geostate_58cat,803,"Southern and Eastern European country (incl AL, BG, ES, GR, IT, RO, YU)"
+geostate_58cat,804,"Central and Southern American country (incl MX, West Indies)"
+geostate_58cat,805,Asian and Middle Eastern country (incl EG; excl RU)
+geostate_58cat,806,African country (excl EG)
+georegion_6cat,1,Northeast
+georegion_6cat,2,Midwest
+georegion_6cat,3,South
+georegion_6cat,4,West
+georegion_6cat,5,Alaska or Hawaii
+georegion_6cat,6,Country outside the United States
+geometro_3cat,0,"No, non-metropolitan area (Beale-Ross Rural-Urban Continuum Codes 1–3)"
+geometro_3cat,1,"Yes, metropoilitan area (Beale-Ross Rural-Urban Continuum Codes 4–9)"
+geometro_3cat,9,"N/A, not classified (Country outside the United States)"
+seqnum_89cat,0,[seqnum=0] Ind is nonresponse or has not yet entered survey
+responseext_40cat,0,Active response: Ind is current member of fam unit at time of interview [0; seqnum==(1–20)]
+responseext_40cat,101,Nonresponse: Ind in an institution (Armed forces) [11]
+responseext_40cat,102,Nonresponse: Ind in an institution (Educational) [12]
+responseext_40cat,103,Nonresponse: Ind in an institution (Health care facility) [13]
+responseext_40cat,104,Nonresponse: Ind in an institution (Jail or prison) [14]
+responseext_40cat,105,Nonresponse: Ind in an institution (Misc other type or unknown) [19]
+responseext_40cat,200,"Nonresponse: Ind unavailable after life event (Moved out, eligible to be followed) [91]"
+responseext_40cat,201,"Nonresponse: Ind unavailable after life event (Moved out, not eligible to be followed) [92]"
+responseext_40cat,210,"Nonresponse: Ind unavailable after life event (Adopted by unrelated persons, became nonsample) [45]"
+responseext_40cat,211,Nonresponse: Ind unavailable after life event (Unable to cooperate because of disability) [31]
+responseext_40cat,300,Nonresponse: Ind died since previous wave or after becoming nonresponse in a prior year [41]
+responseext_40cat,400,Nonresponse: Refusal (Declined wave) [1]
+responseext_40cat,401,Nonresponse: Refusal (No future contact) [10]
+responseext_40cat,410,Nonresponse: Refusal (Withdrew by contacting study or IRB) [15]
+responseext_40cat,420,"Nonresponse: Refusal (Unknown reason; i.e., DK/NA) [99]"
+responseext_40cat,500,Nonresponse: Logistics (No one home during interview period) [2]
+responseext_40cat,501,Nonresponse: Logistics (Fam unit too far away for interviewer contact) [5]
+responseext_40cat,502,Nonresponse: Logistics (Contact with family member but not appropriate respondent) [3]
+responseext_40cat,520,Nonresponse: Logistics (Inability to locate any member of FU) [4]
+responseext_40cat,521,Nonresponse: Logistics (Insufficient contact information for recontact) [57]
+responseext_40cat,530,Nonresponse: Logistics (Error: Ind should have been followed but was not) [52]
+responseext_40cat,540,"Nonresponse: Logistics (Error: Ind was followed, discovered to be nonsample) [51]"
+responseext_40cat,541,"Nonresponse: Logistics (Error: Ind included in multiple panel families, this record is erronerous) [53]"
+responseext_40cat,542,Nonresponse: Logistics (Error: Ind never existed or never actually lived in FU) [54]
+responseext_40cat,543,Nonresponse: Logistics (Miscellaneous office error) [59]
+responseext_40cat,550,Nonresponse: Logistics (Staff decision discontinue contact efforts due to budget/time) [58]
+responseext_40cat,551,"Nonresponse: Logistics (Latino recontact only, deliberately not followed) [94]"
+responseext_40cat,552,"Nonresponse: Logistics (Nonsample parent became eligible, followability determined before wave) [56]"
+responseext_40cat,600,Nonresponse: Sample drop (1996: Latino sample; 1997: One-third of main/Census sample) [80]
+responseext_40cat,700,Nonresponse: Nonsample eligibility (Change to nonsample parent of sample child) [60]
+responseext_40cat,711,Nonresponse: Nonsample eligibility (Sample member joined armed forces) [21]
+responseext_40cat,712,Nonresponse: Nonsample eligibility (Sample member entered educ institution) [22]
+responseext_40cat,713,Nonresponse: Nonsample eligibility (Sample member entered health care facility) [23]
+responseext_40cat,714,Nonresponse: Nonsample eligibility (Sample member went to jail or prison) [24]
+responseext_40cat,715,Nonresponse: Nonsample eligibility (Sample member entered misc other institution) [29]
+responseext_40cat,720,Nonresponse: Nonsample eligibility (All sample members moved out) [93]
+responseext_40cat,721,Nonresponse: Nonsample eligibility (Sample member disability) [32]
+responseext_40cat,730,Nonresponse: Nonsample eligibility (Sample member died) [42]
+responseext_40cat,740,Nonresponse: Nonsample eligibility (Sample member refused to participate) [25]
+responseext_40cat,750,Nonresponse: Nonsample eligibility (Change due to logistics) [61]
+responseext_40cat,751,Nonresponse: Nonsample eligibility (Nonsample elderly Ind was followed) [81]
+responseext_40cat,800,"Nonresponse: No interview after nonresponse in previous wave, not selected for recontact [98]"
+responseext_40cat,900,"Not applicable: Ind has not yet entered survey (Not born, not moved in, or sample added in subsequent year) [97]"
+paneldroprein_2cat,0,Never dropped
+paneldroprein_2cat,1,Dropped and reinstated (Observed in current wave)
+panelreineligind_2cat,0,Not eligible for 1997 CDS (incl not applicable)
+panelreineligind_2cat,1,Eligible for 1997 CDS
+panelcurrent_2cat,0,"No, not a current member of family unit"
+panelcurrent_2cat,1,"Yes, current member of family unit"
+panelinst_6cat,0,Does not live in institution
+panelinst_6cat,1,Armed forces
+panelinst_6cat,2,Educational institution
+panelinst_6cat,3,Health care facility
+panelinst_6cat,4,Jail or prison
+panelinst_6cat,5,Other institution or unknown institution
+panelmove_2cat,0,"No, did not move out since last wave"
+panelmove_2cat,1,"Yes, moved out since last wave"
+response_10cat,0,Active response: Ind is current member of fam unit at time of interview [0; sv_seqnum==(1–20)]
+response_10cat,1,"Nonresponse: Ind in an institution (e.g., armed forces, educational, prison) [11-14, 19]"
+response_10cat,2,"Nonresponse: Ind unavailable after life event (e.g., moved out, adopted, disability) [31, 45, 91-92]"
+response_10cat,3,Nonresponse: Ind died since previous wave or after becoming nonresponse in a prior year [41]
+response_10cat,4,"Nonresponse: Refusal (e.g., panel withdrawal, unknown reason) [1, 10, 15, 99]"
+response_10cat,5,"Nonresponse: Logistics (e.g., lost contact, error, budget) [2-5, 51-54, 57-59, 94]"
+response_10cat,6,Nonresponse: Sample drop (1996: Latino sample; 1997: one-third of main/Census sample) [80]
+response_10cat,7,"Nonresponse: Nonsample eligibility (determined ineligible or no longer eligible) [21-25, 29, 32, 42, 60-61, 93]"
+response_10cat,8,"Nonresponse: No interview after nonresponse in previous wave, not selected for recontact [98]"
+response_10cat,9,"Not applicable: Ind has not yet entered survey (not born, not moved in, or sample added in subsequent year) [97]"
+paneldropstat_3cat,0,"Never dropped (incl not applicable, dropped Latino sample)"
+paneldropstat_3cat,1,Dropped and never reinstated
+paneldropstat_3cat,2,Dropped and reinstated (observed in at least one subsequent wave)
+panelreinelig_2cat,0,"No, FU does not include an eligible child"
+panelreinelig_2cat,1,"Yes, FU includes an eligibile child"
+homestat_3cat,1,Owns home
+homestat_3cat,2,Pays rent
+homestat_3cat,3,Neither owns home nor pays rent
+homeownmorany1m_2cat,0,"No, does not have a mortgage"
+homeownmorany1m_2cat,1,"Yes, has a mortgage"
+homeownmorany2m_2cat,0,"No, does not have a second mortgage"
+homeownmorany2m_2cat,1,"Yes, has a second mortgage"
+homeownmorany3m_2cat,0,"No, does not have a third mortgage"
+homeownmorany3m_2cat,1,"Yes, has a third mortgage"
+homemornum_3cat,0,No mortgage
+homemornum_3cat,1,One mortgage
+homemornum_3cat,2,Two mortgages
+race_9cat,1,White
+race_9cat,2,Black
+race_9cat,3,American Indian or Alaska Native
+race_9cat,4,Asian
+race_9cat,5,Native Hawaiian or Pacific Islander
+race_9cat,6,Asian or Pacific Islander
+race_9cat,7,Other race
+race_9cat,8,Mentions Spanish origin or descent
+race_9cat,9,More than one mention
+ethospan_8cat,0,No Spanish descent
+ethospan_8cat,1,Spanish descent (Mexican)
+ethospan_8cat,2,Spanish descent (Mexican American)
+ethospan_8cat,3,Spanish descent (Chicano)
+ethospan_8cat,4,Spanish descent (Puerto Rican)
+ethospan_8cat,5,Spanish descent (Cuban)
+ethospan_8cat,6,"Spanish descent (Hispanic, Latino, other ethnicity of Spanish descent)"
+ethospan_8cat,7,Spanish descent (More than one mention)
+raceonly_9cat,1,White
+raceonly_9cat,2,Black
+raceonly_9cat,3,American Indian or Alaska Native
+raceonly_9cat,4,Asian
+raceonly_9cat,5,Native Hawaiian or Pacific Islander
+raceonly_9cat,6,Asian or Pacific Islander
+raceonly_9cat,7,Other race
+raceonly_9cat,8,Mentions Spanish origin or descent
+raceonly_9cat,9,More than one mention
+raceethnicity_1v_4cat,1,White
+raceethnicity_1v_4cat,2,Black
+raceethnicity_1v_4cat,3,Other race
+raceethnicity_1v_4cat,4,Spanish descent
+raceethnicity_2v_4cat,1,"White, non-Hispanic"
+raceethnicity_2v_4cat,2,"Black, non-Hispanic"
+raceethnicity_2v_4cat,3,"Other race, non-Hispanic"
+raceethnicity_2v_4cat,4,Hispanic
+raceethnicity_summary_4cat,1,White
+raceethnicity_summary_4cat,2,Black
+raceethnicity_summary_4cat,3,Other race
+raceethnicity_summary_4cat,4,Hispanic
+raceethnicity_8cat,1,White
+raceethnicity_8cat,2,Black
+raceethnicity_8cat,3,American Indian or Alaska Native
+raceethnicity_8cat,4,Asian
+raceethnicity_8cat,5,Native Hawaiian or Pacific Islander
+raceethnicity_8cat,6,Asian or Pacific Islander
+raceethnicity_8cat,7,Other race
+raceethnicity_8cat,15,Spanish descent
+raceethnicity_15cat,1,"White, non-Hispanic"
+raceethnicity_15cat,2,"Black, non-Hispanic"
+raceethnicity_15cat,3,"American Indian or Alaska Native, non-Hispanic"
+raceethnicity_15cat,4,"Asian, non-Hispanic"
+raceethnicity_15cat,5,"Native Hawaiian or Pacific Islander, non-Hispanic"
+raceethnicity_15cat,6,"Asian or Pacific Islander, non-Hispanic"
+raceethnicity_15cat,7,"Other race, non-Hispanic"
+raceethnicity_15cat,8,"White, Hispanic"
+raceethnicity_15cat,9,"Black, Hispanic"
+raceethnicity_15cat,10,"American Indian or Alaska Native, Hispanic"
+raceethnicity_15cat,11,"Asian, Hispanic"
+raceethnicity_15cat,12,"Native Hawaiian or Pacific Islander, Hispanic"
+raceethnicity_15cat,13,"Asian or Pacific Islander, Hispanic"
+raceethnicity_15cat,14,"Other race, Hispanic"
+raceethnicity_15cat,15,"Unspecified race, Hispanic"
+relchiflag_10cat,0,No records
+relchiflag_10cat,1,Records: Does not have birth or adopted children
+relchiflag_10cat,2,"Records: Has birth children (exact number), does not have adopted children"
+relchiflag_10cat,3,"Records: Has/might have birth children (unknown number), does not have adopted children"
+relchiflag_10cat,4,"Records: Has adopted children (exact number), does not have birth children"
+relchiflag_10cat,5,"Records: Has/might have adopted children (unknown number), does not have birth children"
+relchiflag_10cat,6,"Records: Has birth children (exact number), has adopted children (exact number)"
+relchiflag_10cat,7,"Records: Has birth children (exact number), has/might have adopted children (unknown number)"
+relchiflag_10cat,8,"Records: Has/might have birth children (unknown number), has adopted children (exact number)"
+relchiflag_10cat,9,"Records: Has/might have birth children (unknown number), has/might have adopted children (unknown number)"
+relchitype_2cat,1,Biological child
+relchitype_2cat,2,Adopted child
+relmarflag_3cat,0,No records
+relmarflag_3cat,1,Records: No marriages
+relmarflag_3cat,2,Records: At least one marriage
+relmarstat_6cat,1,Current union: Married and spouses are not separated
+relmarstat_6cat,2,Current union: Married and spouses are separated
+relmarstat_6cat,3,Union dissolution: Marriage ended in widowhood
+relmarstat_6cat,4,Union dissolution: Marriage ended in divorce or annulment
+relmarstat_6cat,5,"Other: Bigamy, more recent marriage reported without evidence of widowhood or divorce"
+relmarstat_6cat,6,"Other: Unspecified, not applicable or don't know"
+relpartype_6cat,1,Birth mother
+relpartype_6cat,2,Birth father
+relpartype_6cat,3,Adoptive mother 1
+relpartype_6cat,4,Adoptive mother 2
+relpartype_6cat,5,Adoptive father 1
+relpartype_6cat,6,Adoptive father 2
+fw_general_1cat,0,"FU has no family weight (i.e., no sample persons)"
+fw_1990_1995_1cat,0,"FU is Latino sample or has no family weight (i.e., no sample persons)"
+fwlatinonly_1cat,0,FU is main sample (SRC; Census/SEO)
+iw_general_1cat,0,"Ind is nonresponse, not a sample person, Latino sample, or not yet entered survey (born, moved in, subsequent sample)"
+iwlatincore_1cat,0,"Ind is nonresponse, not a sample person, or not yet entered survey (born, moved in, subsequent sample)"
+iwlatinonly_1cat,0,"Ind is core sample (SRC; Census/SEO), nonresponse, not a sample person, or not yet entered survey (born, moved in, subsequent sample)"
+stratum_94cat,1,[stratum=1] Core sample (SRC; Census/SEO) stratum code
+sample_5cat,1,Main sample (SRC)
+sample_5cat,2,Main sample (Census/SEO)
+sample_5cat,3,Latino sample (1990/1992; ended 1995)
+sample_5cat,4,Immigrant refresher sample (1997/1999)
+sample_5cat,5,Immigrant refresher sample (2017/2019)
+sampstatext_7cat,1,Nonsample person: Not followable
+sampstatext_7cat,11,"Nonsample person: Followable elderly, age 65 or older (1990–1995)"
+sampstatext_7cat,12,"Nonsample person: Followable parent, live with sample child under age 25 (1994–2003)"
+sampstatext_7cat,100,Sample person: Original
+sampstatext_7cat,200,Sample person: Born-in
+sampstatext_7cat,300,Sample person: Moved-in
+sampstatext_7cat,400,Sample person: Joint inclusion
+respondentext_19cat,101,Ref person (Head)
+respondentext_19cat,102,Ref person (Current Head)
+respondentext_19cat,103,Ref person (Current Reference Person)
+respondentext_19cat,201,"Spouse/partner (Wife, responding for self)"
+respondentext_19cat,202,"Spouse/partner (Wife, responding for self, Wife considered Head)"
+respondentext_19cat,203,Spouse/partner (Wife)
+respondentext_19cat,204,"Spouse/partner (Wife/""Wife"")"
+respondentext_19cat,205,Spouse/partner (Wife or new Wife)
+respondentext_19cat,206,"Spouse/partner (""Wife"" or new ""Wife"")"
+respondentext_19cat,207,Spouse/partner (Partner or new partner)
+respondentext_19cat,208,Spouse/partner (Spouse or new spouse)
+respondentext_19cat,251,"Spouse/partner (Wife, responding for husband)"
+respondentext_19cat,801,Other person (Other)
+respondentext_19cat,802,Other person (Someone other than Head or Wife)
+respondentext_19cat,803,Other person (Other than Head or Wife)
+respondentext_19cat,804,"Other person (Someone other than Head or Wife/""Wife"")"
+respondentext_19cat,851,Other person (Other FU member)
+respondentext_19cat,861,"Other person (Proxy R, not a member of this FU)"
+respondentext_19cat,999,Unknown person (NA)
+rindiv_2cat,0,Not the current respondent
+rindiv_2cat,1,Current respondent
+relext_35cat,100,"Ref person [1, 10]"
+relext_35cat,200,"Spouse/partner of ref person (Legal spouse of RP) [2, 20]"
+relext_35cat,201,Spouse/partner of ref person (Cohabiting partner of RP) [22]
+relext_35cat,208,"Spouse/partner of ref person (Uncooperative legal spouse of RP) [9, 90]"
+relext_35cat,209,Spouse/partner of ref person (Uncooperative cohabiting partner of RP) [92]
+relext_35cat,300,"Child of ref person (Child of RP, born or adopted) [3, 30]"
+relext_35cat,301,Child of ref person (Step-child of RP; child of legal spouse) [33]
+relext_35cat,302,Child of ref person (Child of cohabiting partner) [35]
+relext_35cat,401,Other fam unit member (First-year cohabitor of RP) [88]
+relext_35cat,402,Other fam unit member (Child of first-year cohabiting partner) [38]
+relext_35cat,410,Other fam unit member (Foster child of RP) [83]
+relext_35cat,411,"Other fam unit member (Child-in-law of RP; spouse of child, incl. step) [37]"
+relext_35cat,420,"Other fam unit member (Parent of RP, incl. step) [5, 50]"
+relext_35cat,421,Other fam unit member (Parent-in-law of RP; parent of legal spouse) [57]
+relext_35cat,422,Other fam unit member (Parent of cohabiting partner) [58]
+relext_35cat,430,"Other fam unit member (Grandchild of RP or legal spouse) [6, 60]"
+relext_35cat,431,Other fam unit member (Great-grandchild of RP or legal spouse) [65]
+relext_35cat,440,Other fam unit member (Grandparent of RP) [66]
+relext_35cat,441,Other fam unit member (Grandparent of legal spouse) [67]
+relext_35cat,442,Other fam unit member (Great-grandparent of RP) [68]
+relext_35cat,443,Other fam unit member (Great-grandparent of legal spouse) [69]
+relext_35cat,450,"Other fam unit member (Sibling of RP, incl. step and half) [4, 40]"
+relext_35cat,451,Other fam unit member (Sibling-in-law of RP; sibling of legal spouse) [47]
+relext_35cat,452,Other fam unit member (Sibling of cohabiting partner) [48]
+relext_35cat,453,Other fam unit member (Niece/nephew of RP) [70]
+relext_35cat,454,Other fam unit member (Niece/nephew of legal spouse) [71]
+relext_35cat,455,Other fam unit member (Cousin of RP) [74]
+relext_35cat,456,Other fam unit member (Cousin of legal spouse) [75]
+relext_35cat,457,Other fam unit member (Aunt/uncle of RP) [72]
+relext_35cat,458,Other fam unit member (Aunt/uncle of legal spouse) [73]
+relext_35cat,480,Other fam unit member (Other relative of unspecified person) [7]
+relext_35cat,481,Other fam unit member (Other relative of RP) [95]
+relext_35cat,482,Other fam unit member (Other relative of legal spouse) [96]
+relext_35cat,483,Other fam unit member (Other relative of cohabiting partner) [97]
+relext_35cat,490,"Other fam unit member (Other nonrelative or unspecified relationship) [8, 98]"
+respondent_3cat,1,Ref person
+respondent_3cat,2,Spouse/partner of ref person
+respondent_3cat,3,"Other person (other fam unit member, proxy respondent who is not a member of fam unit, unspecified)"
+rel_4cat,1,Ref person
+rel_4cat,2,Spouse/partner of ref person
+rel_4cat,3,Child of ref person
+rel_4cat,4,Other family unit member
+refcouple_2cat,0,Not in ref couple (not ref person or spouse/partner)
+refcouple_2cat,1,In ref couple (ref person or spouse/partner)
+sampstat_5cat,0,Nonsample person
+sampstat_5cat,1,Sample person: Original
+sampstat_5cat,2,Sample person: Born-in
+sampstat_5cat,3,Sample person: Moved-in
+sampstat_5cat,4,Sample person: Joint inclusion
+hours_gen_rp_2cat,0,None
+hours_gen_rp_2cat,112,112 hours or more
+hours_gen_sp_2cat,0,None or no SP
+hours_gen_sp_2cat,112,112 hours or more
+hours_care_rp_1cat,0,None
+hours_care_sp_1cat,0,None or no SP
+hours_hous_rp_1976_1993_3cat,0,None
+hours_hous_rp_1976_1993_3cat,1,1 hour or less
+hours_hous_rp_1976_1993_3cat,98,98 hours or more
+hours_hous_rp_1994_3cat,0,None
+hours_hous_rp_1994_3cat,1,1 hour or less
+hours_hous_rp_1994_3cat,112,112 hours or more
+hours_hous_rp_1995_2099_2cat,0,None
+hours_hous_rp_1995_2099_2cat,112,112 hours or more
+hours_hous_sp_1976_1993_3cat,0,None or no SP
+hours_hous_sp_1976_1993_3cat,1,1 hour or less
+hours_hous_sp_1976_1993_3cat,98,98 hours or more
+hours_hous_sp_1994_3cat,0,None or no SP
+hours_hous_sp_1994_3cat,1,1 hour or less
+hours_hous_sp_1994_3cat,112,112 hours or more
+hours_hous_sp_1995_2099_2cat,0,None or no SP
+hours_hous_sp_1995_2099_2cat,112,112 hours or more
+imputehome_5cat,0,Not imputed
+imputehome_5cat,1,Imputed (minor assignment)
+imputehome_5cat,2,Imputed (major assignment)
+imputehome_5cat,3,Imputed (complex property)
+imputehome_5cat,9,Estimate not accurate

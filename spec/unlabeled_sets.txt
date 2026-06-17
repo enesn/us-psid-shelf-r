@@ -1,0 +1,11 @@
+cconstat_cans_2cat
+earn_ranges_9cat
+famchild_lab_1968_1968
+famchild_lab_1969_1969
+famchild_lab_1970_1971
+famchild_lab_1972_2019
+hlthhospany_2cat
+iadlnahealth_3cat
+occ1970c_cat
+occ2000c_cat
+occ2010c_cat
