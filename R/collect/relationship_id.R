@@ -80,6 +80,10 @@ for (i in 1:20) {
     sx   <- rc(sx,  c12 >= 1 & c12 <= 2, c12); sx <- rc(sx,  c12 %in% c(8,9) | is.na(c12) | rf_chi %in% 0, NA)
     ord  <- rc(ord, c9 >= 1 & c9 <= 20, c9);   ord <- rc(ord, c9 %in% c(98,99) | is.na(c9) | rf_chi %in% 0, NA)
     by   <- rc(by,  c15 >= 1900 & c15 <= 2099, c15); by <- rc(by, c15 %in% c(9998,9999) | is.na(c15) | rf_chi %in% 0, NA)
+  } else {
+    # birth-order slot absent from the CAH supplement (e.g. child 19/20): no
+    # input columns, so the slot is empty -> all NA (not the -1 sentinel).
+    num <- rep_ <- id <- typ <- sx <- ord <- by <- rep(NA_real_, .relid_n)
   }
   psid_abridged[[sprintf("rel_chi%d_num",i)]]   <- .relid_setv(num,  "Ind's total number of child records (sep by birth/adopt)")
   psid_abridged[[sprintf("rel_chi%d_rep",i)]]   <- .relid_setv(rep_, "Ind's reported number of children, with or without records (sep by birth/adopt)")
