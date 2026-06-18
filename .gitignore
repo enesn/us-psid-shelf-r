@@ -8,5 +8,12 @@ Thumbs.db
 
 raw-data/*
 
+SHELF_codes
+
+# Generated PSID-SHELF outputs (large; re-creatable via 00-run-all.R)
+output/
+
 # Keep folder structure
 !raw-data/.gitkeep
+
+000-extract-specs.R
