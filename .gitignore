@@ -13,9 +13,16 @@ SHELF_codes
 # Generated PSID-SHELF outputs (large; re-creatable via 00-run-all.R)
 output/
 
+# Validation logs (re-creatable via 08-validate-output.R); keep the folder
+log/*
+!log/.gitkeep
+
 # Keep folder structure
 !raw-data/.gitkeep
 # Keep the raw-data download guide (the data itself stays ignored)
 !raw-data/README.md
 
 000-extract-specs.R
+
+.claude
+.gitignore
