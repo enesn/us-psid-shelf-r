@@ -7,19 +7,9 @@
 #                                                         iadl_sum_any_ind)
 # =====================================================================
 
-bin5 <- function(x, y) {
-  out <- rep(-1, length(x)); out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  rc(out, inlist(x, 8, 9, 0) | is.na(x), NA)
-}
-bin5_w7 <- function(x, y) {
-  out <- rep(-1, length(x)); out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  out <- rc(out, inlist(x, 7), 9)
-  rc(out, inlist(x, 8, 9, 0) | is.na(x), NA)
-}
-bin5_n89 <- function(x, y) {
-  out <- rep(-1, length(x)); out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  rc(out, inlist(x, 0) | is.na(x), NA)
-}
+bin5     <- function(x, y) recode(x, 5 ~ 0, 1 ~ 1, c(8, 9, 0, NA) ~ NA)
+bin5_w7  <- function(x, y) recode(x, 5 ~ 0, 1 ~ 1, 7 ~ 9, c(8, 9, 0, NA) ~ NA)
+bin5_n89 <- function(x, y) recode(x, 5 ~ 0, 1 ~ 1, c(0, NA) ~ NA)
 
 all_vars <- c(
   paste0("adl_q", rep(1:7, each = 3), "_any_", c("ind","rp","sp")),

@@ -5,50 +5,29 @@
 # =====================================================================
 
 # fam_size — number of people in FU
-psid_abridged <- collect_tv(psid_abridged, "fam_size", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 20), x)
-  out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "fam_size", function(x, y) recode(x,
+  1 %..% 20 ~ keep,
+  c(99, NA) ~ NA))
 
 # fam_size_chi — number of children in FU
-psid_abridged <- collect_tv(psid_abridged, "fam_size_chi", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 0, 20), x)
-  out <- rc(out, is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "fam_size_chi", function(x, y) recode(x,
+  0 %..% 20 ~ keep,
+  NA ~ NA))
 
 # fam_parstat — RP partnership status
-psid_abridged <- collect_tv(psid_abridged, "fam_parstat", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 5), 2)
-  out <- rc(out, inlist(x, 4), 3); out <- rc(out, inlist(x, 3), 4)
-  out <- rc(out, inlist(x, 2), 5); out <- rc(out, inlist(x, 8), 80)
-  out <- rc(out, inlist(x, 9) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "fam_parstat", function(x, y) recode(x,
+  1 ~ 1, 5 ~ 2, 4 ~ 3, 3 ~ 4, 2 ~ 5, 8 ~ 80,
+  c(9, NA) ~ NA))
 
 # fam_partype — RP partner type
-psid_abridged <- collect_tv(psid_abridged, "fam_partype", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  out <- rc(out, inlist(x, 2), 2); out <- rc(out, inlist(x, 3), 3)
-  out <- rc(out, inlist(x, 4), 4); out <- rc(out, is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "fam_partype", function(x, y) recode(x,
+  5 ~ 0, 1 ~ 1, 2 ~ 2, 3 ~ 3, 4 ~ 4,
+  NA ~ NA))
 
 # fam_marstat — RP legal marital status
-psid_abridged <- collect_tv(psid_abridged, "fam_marstat", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 5), 2)
-  out <- rc(out, inlist(x, 4), 3); out <- rc(out, inlist(x, 3), 4)
-  out <- rc(out, inlist(x, 2), 5)
-  out <- rc(out, inlist(x, 8, 9), NA); out <- rc(out, inlist(x, 0), NA)
-  out <- rc(out, is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "fam_marstat", function(x, y) recode(x,
+  1 ~ 1, 5 ~ 2, 4 ~ 3, 3 ~ 4, 2 ~ 5,
+  c(8, 9, 0, NA) ~ NA))
 
 # fam_young — age of youngest child in FU
 psid_abridged <- collect_tv(psid_abridged, "fam_young", function(x, y) {

@@ -4,21 +4,15 @@
 #         occ_2010c_{1m..4m}_{rp,sp}_*   (census occupation codes, passthrough)
 # =====================================================================
 
-occ_1970 <- function(x, y) {          # 1970 census codes
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 809) | inrange(x, 811, 984), x)
-  rc(out, inlist(x, 810, 0, 997, 998, 999) | is.na(x), NA)
-}
-occ_2000 <- function(x, y) {          # 2000 census codes
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 614) | inrange(x, 616, 983), x)
-  rc(out, inlist(x, 615, 0, 999) | is.na(x), NA)
-}
-occ_2010 <- function(x, y) {          # 2010 census codes
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 10, 9830), x)
-  rc(out, inlist(x, 0, 9999) | is.na(x), NA)
-}
+occ_1970 <- function(x, y) recode(x,          # 1970 census codes
+  1 %..% 809 ~ keep, 811 %..% 984 ~ keep,
+  c(810, 0, 997, 998, 999, NA) ~ NA)
+occ_2000 <- function(x, y) recode(x,          # 2000 census codes
+  1 %..% 614 ~ keep, 616 %..% 983 ~ keep,
+  c(615, 0, 999, NA) ~ NA)
+occ_2010 <- function(x, y) recode(x,          # 2010 census codes
+  10 %..% 9830 ~ keep,
+  c(0, 9999, NA) ~ NA)
 
 psid_abridged <- collect_tv(psid_abridged, "occ_1970c_rp", occ_1970)
 psid_abridged <- collect_tv(psid_abridged, "occ_1970c_sp", occ_1970)

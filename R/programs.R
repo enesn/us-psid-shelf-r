@@ -28,6 +28,31 @@ rc <- function(out, cond, val) {
 inrange <- function(x, lo, hi) x >= lo & x <= hi
 inlist  <- function(x, ...)    x %in% c(...)
 
+# ---- recode: declarative front-end for the rc() chain -----------------
+# recode(x, <rule>, ..., .default = -1): build a recoded vector by applying
+# `code ~ value` rules in order (last match wins), exactly like the explicit
+# `out <- rep(-1, n); out <- rc(out, cond, val); ...` chains it replaces -- it
+# *is* that chain underneath, so the Stata "gen=-1 / replace if" semantics
+# (ordering, NA-as-FALSE) are unchanged. It just hides inrange/inlist:
+#   * LHS  k        -> matches input code k          (inlist(x, k))
+#          c(a,b)   -> matches any of a, b           (inlist(x, a, b))
+#          lo %..% hi -> closed interval lo..hi      (inrange(x, lo, hi))
+#          an NA among the codes also matches is.na(x); a bare NA == is.na(x)
+#   * RHS  scalar / NA -> assigned;  keep -> passthrough (out <- x)
+`%..%` <- function(lo, hi) structure(c(lo, hi), class = "psid_range")
+keep    <- structure(list(), class = "psid_keep")
+recode  <- function(x, ..., .default = -1) {
+  out <- rep(.default, length(x))
+  for (f in list(...)) {
+    sel <- eval(f[[2L]], environment(f))            # LHS: codes or a %..% range
+    val <- eval(f[[3L]], environment(f))            # RHS: scalar / NA / keep
+    cond <- if (inherits(sel, "psid_range")) x >= sel[1L] & x <= sel[2L]
+            else (x %in% sel[!is.na(sel)]) | (anyNA(sel) & is.na(x))
+    out <- if (inherits(val, "psid_keep")) rc(out, cond, x) else rc(out, cond, val)
+  }
+  out
+}
+
 # dollar block (used by the nominal-dollar economic domains): passthrough the
 # valid range [lo,hi] and any `pass` codes, then map the era top-code `tc` to
 # `tcout` (the standardized 9999999, or NA in the PSID "wild-code" years).

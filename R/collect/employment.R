@@ -5,12 +5,11 @@
 # =====================================================================
 
 mk <- function(extra_miss, na_zero_dot = TRUE) function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 8), x)
-  out <- rc(out, x %in% extra_miss, NA)
-  if (na_zero_dot) out <- rc(out, inlist(x, 0) | is.na(x), NA)
-  else             out <- rc(out, inlist(x, 0), NA)   # 1m_ind: only 0 -> NA
-  out
+  miss0 <- if (na_zero_dot) c(0, NA) else 0   # 1m_ind: only 0 -> NA (no is.na)
+  recode(x,
+    1 %..% 8   ~ keep,
+    extra_miss ~ NA,
+    miss0      ~ NA)
 }
 
 psid_abridged <- collect_tv(psid_abridged, "emp_stat_1m_rp",  mk(c(9, 98, 99, 22)))

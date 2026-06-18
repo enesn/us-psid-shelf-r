@@ -6,41 +6,20 @@
 # =====================================================================
 
 # Spanish/Hispanic ethnicity
-eth_span <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 0), 0); out <- rc(out, inlist(x, 1), 1)
-  out <- rc(out, inlist(x, 2), 2); out <- rc(out, inlist(x, 3), 3)
-  out <- rc(out, inlist(x, 4), 4); out <- rc(out, inlist(x, 5), 5)
-  out <- rc(out, inlist(x, 7), 6); out <- rc(out, inlist(x, 6), 7)
-  rc(out, inlist(x, 9) | is.na(x), NA)
-}
+eth_span <- function(x, y) recode(x,
+  0 ~ 0, 1 ~ 1, 2 ~ 2, 3 ~ 3, 4 ~ 4, 5 ~ 5, 7 ~ 6, 6 ~ 7,
+  c(9, NA) ~ NA)
 
 # race scheme (PSID race coding changed across eras)
 race_scheme <- function(x, y) {
-  out <- rep(-1, length(x))
-  if (y >= 1968 && y <= 1984) {
-    out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 2), 2)
-    out <- rc(out, inlist(x, 7), 7); out <- rc(out, inlist(x, 3), 8)
-    out <- rc(out, inlist(x, 8), 9)
-    out <- rc(out, inlist(x, 0, 9) | is.na(x), NA)
-  } else if (y >= 1985 && y <= 1993) {
-    out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 2), 2)
-    out <- rc(out, inlist(x, 3), 3); out <- rc(out, inlist(x, 4), 6)
-    out <- rc(out, inlist(x, 6, 7), 7); out <- rc(out, inlist(x, 5), 8)
-    out <- rc(out, inlist(x, 8), 9)
-    out <- rc(out, inlist(x, 0, 9) | is.na(x), NA)
-  } else if (y >= 1994 && y <= 2003) {
-    out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 2), 2)
-    out <- rc(out, inlist(x, 3), 3); out <- rc(out, inlist(x, 4), 6)
-    out <- rc(out, inlist(x, 6, 7), 7); out <- rc(out, inlist(x, 5), 8)
-    out <- rc(out, inlist(x, 0, 8, 9) | is.na(x), NA)
-  } else {  # 2005+
-    out <- rc(out, inlist(x, 1), 1); out <- rc(out, inlist(x, 2), 2)
-    out <- rc(out, inlist(x, 3), 3); out <- rc(out, inlist(x, 4), 4)
-    out <- rc(out, inlist(x, 5), 5); out <- rc(out, inlist(x, 7), 7)
-    out <- rc(out, inlist(x, 0, 9) | is.na(x), NA)
-  }
-  out
+  if (y >= 1968 && y <= 1984)
+    recode(x, 1 ~ 1, 2 ~ 2, 7 ~ 7, 3 ~ 8, 8 ~ 9, c(0, 9, NA) ~ NA)
+  else if (y >= 1985 && y <= 1993)
+    recode(x, 1 ~ 1, 2 ~ 2, 3 ~ 3, 4 ~ 6, c(6, 7) ~ 7, 5 ~ 8, 8 ~ 9, c(0, 9, NA) ~ NA)
+  else if (y >= 1994 && y <= 2003)
+    recode(x, 1 ~ 1, 2 ~ 2, 3 ~ 3, 4 ~ 6, c(6, 7) ~ 7, 5 ~ 8, c(0, 8, 9, NA) ~ NA)
+  else  # 2005+
+    recode(x, 1 ~ 1, 2 ~ 2, 3 ~ 3, 4 ~ 4, 5 ~ 5, 7 ~ 7, c(0, 9, NA) ~ NA)
 }
 
 for (v in c("eth_only_span_rp", "eth_only_span_sp"))

@@ -5,16 +5,12 @@
 # =====================================================================
 
 # range passthrough: keep [lo,hi], everything else (incl. .) -> NA
-rng <- function(lo, hi) function(x, y) {
-  out <- rep(-1, length(x)); out <- rc(out, inrange(x, lo, hi), x); rc(out, is.na(x), NA)
-}
+rng <- function(lo, hi) function(x, y) recode(x, lo %..% hi ~ keep, NA ~ NA)
 
 # expn_tot_nd changed range between 1999 and 2001+
 psid_abridged <- collect_tv(psid_abridged, "expn_tot_nd", function(x, y) {
-  out <- rep(-1, length(x))
-  if (y == 1999) out <- rc(out, inrange(x, -5000, 500000), x)
-  else           out <- rc(out, inrange(x, 0, 5000000), x)
-  rc(out, is.na(x), NA)
+  if (y == 1999) recode(x, -5000 %..% 500000 ~ keep, NA ~ NA)
+  else           recode(x, 0 %..% 5000000 ~ keep, NA ~ NA)
 })
 
 dollar_ranges <- list(
@@ -30,7 +26,7 @@ for (v in names(dollar_ranges))
   psid_abridged <- collect_tv(psid_abridged, v, rng(dollar_ranges[[v]][1], dollar_ranges[[v]][2]))
 
 # if_expn_* flags: 0/1 passthrough
-flag01 <- function(x, y) { out <- rep(-1, length(x)); out <- rc(out, inlist(x, 0, 1), x); rc(out, is.na(x), NA) }
+flag01 <- function(x, y) recode(x, c(0, 1) ~ keep, NA ~ NA)
 for (v in c("if_expn_ccar_uni","if_expn_clot_uni","if_expn_comp_uni","if_expn_educ_uni",
             "if_expn_hlth_doc","if_expn_hlth_hos","if_expn_hlth_ins","if_expn_hlth_pre",
             "if_expn_orec_uni","if_expn_trip_uni"))

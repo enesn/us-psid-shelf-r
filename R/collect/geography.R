@@ -19,84 +19,43 @@ fips2psid <- function(out, x) {
 
 # geo_region — Census region of FU
 psid_abridged <- collect_tv(psid_abridged, "geo_region", function(x, y) {
-  out <- rep(-1, length(x))
-  if (y >= 1968 && y <= 1969) {
-    out <- rc(out, inrange(x, 1, 4), x)
-    out <- rc(out, is.na(x), NA)
-  } else if (y >= 1970 && y <= 1997) {
-    out <- rc(out, inrange(x, 1, 6), x); out <- rc(out, inlist(x, 9) | is.na(x), NA)
-  } else if (y == 1999) {
-    out <- rc(out, inrange(x, 1, 6), x)
-    out <- rc(out, inlist(x, 9, 0) | is.na(x), NA)
-  } else {  # 2001+
-    out <- rc(out, inrange(x, 1, 6), x); out <- rc(out, inlist(x, 9) | is.na(x), NA)
-  }
-  out
+  if (y >= 1968 && y <= 1969) recode(x, 1 %..% 4 ~ keep, NA ~ NA)
+  else if (y == 1999)         recode(x, 1 %..% 6 ~ keep, c(9, 0, NA) ~ NA)
+  else                        recode(x, 1 %..% 6 ~ keep, c(9, NA) ~ NA)  # 1970-1997, 2001+
 })
 
 # geo_state — state of FU
-psid_abridged <- collect_tv(psid_abridged, "geo_state", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 51), x)
-  out <- rc(out, inlist(x, 0), 800)
-  out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "geo_state", function(x, y) recode(x,
+  1 %..% 51 ~ keep, 0 ~ 800, c(99, NA) ~ NA))
 
 # geo_metro — FU in a metropolitan area? (2015–present)
-psid_abridged <- collect_tv(psid_abridged, "geo_metro", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 2), 0)
-  out <- rc(out, inlist(x, 1), 1)
-  out <- rc(out, inlist(x, 0), 9)
-  out <- rc(out, inlist(x, 9) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "geo_metro", function(x, y) recode(x,
+  2 ~ 0, 1 ~ 1, 0 ~ 9, c(9, NA) ~ NA))
 
 # cgeo_region_rp — region of RP's birth/childhood
-psid_abridged <- collect_tv(psid_abridged, "cgeo_region_rp", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 6), x)
-  out <- rc(out, inlist(x, 9) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "cgeo_region_rp", function(x, y) recode(x,
+  1 %..% 6 ~ keep, c(9, NA) ~ NA))
 
 # cgeo_region_sp — region of SP's birth/childhood (1976–present)
-psid_abridged <- collect_tv(psid_abridged, "cgeo_region_sp", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 6), x)
-  out <- rc(out, inlist(x, 9, 0) | is.na(x), NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "cgeo_region_sp", function(x, y) recode(x,
+  1 %..% 6 ~ keep, c(9, 0, NA) ~ NA))
 
 # cgeo_state_rp — state/country of RP's birth/childhood
 psid_abridged <- collect_tv(psid_abridged, "cgeo_state_rp", function(x, y) {
-  out <- rep(-1, length(x))
-  if (y == 1968) {
-    out <- rc(out, inrange(x, 1, 51), x)
-    out <- rc(out, inlist(x, 61), 801); out <- rc(out, inlist(x, 62), 802)
-    out <- rc(out, inlist(x, 63), 803); out <- rc(out, inlist(x, 64), 804)
-    out <- rc(out, inlist(x, 65), 805); out <- rc(out, inlist(x, 66), 806)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else if (y >= 1969 && y <= 1996) {
-    out <- rc(out, inrange(x, 1, 51), x); out <- rc(out, inlist(x, 0), 800)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else {  # 1997+
-    out <- fips2psid(out, x)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  }
-  out
+  if (y == 1968)
+    recode(x, 1 %..% 51 ~ keep,
+           61 ~ 801, 62 ~ 802, 63 ~ 803, 64 ~ 804, 65 ~ 805, 66 ~ 806,
+           c(99, NA) ~ NA)
+  else if (y >= 1969 && y <= 1996)
+    recode(x, 1 %..% 51 ~ keep, 0 ~ 800, c(99, NA) ~ NA)
+  else  # 1997+: FIPS lookup, then 99/. -> NA
+    rc(fips2psid(rep(-1, length(x)), x), inlist(x, 99) | is.na(x), NA)
 })
 
 # cgeo_state_sp — state/country of SP's birth/childhood (1976–present)
 psid_abridged <- collect_tv(psid_abridged, "cgeo_state_sp", function(x, y) {
-  out <- rep(-1, length(x))
-  if (y >= 1976 && y <= 1996) {
-    out <- rc(out, inrange(x, 1, 51), x); out <- rc(out, inlist(x, 0), 800)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else {  # 1997+
-    out <- fips2psid(out, x)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  }
-  out
+  if (y >= 1976 && y <= 1996)
+    recode(x, 1 %..% 51 ~ keep, 0 ~ 800, c(99, NA) ~ NA)
+  else  # 1997+
+    rc(fips2psid(rep(-1, length(x)), x), inlist(x, 99) | is.na(x), NA)
 })

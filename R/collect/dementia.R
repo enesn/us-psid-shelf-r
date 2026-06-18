@@ -5,17 +5,9 @@
 # =====================================================================
 
 # binary item without DK/refused mapping (elig, score_cut): 5->0, 1->1, 0/.->NA
-dmnt_bin <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  rc(out, inlist(x, 0) | is.na(x), NA)
-}
+dmnt_bin <- function(x, y) recode(x, 5 ~ 0, 1 ~ 1, c(0, NA) ~ NA)
 # binary item with DK/refused (the q items): also 8/9 -> NA
-dmnt_q <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 5), 0); out <- rc(out, inlist(x, 1), 1)
-  rc(out, inlist(x, 8, 9, 0) | is.na(x), NA)
-}
+dmnt_q   <- function(x, y) recode(x, 5 ~ 0, 1 ~ 1, c(8, 9, 0, NA) ~ NA)
 
 for (who in c("ind", "rp", "sp")) {
   psid_abridged <- collect_tv(psid_abridged, paste0("dmnt_elig_", who), dmnt_bin)

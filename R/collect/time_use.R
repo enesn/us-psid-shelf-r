@@ -5,55 +5,27 @@
 # =====================================================================
 
 # care hours: passthrough 1..168, 0 -> 0, 998/999/. -> NA
-time_care <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 168), x)
-  out <- rc(out, inlist(x, 0), 0)
-  rc(out, inlist(x, 998, 999) | is.na(x), NA)
-}
+time_care <- function(x, y) recode(x,
+  1 %..% 168 ~ keep, 0 ~ keep, c(998, 999, NA) ~ NA)
 # generic hours with 112 top-code: passthrough 1..111, 0 -> 0, 112 -> 112
-time_hrs <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inrange(x, 1, 111), x)
-  out <- rc(out, inlist(x, 0), 0)
-  out <- rc(out, inlist(x, 112), 112)
-  rc(out, inlist(x, 998, 999) | is.na(x), NA)
-}
+time_hrs <- function(x, y) recode(x,
+  1 %..% 111 ~ keep, 0 ~ keep, 112 ~ keep, c(998, 999, NA) ~ NA)
 # housework flag
-if_hous <- function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 0), 0); out <- rc(out, inlist(x, 1), 1)
-  rc(out, is.na(x), NA)
-}
+if_hous <- function(x, y) recode(x, c(0, 1) ~ keep, NA ~ NA)
 # housework hours (coding scheme changed across eras)
 time_hous_fn <- function(x, y) {
-  out <- rep(-1, length(x))
-  if (y == 1976) {
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inlist(x, 1), 1)
-    out <- rc(out, inrange(x, 2, 97), x); out <- rc(out, inlist(x, 98), 98)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else if (y >= 1977 && y <= 1981) {
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inrange(x, 1, 97), x)
-    out <- rc(out, inlist(x, 98), 98)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else if (y >= 1983 && y <= 1993) {
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inlist(x, 1), 1)
-    out <- rc(out, inrange(x, 2, 97), x); out <- rc(out, inlist(x, 98), 98)
-    out <- rc(out, inlist(x, 99) | is.na(x), NA)
-  } else if (y == 1994) {
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inlist(x, 1), 1)
-    out <- rc(out, inrange(x, 2, 111), x); out <- rc(out, inlist(x, 112), 112)
-    out <- rc(out, inlist(x, 998, 999) | is.na(x), NA)
-  } else if (y >= 1995 && y <= 2009) {
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inrange(x, 0.1, 111), x)
-    out <- rc(out, inlist(x, 112), 112)
-    out <- rc(out, inlist(x, 998, 999) | is.na(x), NA)
-  } else {  # 2011+
-    out <- rc(out, inlist(x, 0), 0); out <- rc(out, inrange(x, 1, 111), x)
-    out <- rc(out, inlist(x, 112), 112)
-    out <- rc(out, inlist(x, 998, 999) | is.na(x), NA)
-  }
-  out
+  if (y == 1976)
+    recode(x, 0 ~ keep, 1 ~ keep, 2 %..% 97 ~ keep, 98 ~ keep, c(99, NA) ~ NA)
+  else if (y >= 1977 && y <= 1981)
+    recode(x, 0 ~ keep, 1 %..% 97 ~ keep, 98 ~ keep, c(99, NA) ~ NA)
+  else if (y >= 1983 && y <= 1993)
+    recode(x, 0 ~ keep, 1 ~ keep, 2 %..% 97 ~ keep, 98 ~ keep, c(99, NA) ~ NA)
+  else if (y == 1994)
+    recode(x, 0 ~ keep, 1 ~ keep, 2 %..% 111 ~ keep, 112 ~ keep, c(998, 999, NA) ~ NA)
+  else if (y >= 1995 && y <= 2009)
+    recode(x, 0 ~ keep, 0.1 %..% 111 ~ keep, 112 ~ keep, c(998, 999, NA) ~ NA)
+  else  # 2011+
+    recode(x, 0 ~ keep, 1 %..% 111 ~ keep, 112 ~ keep, c(998, 999, NA) ~ NA)
 }
 
 for (who in c("rp", "sp")) {
