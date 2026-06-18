@@ -129,6 +129,7 @@ Rscript 00-run-all.R        # ingest → collect → generate → revise → pub
   variable's codes when you write or check a recode in `R/collect/`. Download the
   per-year codebooks from the same Data Center pages.
 - **`psid-shelf-original/`** — the published PSID-SHELF reference release
+(Pfeffer, Fabian T., Daumler, Davis, and Friedman, Esther. PSID-SHELF, 1968–2021: The PSID’s Social, Health, and Economic Longitudinal File (PSID-SHELF), Beta Release. Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributor], 2025-02-24. https://doi.org/10.3886/E194322V2)
   (`PSIDSHELF_1968_2021_LONG.dta`) used by
   [`08-validate-output.R`](../08-validate-output.R) to compare this pipeline's
   output against the original, value-for-value. Only needed if you want to run that
