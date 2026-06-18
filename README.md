@@ -8,7 +8,7 @@ in `spec/`, so the pipeline reads only `spec/` and the raw PSID data.
 ## Run it
 
 ```sh
-Rscript 00-run-all.R            # ingest -> collect -> generate -> revise -> publish
+Rscript 00-run-all.R            # ingest -> collect -> generate -> revise -> publish -> metadata
 Rscript 08-validate-output.R    # compare LONG output to a reference release
 ```
 
@@ -16,6 +16,11 @@ Outputs land in `output/`:
 - `PSID_SHELF_R_1968_2021_LONG.parquet` (185 MB) and `…_LONG.dta` (9.9 GB, single
   file, with variable + value labels via `haven`) — 3,533,040 rows × 552 cols
 - `PSID_SHELF_R_1968_2021_WIDE.parquet` (196 MB)
+
+The build also writes a YAML run manifest to `metadata/<version>.yaml` —
+provenance (raw-input sha256, git commit, scripts, runtime), output schema, and
+known-quality notes. Regenerate it for an existing build with `Rscript 09-metadata.R`
+(set `PSID_META_HASH_BIG=0` to skip hashing the ~10 GB `.dta`).
 
 The LONG table (~15 GB in memory) is built one column at a time and the wide
 tables are freed (`rm` + `gc`) first, so `07-publish.R` stays well within RAM
@@ -35,6 +40,7 @@ Before writing, whole-valued columns that fit a 32-bit int are downcast to
 | Generate variables | `05-generate-variables.R` → `R/generate/<domain>.R` | derived variables |
 | Revise variables | `06-revise-variables.R` → `R/revise/<part>.R` | not-in-FU / family-size / inflation |
 | Publish (reshape) | `07-publish.R` | wide -> long, write parquet + dta |
+| Metadata manifest | `09-metadata.R` | write `metadata/<version>.yaml` (provenance + schema) |
 | Orchestrator | `00-run-all.R` | runs the whole pipeline |
 
 `spec/` (machine-generated, safe to regenerate):

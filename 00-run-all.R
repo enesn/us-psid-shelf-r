@@ -8,6 +8,7 @@
 #   05-generate-variables.R generated (derived) variables
 #   06-revise-variables.R   not-in-FU recode, family-size, inflation adjustments
 #   07-publish.R            reshape wide->long, write parquet + dta
+#   09-metadata.R           write metadata/<version>.yaml run manifest
 #
 # The spec/ folder (parameters, value labels, variable maps, publish lists) must
 # already exist; the pipeline reads only spec/ and the raw PSID data.
@@ -47,6 +48,9 @@ source("06-revise-variables.R")
 
 banner("07  publish (reshape + write)")
 source("07-publish.R")
+
+banner("09  generate metadata manifest")
+source("09-metadata.R")
 
 message(sprintf("\n[00-run-all] DONE in %.1f min",
                 as.numeric(difftime(Sys.time(), t_all, units = "mins"))))

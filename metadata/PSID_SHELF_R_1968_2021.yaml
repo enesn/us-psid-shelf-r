@@ -1,0 +1,146 @@
+dataset:
+  name: psid-shelf-r
+  version: PSID_SHELF_R_1968_2021
+  previous_version: ''
+  release_date: '2026-06-18'
+  created_by: enesn
+provenance:
+  source_release:
+    release_num: 2025-01
+    retrieved: 2023/11/16
+    compiled_by: Davis Daumler
+  raw_sources:
+  - name: main_extract
+    folder: raw-data/downloaded-from-psid/ascii
+    description: PSID main 1968-2021 individual+family fixed-width extract (variable
+      cart)
+    files_sha256:
+      J362500.txt: 407e896d76bfd83a16520ae3539eff989638bf98d7ae93dd7ab731b22d1946eb
+      J362500.sas: 0879206fde1d7863f876a27b558b97a682254840d65157325b02bc936137d489
+  - name: marriage_history
+    folder: raw-data/downloaded-from-psid/mh85_23
+    description: Marriage History 1985-2023 supplement
+    files_sha256:
+      MH85_23.txt: 05297c541ae3cc62abd834b0c8e06aa189df4712e56f3507bb64c15e05b38ff7
+      MH85_23.sas: 86ba3e9f1f6524ce05bba6758c6f2f9cd4c9cea6f068393f134b362e1b450457
+  - name: childbirth_adoption_history
+    folder: raw-data/downloaded-from-psid/cah85_23
+    description: Childbirth & Adoption History 1985-2023 supplement
+    files_sha256:
+      CAH85_23.txt: 92ae48492a815a8b56c1833051507240b3bc7a152a15267870a24ca9cbf929cd
+      CAH85_23.sas: 9aece35ccb84d37556d007fbf173beacf58f080c3f1379577f1b8a2c4eef8142
+  - name: parent_identification
+    folder: raw-data/downloaded-from-psid/pid23
+    description: Parent Identification File 2023 supplement
+    files_sha256:
+      PID23.txt: d853a5b34f46cf7546e0cde7765f6613b4b1001844552f9a8f43e8d4de887b64
+      PID23.sas: 1f2b8b59ab32fa95378ea0dd1ba30db883c60026d1af47d23372d7c28e5042f0
+  pipeline:
+    repo: github.com/enesn/us-psid
+    branch: main
+    commit: f98e3c9660716485aa2e4dfb021b3392e3c198ec
+    entry_point: 00-run-all.R
+    scripts_executed:
+    - 01-ingest.R
+    - 03-shelf-parameters.R
+    - 04-collect-inputs.R
+    - 05-generate-variables.R
+    - 06-revise-variables.R
+    - 07-publish.R
+    outputs_sha256:
+      PSID_SHELF_R_1968_2021_LONG.parquet: 4562bd007887c5b8aa7c250dea9adb22a3ec86a23a967041771be279bd4af6f0
+      PSID_SHELF_R_1968_2021_LONG.dta: '(skipped: 10.6 GB)'
+      PSID_SHELF_R_1968_2021_WIDE.parquet: d9e77df42a81e3c42a14e00bfb6fc16b4f699921b27dfd305d6ece20c22097fe
+    runtime:
+      R: 4.5.3
+      packages:
+        readr: 2.2.0
+        vroom: 1.7.1
+        stringr: 1.6.0
+        dplyr: 1.2.1
+        tidyr: 1.3.2
+        haven: 2.5.5
+        arrow: 23.0.1.2
+        jsonlite: 2.0.0
+        digest: 0.6.39
+        yaml: 2.3.12
+    environment:
+      image: rocker/tidyverse:4.5
+schema:
+  codebook_ref: spec/psid-cross-year-index.xlsx
+  n_rows: 3533040
+  n_cols: 552
+  unit_of_observation: Individual × wave (person-year), keyed by (ID, YEAR)
+  panel_waves:
+  - 1968
+  - 1969
+  - 1970
+  - 1971
+  - 1972
+  - 1973
+  - 1974
+  - 1975
+  - 1976
+  - 1977
+  - 1978
+  - 1979
+  - 1980
+  - 1981
+  - 1982
+  - 1983
+  - 1984
+  - 1985
+  - 1986
+  - 1987
+  - 1988
+  - 1989
+  - 1990
+  - 1991
+  - 1992
+  - 1993
+  - 1994
+  - 1995
+  - 1996
+  - 1997
+  - 1999
+  - 2001
+  - 2003
+  - 2005
+  - 2007
+  - 2009
+  - 2011
+  - 2013
+  - 2015
+  - 2017
+  - 2019
+  - 2021
+  key_variables:
+    ID: Individual identifier = ER30001 * 1000 + ER30002 (1968 interview no. + person
+      no.)
+    YEAR: Survey wave / calendar year of interview
+  weight_variables:
+    FW: Family-level longitudinal expansion weight
+    IW: Individual-level longitudinal expansion weight
+changelog:
+- type: initial
+  description: 'Initial PSID-SHELF-R release — R port of the Stata PSID-SHELF construction:
+    ingest main extract + MH/CAH/PID supplements, collect input variables, generate
+    derived variables, revise (not-in-FU / family-size / PCEPI inflation), and publish
+    a labelled LONG .dta + parquet.'
+  variables_affected: all
+  rationale: First version of the R reproduction of the longitudinal file.
+quality:
+  completeness:
+    ID: OK (0 nulls)
+    YEAR: OK (0 nulls)
+  known_issues:
+    ingestion_one_person: Output has 3,533,040 rows (84,120 persons × 42 waves); the
+      reference release has 42 more (84,121 persons) — a one-person difference originating
+      in 01-ingest.R, not the construction logic.
+    coverage_gaps: 552 / 593 reference variables reproduced; the unreproduced ~41
+      are the _rp/_sp and combined-majority variants in the most complex generators
+      (education levels, race-ethnicity, COVID).
+  validation:
+    reference: raw-data/psid-shelf-original/PSIDSHELF_1968_2021_LONG.dta
+    how: Rscript 08-validate-output.R [n_vars]  (value-level agreement vs the reference
+      release)

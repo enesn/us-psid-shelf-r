@@ -21,7 +21,7 @@ lets you add **new waves, new variables, and new domains by editing these files*
 | `value_labels.csv` | `label_set, value, label` | the code → text definitions (e.g. `1 = "Male"`) |
 | `publish_vars.csv` | `domain, token, order` | which variables are published, in which order (`token` may contain `*`) |
 | `time_invariant_vars.txt` | one stub per line | variables that carry **no** `_<year>` suffix (constant across waves) |
-| `metadata.csv` | `key, value` | release strings stamped onto the output |
+| `metadata.csv` | `key, value` | *optional* upstream Stata-release strings (release no. / retrieved / compiler), folded into the generated `metadata/<version>.yaml` provenance |
 | `unlabeled_sets.txt` | one set name per line | label sets defined dynamically in R, so the loader skips them silently |
 
 A SHELF variable named `foo`:
