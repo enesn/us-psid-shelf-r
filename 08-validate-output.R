@@ -7,6 +7,10 @@
 #   2. variable coverage (shared / reference-only / ours-only)
 #   3. value-level agreement, variable by variable, on the shared ID x YEAR rows
 #
+# Key results are printed to the console AND saved, in a human-readable report,
+# to  log/validate-output_<timestamp>.txt  (plus a stable copy at
+# log/validate-output_latest.txt).
+#
 # Both files are large, so columns are streamed one (or a few) at a time.
 # The reference path is taken from the env var PSIDSHELF_REF, else the first
 # CLI argument, else raw-data/psid-shelf-original/PSIDSHELF_1968_2021_LONG.dta.
@@ -32,12 +36,21 @@ if (!file.exists(ref_path))
 our_files <- list.files("output", pattern = "^PSID_SHELF_R_\\d{4}_\\d{4}_LONG\\.parquet$", full.names = TRUE)
 if (!length(our_files)) stop("no output/PSID_SHELF_R_<fromyear>_<toyear>_LONG.parquet found — run 00-run-all.R first")
 our_dir <- our_files[order(file.mtime(our_files), decreasing = TRUE)][1]
-message("  validating: ", our_dir)
 n_arg <- args[!file.exists(args)]
-n_value_vars <- if (length(n_arg)) as.integer(n_arg[1]) else 40L
+n_value_vars <- 50
 
-banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("=", 64), m, strrep("=", 64)))
-ok <- function(cond, msg) message(sprintf("  [%s] %s", if (isTRUE(cond)) "PASS" else "FAIL", msg))
+# ---- logging: tee key results to console AND a human-readable report -----
+LOG <- character(0)
+emit   <- function(txt = "") { message(txt); LOG[[length(LOG) + 1L]] <<- txt; invisible() }
+banner <- function(m) emit(sprintf("\n%s\n  %s\n%s", strrep("=", 64), m, strrep("=", 64)))
+ok     <- function(cond, msg) emit(sprintf("  [%s] %s", if (isTRUE(cond)) "PASS" else "FAIL", msg))
+
+started <- Sys.time()
+emit(sprintf("PSID-SHELF-R validation report"))
+emit(sprintf("  run at      : %s", format(started, "%Y-%m-%d %H:%M:%S")))
+emit(sprintf("  our output  : %s", our_dir))
+emit(sprintf("  reference   : %s", ref_path))
+emit(sprintf("  value vars  : %d", n_value_vars))
 
 # ---- column inventories ----------------------------------------------
 banner("1  variable coverage")
@@ -48,14 +61,14 @@ our_cols <- names(our_ds)
 shared   <- intersect(ref_cols, our_cols)
 ref_only <- setdiff(ref_cols, our_cols)
 our_only <- setdiff(our_cols, ref_cols)
-message(sprintf("  reference: %d cols | ours: %d cols | shared: %d",
-                length(ref_cols), length(our_cols), length(shared)))
-if (length(ref_only)) message("  reference-only (", length(ref_only), "): ",
-                              paste(head(ref_only, 25), collapse = ", "),
-                              if (length(ref_only) > 25) " ..." else "")
-if (length(our_only)) message("  ours-only (", length(our_only), "): ",
-                              paste(head(our_only, 25), collapse = ", "),
-                              if (length(our_only) > 25) " ..." else "")
+emit(sprintf("  reference: %d cols | ours: %d cols | shared: %d",
+             length(ref_cols), length(our_cols), length(shared)))
+if (length(ref_only)) emit(paste0("  reference-only (", length(ref_only), "): ",
+                                  paste(head(ref_only, 25), collapse = ", "),
+                                  if (length(ref_only) > 25) " ..." else ""))
+if (length(our_only)) emit(paste0("  ours-only (", length(our_only), "): ",
+                                  paste(head(our_only, 25), collapse = ", "),
+                                  if (length(our_only) > 25) " ..." else ""))
 
 # ---- key & row count --------------------------------------------------
 banner("2  rows & key")
@@ -95,9 +108,17 @@ for (i in seq_along(sample_vars)) {
   results$n_compared[i] <- length(agree)
 }
 results <- results[order(results$agree_pct), ]
-message("  per-variable agreement (worst first):")
+emit("  per-variable agreement (worst first):")
 for (i in seq_len(nrow(results)))
-  message(sprintf("    %-28s %6.2f%%  (n=%d)", results$variable[i], results$agree_pct[i], results$n_compared[i]))
+  emit(sprintf("    %-28s %6.2f%%  (n=%d)", results$variable[i], results$agree_pct[i], results$n_compared[i]))
 banner(sprintf("mean agreement across %d variables: %.2f%%   (>=99%% on %d / %d)",
                nrow(results), mean(results$agree_pct),
                sum(results$agree_pct >= 99), nrow(results)))
+
+# ---- persist the report ----------------------------------------------
+emit(sprintf("\n  validation finished in %.1f s", as.numeric(difftime(Sys.time(), started, units = "secs"))))
+dir.create("log", showWarnings = FALSE)
+log_path <- file.path("log", sprintf("validate-output_%s.txt", format(started, "%Y%m%d_%H%M%S")))
+writeLines(LOG, log_path)
+file.copy(log_path, file.path("log", "validate-output_latest.txt"), overwrite = TRUE)
+message("\n  report saved to ", log_path, "  (+ log/validate-output_latest.txt)")
