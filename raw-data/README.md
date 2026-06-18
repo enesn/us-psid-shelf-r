@@ -1,4 +1,4 @@
-# `raw-data/` — the PSID inputs (download these yourself)
+# `raw-data/` — the PSID inputs 
 
 The pipeline reads its inputs from this folder. **Nothing here is committed to git**
 (`raw-data/*` is in [`.gitignore`](../.gitignore)) — the files are large and come
