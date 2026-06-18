@@ -46,32 +46,35 @@ Before writing, whole-valued columns that fit a 32-bit int are downcast to
 
 Each collected variable starts at the sentinel `-1`, then recode rules overwrite
 it by value (and, for time-varying variables, by wave), then value labels are
-attached. In R, in `R/collect/<domain>.R`:
+attached. The recodes are written with `recode()`, a declarative rule list that
+reads like the PSID codebook. In R, in `R/collect/<domain>.R`:
 
 ```r
 # time-invariant (single input var):
-psid_abridged <- collect_inv(psid_abridged, "demo_sex", function(x) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 1), 1)
-  out <- rc(out, inlist(x, 2), 2)
-  out <- rc(out, inlist(x, 9), NA)
-  out
-})
+psid_abridged <- collect_inv(psid_abridged, "demo_sex", function(x) recode(x,
+  1 ~ 1,
+  2 ~ 2,
+  9 ~ NA))
 
 # time-varying (per-wave input vars; fn receives the input column x and wave y):
-psid_abridged <- collect_tv(psid_abridged, "demo_age_rep", function(x, y) {
-  out <- rep(-1, length(x))
-  out <- rc(out, inlist(x, 1),       1)
-  out <- rc(out, inrange(x, 2, 110), x)   # passthrough
-  out <- rc(out, inlist(x, 999),     NA)
-  out
-})
+psid_abridged <- collect_tv(psid_abridged, "demo_age_rep", function(x, y) recode(x,
+  1          ~ 1,
+  2 %..% 110 ~ keep,   # passthrough (keep the raw value)
+  c(999, 0)  ~ NA))
 ```
 
+`recode` rules are applied top to bottom, last match wins — equivalent to a Stata
+`gen out = -1` then a series of `replace out = value if …`. See
+[`spec/README.md`](spec/README.md#recoding-cheatsheet-recode-rules) for the full
+rule cheatsheet (`k ~ v`, `c(a,b) ~ v`, `lo %..% hi ~ v`, `keep`, `NA` handling).
+
 Helpers (`R/programs.R`):
-`rc(out, cond, val)` is a NA-safe conditional assignment (`out[cond] <- val`);
-`inrange`/`inlist`; `collect_tv`/`collect_inv` build the columns, pull the
-year→input-var map from `spec/`, and attach variable + value labels
+`recode(x, code ~ value, …)` is the recoding front-end (built on `rc`); `%..%` is
+an inclusive range and `keep` passes the raw value through. `rc(out, cond, val)`
+is the underlying NA-safe conditional assignment (`out[cond] <- val`, Stata
+`replace … if`), still used directly for cross-column / cross-wave rules that a
+flat rule list can't express. `collect_tv`/`collect_inv` build the columns, pull
+the year→input-var map from `spec/`, and attach variable + value labels
 automatically; `set_value_labels` silently skips dynamic/optional label sets.
 
 Generate files derive cross-year summaries (e.g. last-reported birth year) — plain

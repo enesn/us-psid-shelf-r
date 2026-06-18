@@ -15,5 +15,7 @@ output/
 
 # Keep folder structure
 !raw-data/.gitkeep
+# Keep the raw-data download guide (the data itself stays ignored)
+!raw-data/README.md
 
 000-extract-specs.R

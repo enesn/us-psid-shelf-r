@@ -3,9 +3,9 @@
 This folder holds **all the construction data** the R pipeline needs: which raw
 PSID variable feeds each SHELF variable in each wave, the human labels, the value
 codes, and the publish order. The R scripts contain only *logic* (recodes,
-derivations); everything that is just *data* lives here. That separation is what
+derivations); everything that is just *specification* lives here. That separation is what
 lets you add **new waves, new variables, and new domains by editing these files**
-(plus a small amount of recode R), without touching the engine.
+(plus a small amount of recode R), without touching the entire engine.
 
 ---
 
@@ -94,16 +94,13 @@ You want to surface a raw PSID variable that the pipeline currently ignores
    ```
 
 6. **Recode logic** — in `R/collect/chronic_conditions.R`, add a `collect_tv`
-   block. Start from the sentinel `-1`, then map each raw code (see
+   block. Map each raw code with `recode()`, which reads like the codebook (see
    [the demographics example](../R/collect/demographics.R)):
    ```r
-   psid_abridged <- collect_tv(psid_abridged, "health_newitem", function(x, y) {
-     out <- rep(-1, length(x))
-     out <- rc(out, inlist(x, 1), 1)     # Yes
-     out <- rc(out, inlist(x, 5), 2)     # No  (PSID often codes No as 5)
-     out <- rc(out, inlist(x, 8, 9), 9)  # DK/NA
-     out
-   })
+   psid_abridged <- collect_tv(psid_abridged, "health_newitem", function(x, y) recode(x,
+     1        ~ 1,    # Yes
+     5        ~ 2,    # No  (PSID often codes No as 5)
+     c(8, 9)  ~ 9))   # DK/NA
    ```
    How the two pieces work:
    - **`collect_tv(df, newvar, fn)`** is the per-wave loop. It reads the
@@ -113,17 +110,17 @@ You want to surface a raw PSID variable that the pipeline currently ignores
      value labels. So **the map says *where* the data comes from each wave; your
      `fn` says *how* to recode it.** The same `fn` is replayed for every wave,
      which is why adding a wave is usually just new rows in the map.
-   - **`rc(out, cond, val)`** is the recode primitive — Stata's
-     `replace out = val if cond`. It overwrites only the positions where `cond` is
-     `TRUE` (`NA` inputs never match, matching Stata's `if`), with either a
-     constant (`rc(out, inlist(x,1), 1)`) or a passthrough of the raw value
-     (`rc(out, inrange(x,2,110), x)`). You **chain** `rc` calls starting from the
-     `-1` sentinel; each refines `out` and **the last matching arm wins**, so any
-     position no arm touched stays `-1` and flags an unhandled code.
+   - **`recode(x, code ~ value, …)`** is the recoding front-end. Each rule maps
+     input codes (left of `~`) to an output value (right of `~`); rules are applied
+     **top to bottom and the last matching rule wins**, exactly like a Stata
+     `gen out = -1` followed by a series of `replace out = value if …`. Any
+     position no rule touches keeps the sentinel `-1`, flagging an unhandled code.
+     It mirrors the PSID codebook directly — see the
+     [**Recoding cheatsheet**](#recoding-cheatsheet-recode-rules) section below.
 
    For a **time-invariant** variable use `input_var_single.csv` +
    `time_invariant_vars.txt` + `collect_inv(...)` (one input, one output column,
-   `fn` is just `function(x)`) instead.
+   `fn` is just `function(x) recode(x, …)`) instead.
 
 7. **Run** `Rscript 00-run-all.R`. The new column flows through collect → revise →
    publish into both `output/…_LONG.parquet` and `…_LONG.dta`.
@@ -131,6 +128,57 @@ You want to surface a raw PSID variable that the pipeline currently ignores
 > Sentinel check: any `-1` left after your recode means a raw code you didn't
 > handle. `check_unassigned()` (in `R/programs.R`) flags these — cover every code
 > the codebook lists, or map the leftovers to `NA`/a DK value explicitly.
+
+---
+
+## Recoding cheatsheet (`recode` rules)
+
+`recode(x, code ~ value, …)` is how every collect domain maps raw PSID codes to
+SHELF values. It reads like the codebook: each rule sends some input **codes** (the
+left of `~`) to one output **value** (the right). The most common rules:
+
+| Codebook intent | Rule |
+|-----------------|------|
+| a single code `k` becomes `v` | `k ~ v` |
+| several codes become `v` | `c(a, b, c) ~ v` |
+| a whole range `lo`…`hi` (inclusive) becomes `v` | `lo %..% hi ~ v` |
+| **keep the raw value unchanged** (passthrough) | `… ~ keep` &nbsp;e.g. `2 %..% 110 ~ keep` |
+| a code (or codes) means missing | `c(8, 9) ~ NA` |
+| blank / `.` (an `NA` *input*) should be `NA` | put `NA` in the code set: `c(8, 9, NA) ~ NA`, or `NA ~ NA` on its own |
+| everything not matched | stays `-1`; pass `.default = 0` to start from another value |
+
+Example (PSID "age reported", 1968–present): code `1` → `1`, actual ages `2..110`
+pass through, `999`/`0` → missing:
+
+```r
+recode(x,
+  1          ~ 1,
+  2 %..% 110 ~ keep,
+  c(999, 0)  ~ NA)
+```
+
+Semantics that keep the translation faithful to Stata:
+
+- **Order matters, last match wins.** Later rules overwrite earlier ones on the
+  same positions, so list narrowing/override rules after the broad ones — exactly
+  like a chain of `replace out = value if …`.
+- **An `NA` *input* never matches a code rule** (just as Stata's `if` never matches
+  a missing comparison). To send blanks to `NA` you must say so — add `NA` to the
+  code set, or a `NA ~ NA` rule. Omit it and blanks stay `-1` (occasionally
+  intended; see `fuid` / `rindiv` in
+  [`survey_identifiers.R`](../R/collect/survey_identifiers.R)).
+- **`keep` passes the raw value through** unchanged; a plain value on the right
+  replaces it.
+
+**When `recode` isn't enough.** `recode` covers per-value/per-range maps of a
+single column. For a rule that depends on *another* column or wave (e.g. a
+sample-conditional wild code, or an inches value that's only valid when the feet
+value is real), do the bulk with `recode`, then refine with the underlying
+primitive **`rc(out, cond, val)`** — Stata's `replace out = val if cond`, NA-safe
+like the `if`. See [`earnings.R`](../R/collect/earnings.R) (sample-conditional) and
+[`geography.R`](../R/collect/geography.R) (FIPS lookup). For coding that changed
+across eras, branch on the wave `y` and return a `recode(…)` per era, as in
+[`family_income.R`](../R/collect/family_income.R).
 
 ---
 
@@ -168,8 +216,10 @@ When PSID releases the next wave (e.g. **2023**):
    reshape, the long file automatically gains the new `(ID, 2023)` rows.
 
 No recode R changes are needed for a new wave **unless** PSID changed a variable's
-coding scheme that wave — then adjust the relevant `collect_*` block (often with a
-year gate, e.g. `rc(out, inrange(x,…) & y >= 2023, …)`).
+coding scheme that wave — then adjust the relevant `collect_*` block with a year
+gate that returns a `recode(…)` per era, e.g.
+`if (y >= 2023) recode(x, …) else recode(x, …)` (see the era branches in
+[`family_income.R`](../R/collect/family_income.R) / [`geography.R`](../R/collect/geography.R)).
 
 ---
 
@@ -213,8 +263,9 @@ touch.
 
 ## Conventions to respect
 
-- **Sentinel `-1`** marks "not yet assigned" during collect/generate; never let it
-  reach the output — cover every raw code or map leftovers to `NA`.
+- **Sentinel `-1`** marks "not yet assigned" during collect/generate (the default
+  start value of every `recode`); never let it reach the output — cover every raw
+  code or map leftovers to `NA`.
 - **Missing is `NA`** (Stata `.`), distinct from a real "Don't know" code.
 - **Time-varying** variables are named `<stub>` here and become `<stub>_<year>`
   columns internally; the publish step strips the suffix and reshapes to long.
