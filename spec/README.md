@@ -257,9 +257,11 @@ Rscript 08-validate-output.R [n_vars]      # compare against a reference .dta
 
 `08-validate-output.R` reports column coverage, the `(ID, YEAR)` key, and
 per-variable value agreement, so you can confirm new variables landed and existing
-ones are unchanged. Keep a copy of the prior `output/…_LONG.parquet` as a
-regression baseline if you want to diff before/after for the variables you didn't
-touch.
+ones are unchanged. It also saves each run as a human-readable report under
+`log/` (`validate-output_<timestamp>.txt`, plus a `…_latest.txt` copy), so you can
+diff successive validation runs. Keep a copy of the prior `output/…_LONG.parquet`
+as a regression baseline if you want to diff before/after for the variables you
+didn't touch.
 
 ## Conventions to respect
 
