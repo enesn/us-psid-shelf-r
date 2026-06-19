@@ -44,14 +44,52 @@ net_cat("odeb", function(y) {
   sum_in_range(comps)
 })
 
-# home assets (value) and debts (mortgages, 1m + 2m)
-gen_tv("wlth_home_ass_nd", function(y) { v <- wc("wlth_home_net_nd", y); if (is.null(v)) return(NULL)
-  ifelse(is.na(v), NA_real_, wc("home_own_val_nd", y)) })
-gen_tv("wlth_home_deb_nd", function(y) {
-  m1 <- wc("home_own_mor_val_1m_nd", y); m2 <- wc("home_own_mor_val_2m_nd", y)
-  if (is.null(m1) && is.null(m2)) return(NULL)
-  sum_in_range(Filter(Negate(is.null), list(m1, m2)))
-})
+# home assets (value) & debts (mortgages): decompose home equity (wlth_home_net)
+# into assets and debts. The reference imputes from home value & mortgages, then
+# (where the reported equity disagrees with value-minus-mortgage) splits with a
+# multi-branch rule. Faithful port of Stata Step_06 file 09 (wlth_home_ass/deb).
+for (y in wlthyear) {
+  hn <- wc("wlth_home_net_nd", y); if (is.null(hn)) next
+  hv <- wc("home_own_val_nd", y);       if (is.null(hv)) hv <- rep(NA_real_, .n)
+  m1 <- wc("home_own_mor_val_1m_nd", y); if (is.null(m1)) m1 <- rep(NA_real_, .n)
+  m2 <- wc("home_own_mor_val_2m_nd", y); if (is.null(m2)) m2 <- rep(NA_real_, .n)
+  # total mortgage: 1m only (<=1989); 1m+2m (1994+) but only when 1m present and
+  # 2m is a real non-zero value, else missing (matches the Stata egen-if).
+  tmor <- if (y <= 1989) m1 else ifelse(!is.na(m1) & !is.na(m2) & !(m2 %in% 0), m1 + m2, NA_real_)
+  # value-implied equity, its difference from reported equity, imputation flag
+  tv <- rep(NA_real_, .n)
+  tv <- rc(tv, !is.na(hn) & !is.na(hv) & !is.na(tmor), hv - tmor)
+  tv <- rc(tv, !is.na(hn) & !is.na(hv) &  is.na(tmor), hv)
+  tv <- rc(tv, !is.na(hn) &  is.na(hv) & !is.na(tmor), -tmor)
+  td <- ifelse(!is.na(hn) & !is.na(tv), hn - tv, NA_real_)
+  fl <- rep(NA_real_, .n)                       # if_wlth_home_ass/deb
+  fl <- rc(fl, !is.na(hn) &   td %in% 0,  0)
+  fl <- rc(fl, !is.na(hn) & !(td %in% 0), 1)    # td != 0 OR td missing -> 1 (Stata . > 0)
+  ha <- rep(-1, .n); hd <- rep(-1, .n)
+  ha <- rc(ha, is.na(hn), NA); hd <- rc(hd, is.na(hn), NA)
+  P <- !is.na(hn)
+  # flag 0: equity == value - mortgage
+  ha <- rc(ha, P & fl %in% 0 & !is.na(hv),   hv);   ha <- rc(ha, P & fl %in% 0 & is.na(hv),   0)
+  hd <- rc(hd, P & fl %in% 0 & !is.na(tmor), tmor); hd <- rc(hd, P & fl %in% 0 & is.na(tmor), 0)
+  # flag 1, group A: value & mortgage both present
+  gA <- P & fl %in% 1 & !is.na(hv) & !is.na(tmor); d <- hv - hn
+  ha <- rc(ha, gA & d >= 0,                hv);        hd <- rc(hd, gA & d >= 0,                hv - hn)
+  ha <- rc(ha, gA & d < 0 & tmor %in% 0,   hn);        hd <- rc(hd, gA & d < 0 & tmor %in% 0,   0)
+  ha <- rc(ha, gA & d < 0 & tmor > 0,      hn + tmor); hd <- rc(hd, gA & d < 0 & tmor > 0,      tmor)
+  # group B: value present, mortgage missing
+  gB <- P & fl %in% 1 & !is.na(hv) & is.na(tmor); d <- hv - hn
+  ha <- rc(ha, gB & d >= 0, hv); hd <- rc(hd, gB & d >= 0, hv - hn)
+  ha <- rc(ha, gB & d < 0,  hn); hd <- rc(hd, gB & d < 0,  0)
+  # group C: value missing, mortgage present (permits negative assets, per Stata)
+  gC <- P & fl %in% 1 & is.na(hv) & !is.na(tmor)
+  ha <- rc(ha, gC, hn + tmor); hd <- rc(hd, gC, tmor)
+  # group D: both missing
+  gD <- P & fl %in% 1 & is.na(hv) & is.na(tmor)
+  ha <- rc(ha, gD & hn >= 0, hn); hd <- rc(hd, gD & hn >= 0, 0)
+  ha <- rc(ha, gD & hn < 0,  0);  hd <- rc(hd, gD & hn < 0,  -hn)
+  psid_abridged[[paste0("wlth_home_ass_nd_", y)]] <- g_label(ha, "wlth_home_ass_nd", y)
+  psid_abridged[[paste0("wlth_home_deb_nd_", y)]] <- g_label(hd, "wlth_home_deb_nd", y)
+}
 
 # total assets / debts (sum of present in-range components), and net worth
 asset_comps <- function(y) Filter(Negate(is.null), list(

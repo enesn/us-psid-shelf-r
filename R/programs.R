@@ -255,7 +255,9 @@ modal_recent <- function(measure) {
     ym <- isx * matrix(yrs, n, length(yrs), byrow = TRUE); ym[ym == 0] <- NA
     lasty <- do.call(pmax, c(lapply(seq_len(ncol(ym)), function(j) ym[, j]), list(na.rm = TRUE)))
     lasty[is.infinite(lasty)] <- NA
-    better <- cnt > best_cnt | (cnt == best_cnt & cnt > 0 & !is.na(lasty) & lasty > best_yr)
+    # Stata breaks a full tie (same count AND same most-recent year) toward the
+    # higher value (ascending loop, last assignment wins) -> use >= on the year.
+    better <- cnt > best_cnt | (cnt == best_cnt & cnt > 0 & !is.na(lasty) & lasty >= best_yr)
     best_val[better] <- x; best_cnt[better] <- cnt[better]
     best_yr[better & !is.na(lasty)] <- lasty[better & !is.na(lasty)]
   }

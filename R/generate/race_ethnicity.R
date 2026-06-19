@@ -49,16 +49,44 @@ for (role in c("rp", "sp")) {
   })
 }
 
+# multi-mention per-wave classifications, per role: pick the highest-priority
+# race/ethnicity present across mentions 1-4 (Stata Step_06 file 09).
+#   15-cat (race_eth_mm_ext) priority high->low: 9,10,11,12,13,14,15,8,2,3,4,5,6,7,1
+#   4-cat  (race_eth_mm)      priority high->low: 4 (Hispanic) >2 (Black) >3 (other) >1 (White)
+ext_prio <- c(1, 7, 6, 5, 4, 3, 2, 8, 15, 14, 13, 12, 11, 10, 9)   # low->high; assign in order, last wins
+for (role in c("rp", "sp")) {
+  ments <- function(y) lapply(1:4, function(k) {
+    z <- rc_col(sprintf("race_eth_%dm_ext_%s", k, role), y)
+    if (is.null(z)) rep(NA_real_, .n) else z
+  })
+  gen_tv(paste0("race_eth_mm_ext_", role), function(y) {
+    if (is.null(rc_col(sprintf("race_eth_1m_ext_%s", role), y))) return(NULL)
+    e <- ments(y); has <- function(v) Reduce(`|`, lapply(e, function(z) z %in% v))
+    out <- rep(-1, .n)
+    for (v in ext_prio) out[has(v)] <- v
+    out[Reduce(`&`, lapply(e, is.na))] <- NA
+    out
+  }, "raceethnicity_15cat")
+  gen_tv(paste0("race_eth_mm_", role), function(y) {
+    if (is.null(rc_col(sprintf("race_eth_1m_ext_%s", role), y))) return(NULL)
+    e <- ments(y); has <- function(v) Reduce(`|`, lapply(e, function(z) z %in% v))
+    out <- rep(-1, .n)
+    out[has(1)] <- 1; out[has(3:7)] <- 3; out[has(2)] <- 2; out[has(8:15)] <- 4
+    out[Reduce(`&`, lapply(e, is.na))] <- NA
+    out
+  }, "raceeth_4cat")
+}
+
 # combined per-person versions (RP's for the RP, SP's for the SP)
 for (k in 1:4) combine_rpsp(sprintf("race_eth_%dm_ext", k))
 combine_rpsp("race_eth"); combine_rpsp("race_eth_ext")
+combine_rpsp("race_eth_mm"); combine_rpsp("race_eth_mm_ext")
 
-# majority across waves (modal, recency tie-break) + 4-category collapse
-collapse4 <- function(e) case_when(e %in% 1 ~ 1, e %in% 2 ~ 2, inrange(e, 3, 7) ~ 3,
-                                   inrange(e, 8, 15) ~ 4, .default = NA_real_)
-maj  <- modal_recent("race_eth_1m_ext")
-psid_abridged$race_eth_maj      <- .attach_vl(set_label(maj, var_label("race_eth_maj")), set_for("race_eth_maj"))
-psid_abridged$race_eth_maj_col  <- .attach_vl(set_label(collapse4(maj), var_label("race_eth_maj_col")), set_for("race_eth_maj_col"))
-mmaj <- modal_recent("race_eth_2m_ext")
-psid_abridged$race_eth_mm_maj     <- .attach_vl(set_label(mmaj, var_label("race_eth_mm_maj")), set_for("race_eth_mm_maj"))
-psid_abridged$race_eth_mm_maj_col <- .attach_vl(set_label(collapse4(mmaj), var_label("race_eth_mm_maj_col")), set_for("race_eth_mm_maj_col"))
+# majority across waves (modal, recency tie-break) — each modes over its own
+# per-wave stub (Stata uses race_eth_ext/race_eth/race_eth_mm_ext/race_eth_mm).
+attach_maj <- function(name, stub) psid_abridged[[name]] <<- .attach_vl(
+  set_label(modal_recent(stub), var_label(name)), set_for(name))
+attach_maj("race_eth_maj",        "race_eth_ext")
+attach_maj("race_eth_maj_col",    "race_eth")
+attach_maj("race_eth_mm_maj",     "race_eth_mm_ext")
+attach_maj("race_eth_mm_maj_col", "race_eth_mm")
