@@ -205,6 +205,7 @@ combine_roles <- function(measure, set = NULL) {
     if (!is.null(ind)) out <- rc(out, TRUE, ind)
     if (!is.null(rp))  out <- rc(out, inrange(rel, 100, 199) & rex %in% 0, rp)
     if (!is.null(sp))  out <- rc(out, inrange(rel, 200, 299) & rex %in% 0, sp)
+    out <- rc(out, out %in% -1, NA)   # no _ind fallback for a non-RP/SP person -> NA (Stata: replace=. )
     .GlobalEnv$psid_abridged[[paste0(measure, "_", y)]] <- g_label(out, measure, y, set)
   }
 }
@@ -243,7 +244,10 @@ modal_recent <- function(measure) {
   }
   if (!length(cols)) return(rep(NA_real_, n))
   M <- do.call(cbind, cols)
-  vals <- sort(unique(M[!is.na(M)]))
+  # Stata computes the mode over the valid category codes only (`foreach x of
+  # numlist 1/n_vals`), never over the -1 "unassigned" sentinel; a person with no
+  # valid value ever -> NA (top_tot==0). So consider only values >= 1 here.
+  vals <- sort(unique(M[!is.na(M) & M >= 1]))
   best_val <- rep(NA_real_, n); best_cnt <- rep(0L, n); best_yr <- rep(-Inf, n)
   for (x in vals) {
     isx <- !is.na(M) & M == x

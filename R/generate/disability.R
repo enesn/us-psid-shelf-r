@@ -30,9 +30,13 @@ for (stub in names(stub_q)) {
   }
 }
 
-# combined per-person versions of every measure
+# combined per-person versions of every measure: RP answer for the RP, SP answer
+# for the SP, NA for everyone else. Stata Step_06 file 09 (lines 457-469) sets
+# the value to . for anyone who is not the RP/SP responder — the _ind value is
+# assigned first but then overwritten by that final ". if !inrange(rel,100,299)"
+# line — so this is the combine_rpsp (RP/SP-only) shape, not combine_roles.
 ind_var <- c("adl_sum_tot","adl_sum_any",
              as.vector(rbind(paste0("adl_q",1:7,"_any"), paste0("adl_q",1:7,"_hlp"))),
              "iadl_sum_tot","iadl_sum_any",
              as.vector(rbind(paste0("iadl_q",1:6,"_any"), paste0("iadl_q",1:6,"_hea"))))
-for (m in ind_var) combine_roles(m)
+for (m in ind_var) combine_rpsp(m)

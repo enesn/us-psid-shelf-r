@@ -102,7 +102,6 @@ ok(setequal(unique(our_key$YEAR), unique(ref_key$YEAR)),
 ours_k <- paste(our_key$ID, our_key$YEAR)
 ref_k  <- paste(ref_key$ID,  ref_key$YEAR)
 ok(setequal(ours_k, ref_k), "ID x YEAR key sets are identical")
-align <- match(ours_k, ref_k)                        # ref row for each of our rows
 
 # ---- 3. value-level agreement ----------------------------------------
 value_vars <- setdiff(shared, c("ID", "YEAR"))
@@ -119,8 +118,11 @@ agree_pct <- numeric(0); n_comp <- integer(0)
 batch <- 60L
 for (start in seq(1, length(value_vars), by = batch)) {
   vs <- value_vars[start:min(start + batch - 1L, length(value_vars))]
-  ob <- our_ds %>% select(all_of(vs)) %>% collect()
-  rb <- read_ref(vs)[align, , drop = FALSE]
+  # read ID+YEAR *with* each batch from both sources and align within the batch,
+  # so the comparison can't depend on two separate reads returning the same order
+  ob <- our_ds %>% select(ID, YEAR, all_of(vs)) %>% collect()
+  rb <- read_ref(c("ID", "YEAR", vs))
+  rb <- rb[match(paste(ob$ID, ob$YEAR), paste(as.numeric(rb$ID), as.integer(rb$YEAR))), , drop = FALSE]
   for (v in vs) {
     a <- as.numeric(ob[[v]]); b <- as.numeric(rb[[v]])
     agree <- (is.na(a) & is.na(b)) |
