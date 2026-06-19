@@ -3,24 +3,26 @@
 #                           reference PSIDSHELF_1968_2021_LONG.dta release
 #
 # Compares the pipeline's LONG output to a reference release of the same file:
-#   1. row count and key (ID x YEAR)
-#   2. variable coverage (shared / reference-only / ours-only)
+#   1. variable coverage (shared / reference-only / ours-only)
+#   2. row count and key (ID x YEAR)
 #   3. value-level agreement, variable by variable, on the shared ID x YEAR rows
 #
-# Key results are printed to the console AND saved, in a human-readable report,
-# to  log/validate-output_<timestamp>.txt  (plus a stable copy at
-# log/validate-output_latest.txt).
+# By default it now checks *every* shared variable. Pass a number to spot-check a
+# spread-out sample instead (faster to eyeball):
+#   Rscript 08-validate-output.R            # ALL shared variables
+#   Rscript 08-validate-output.R 50         # a 50-variable sample
 #
-# Both files are large, so columns are streamed one (or a few) at a time.
-# The reference path is taken from the env var PSIDSHELF_REF, else the first
-# CLI argument, else raw-data/psid-shelf-original/PSIDSHELF_1968_2021_LONG.dta.
-# The number of variables to value-check is the second CLI argument (default 40).
-# Our LONG output is auto-discovered from
-# output/PSID_SHELF_R_<fromyear>_<toyear>_LONG.parquet (most recently modified,
-# if more than one exists).
+# SPEED: reading the 7.4 GB reference .dta with haven is the bottleneck (~5 min).
+# The first run converts it once to a parquet cache next to it
+# (PSIDSHELF_..._LONG.parquet); every later run reads that in seconds. Delete the
+# cache (or set PSIDSHELF_REFCACHE=0) to force a re-read.
 #
-# Usage:  PSIDSHELF_REF=/path/to/ref.dta Rscript 08-validate-output.R [n_vars]
-#         Rscript 08-validate-output.R /path/to/ref.dta [n_vars]
+# Key results print to the console AND are saved to a human-readable report at
+# log/validate-output_<timestamp>.txt (+ a stable log/validate-output_latest.txt).
+#
+# Reference path: env PSIDSHELF_REF, else first CLI arg, else
+# raw-data/psid-shelf-original/PSIDSHELF_1968_2021_LONG.dta.  Our LONG output is
+# auto-discovered from output/PSID_SHELF_R_<fromyear>_<toyear>_LONG.parquet.
 # =====================================================================
 
 suppressMessages({library(arrow); library(haven); library(dplyr)})
@@ -37,32 +39,49 @@ our_files <- list.files("output", pattern = "^PSID_SHELF_R_\\d{4}_\\d{4}_LONG\\.
 if (!length(our_files)) stop("no output/PSID_SHELF_R_<fromyear>_<toyear>_LONG.parquet found — run 00-run-all.R first")
 our_dir <- our_files[order(file.mtime(our_files), decreasing = TRUE)][1]
 n_arg <- args[!file.exists(args)]
-n_value_vars <- 50
+n_value_vars <- if (length(n_arg)) as.integer(n_arg[1]) else NA_integer_   # NA = ALL
 
 # ---- logging: tee key results to console AND a human-readable report -----
-LOG <- character(0)
-emit   <- function(txt = "") { message(txt); LOG[[length(LOG) + 1L]] <<- txt; invisible() }
+LOG    <- character(0)
+emit   <- function(txt = "") { message(txt); LOG[[length(LOG) + 1L]] <<- txt; invisible() }  # console + file
+rec    <- function(txt = "") { LOG[[length(LOG) + 1L]] <<- txt; invisible() }                # file only
 banner <- function(m) emit(sprintf("\n%s\n  %s\n%s", strrep("=", 64), m, strrep("=", 64)))
 ok     <- function(cond, msg) emit(sprintf("  [%s] %s", if (isTRUE(cond)) "PASS" else "FAIL", msg))
 
 started <- Sys.time()
-emit(sprintf("PSID-SHELF-R validation report"))
+
+# ---- reference parquet cache (big speed win on repeat runs) -----------
+ref_pq <- sub("\\.dta$", ".parquet", ref_path)
+use_cache <- Sys.getenv("PSIDSHELF_REFCACHE", "1") != "0"
+if (use_cache && (!file.exists(ref_pq) || file.mtime(ref_pq) < file.mtime(ref_path))) {
+  message("  one-time: caching reference .dta -> ", basename(ref_pq), " (~5 min) ...")
+  write_parquet(read_dta(ref_path), ref_pq)
+}
+ref_src  <- if (use_cache && file.exists(ref_pq)) ref_pq else ref_path
+read_ref <- function(cols = NULL) {                 # read selected cols from cache or dta
+  if (identical(ref_src, ref_pq)) {
+    ds <- open_dataset(ref_pq)
+    if (is.null(cols)) collect(ds) else collect(select(ds, all_of(intersect(cols, names(ds)))))
+  } else {
+    if (is.null(cols)) read_dta(ref_path) else read_dta(ref_path, col_select = all_of(cols))
+  }
+}
+ref_cols_all <- if (identical(ref_src, ref_pq)) names(open_dataset(ref_pq)) else names(read_dta(ref_path, n_max = 0))
+
+emit("PSID-SHELF-R validation report")
 emit(sprintf("  run at      : %s", format(started, "%Y-%m-%d %H:%M:%S")))
 emit(sprintf("  our output  : %s", our_dir))
-emit(sprintf("  reference   : %s", ref_path))
-emit(sprintf("  value vars  : %d", n_value_vars))
+emit(sprintf("  reference   : %s%s", ref_path, if (identical(ref_src, ref_pq)) "  (via parquet cache)" else ""))
 
-# ---- column inventories ----------------------------------------------
+# ---- 1. column inventories -------------------------------------------
 banner("1  variable coverage")
-ref_cols <- names(read_dta(ref_path, n_max = 0))
 our_ds   <- open_dataset(our_dir)
 our_cols <- names(our_ds)
-
-shared   <- intersect(ref_cols, our_cols)
-ref_only <- setdiff(ref_cols, our_cols)
-our_only <- setdiff(our_cols, ref_cols)
+shared   <- intersect(ref_cols_all, our_cols)
+ref_only <- setdiff(ref_cols_all, our_cols)
+our_only <- setdiff(our_cols, ref_cols_all)
 emit(sprintf("  reference: %d cols | ours: %d cols | shared: %d",
-             length(ref_cols), length(our_cols), length(shared)))
+             length(ref_cols_all), length(our_cols), length(shared)))
 if (length(ref_only)) emit(paste0("  reference-only (", length(ref_only), "): ",
                                   paste(head(ref_only, 25), collapse = ", "),
                                   if (length(ref_only) > 25) " ..." else ""))
@@ -70,53 +89,63 @@ if (length(our_only)) emit(paste0("  ours-only (", length(our_only), "): ",
                                   paste(head(our_only, 25), collapse = ", "),
                                   if (length(our_only) > 25) " ..." else ""))
 
-# ---- key & row count --------------------------------------------------
+# ---- 2. key & row count ----------------------------------------------
 banner("2  rows & key")
 our_key <- our_ds %>% select(ID, YEAR) %>% collect()
-ref_key <- read_dta(ref_path, col_select = c("ID", "YEAR"))
+ref_key <- read_ref(c("ID", "YEAR"))
 ref_key$ID <- as.numeric(ref_key$ID); ref_key$YEAR <- as.integer(ref_key$YEAR)
 ok(nrow(our_key) == nrow(ref_key),
    sprintf("row count  ours=%d  ref=%d", nrow(our_key), nrow(ref_key)))
 ok(!anyDuplicated(our_key), "ID x YEAR is unique in our output")
 ok(setequal(unique(our_key$YEAR), unique(ref_key$YEAR)),
    sprintf("YEAR domain matches (%d waves)", length(unique(ref_key$YEAR))))
-ours_keyset <- paste(our_key$ID, our_key$YEAR)
-ref_keyset  <- paste(ref_key$ID,  ref_key$YEAR)
-ok(setequal(ours_keyset, ref_keyset), "ID x YEAR key sets are identical")
+ours_k <- paste(our_key$ID, our_key$YEAR)
+ref_k  <- paste(ref_key$ID,  ref_key$YEAR)
+ok(setequal(ours_k, ref_k), "ID x YEAR key sets are identical")
+align <- match(ours_k, ref_k)                        # ref row for each of our rows
 
-# ---- value-level agreement (sample of shared variables) ---------------
-banner(sprintf("3  value agreement (%d shared variables)", n_value_vars))
+# ---- 3. value-level agreement ----------------------------------------
 value_vars <- setdiff(shared, c("ID", "YEAR"))
-# spread the sample across the column order (domains) for breadth
-idx <- unique(round(seq(1, length(value_vars), length.out = min(n_value_vars, length(value_vars)))))
-sample_vars <- value_vars[idx]
-
-# read all sampled columns in ONE pass from each source (the .dta is 7.4 GB)
-ours <- our_ds %>% select(ID, YEAR, all_of(sample_vars)) %>% collect()
-ref  <- read_dta(ref_path, col_select = all_of(c("ID", "YEAR", sample_vars)))
-ours$.k <- paste(ours$ID, ours$YEAR)
-ref$.k  <- paste(as.numeric(ref$ID), as.integer(ref$YEAR))
-ref <- ref[match(ours$.k, ref$.k), ]                 # align ref rows to ours
-results <- data.frame(variable = sample_vars, agree_pct = NA_real_,
-                      n_compared = NA_integer_, stringsAsFactors = FALSE)
-for (i in seq_along(sample_vars)) {
-  v <- sample_vars[i]
-  a <- as.numeric(ours[[v]]); b <- as.numeric(ref[[v]])
-  agree <- (is.na(a) & is.na(b)) |
-           (!is.na(a) & !is.na(b) & abs(a - b) <= 1e-6 * pmax(1, abs(b)))
-  results$agree_pct[i]  <- 100 * mean(agree)
-  results$n_compared[i] <- length(agree)
+if (!is.na(n_value_vars) && n_value_vars < length(value_vars)) {
+  idx <- unique(round(seq(1, length(value_vars), length.out = n_value_vars)))  # spread sample
+  value_vars <- value_vars[idx]
+  banner(sprintf("3  value agreement (%d-variable sample)", length(value_vars)))
+} else {
+  banner(sprintf("3  value agreement (ALL %d shared variables)", length(value_vars)))
 }
+
+# compare in column batches so peak memory stays small (only the batch is held)
+agree_pct <- numeric(0); n_comp <- integer(0)
+batch <- 60L
+for (start in seq(1, length(value_vars), by = batch)) {
+  vs <- value_vars[start:min(start + batch - 1L, length(value_vars))]
+  ob <- our_ds %>% select(all_of(vs)) %>% collect()
+  rb <- read_ref(vs)[align, , drop = FALSE]
+  for (v in vs) {
+    a <- as.numeric(ob[[v]]); b <- as.numeric(rb[[v]])
+    agree <- (is.na(a) & is.na(b)) |
+             (!is.na(a) & !is.na(b) & abs(a - b) <= 1e-6 * pmax(1, abs(b)))
+    agree_pct <- c(agree_pct, 100 * mean(agree)); n_comp <- c(n_comp, length(agree))
+  }
+  message(sprintf("    ... %d / %d variables compared", length(agree_pct), length(value_vars)))
+}
+results <- data.frame(variable = value_vars, agree_pct = agree_pct, n_compared = n_comp,
+                      stringsAsFactors = FALSE)
 results <- results[order(results$agree_pct), ]
-emit("  per-variable agreement (worst first):")
-for (i in seq_len(nrow(results)))
-  emit(sprintf("    %-28s %6.2f%%  (n=%d)", results$variable[i], results$agree_pct[i], results$n_compared[i]))
-banner(sprintf("mean agreement across %d variables: %.2f%%   (>=99%% on %d / %d)",
+
+# full table -> report file; worst 40 also to console
+emit("  per-variable agreement (worst first; full table in the saved report):")
+for (i in seq_len(nrow(results))) {
+  line <- sprintf("    %-30s %7.3f%%  (n=%d)", results$variable[i], results$agree_pct[i], results$n_compared[i])
+  if (i <= 40) emit(line) else rec(line)
+}
+banner(sprintf("mean agreement across %d variables: %.3f%%   (100%% on %d | >=99%% on %d | <90%% on %d)",
                nrow(results), mean(results$agree_pct),
-               sum(results$agree_pct >= 99), nrow(results)))
+               sum(results$agree_pct >= 99.9995), sum(results$agree_pct >= 99),
+               sum(results$agree_pct < 90)))
 
 # ---- persist the report ----------------------------------------------
-emit(sprintf("\n  validation finished in %.1f s", as.numeric(difftime(Sys.time(), started, units = "secs"))))
+emit(sprintf("\n  validation finished in %.1f min", as.numeric(difftime(Sys.time(), started, units = "mins"))))
 dir.create("log", showWarnings = FALSE)
 log_path <- file.path("log", sprintf("validate-output_%s.txt", format(started, "%Y%m%d_%H%M%S")))
 writeLines(LOG, log_path)

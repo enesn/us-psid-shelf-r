@@ -91,7 +91,7 @@ manifest <- list(
     source_release = src_release,
     raw_sources = list(
       list(name = "main_extract", folder = file.path(raw_base, "ascii"),
-           description = "PSID main 1968-2021 individual+family fixed-width extract (variable cart)",
+           description = "PSID main 1968-2023 individual+family fixed-width extract (variable cart)",
            files_sha256 = files_sha256(file.path(raw_base, "ascii"), c("J362500.txt", "J362500.sas"))),
       list(name = "marriage_history", folder = file.path(raw_base, "mh85_23"),
            description = "Marriage History 1985-2023 supplement",
