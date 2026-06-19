@@ -20,6 +20,8 @@ suppressMessages({library(haven); library(arrow); library(stringr)})
 stopifnot(exists("psid_abridged"), exists("SPEC"), exists("year"))
 out_dir <- "output"; dir.create(out_dir, showWarnings = FALSE)
 fw <- min(year); lw <- psid_lastwave
+# gc() here is only a memory optimisation; never let a gc-internal hiccup halt publish
+.safe_gc <- function() tryCatch(gc(FALSE), error = function(e) message("  (gc skipped: ", conditionMessage(e), ")"))
 banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("-", 60), m, strrep("-", 60)))
 
 # ---- 1. ordered publish list (expand Stata varlist wildcards) ---------
@@ -44,7 +46,8 @@ message(sprintf("  %d published columns (%d publish tokens unresolved)",
                 length(unique(pv$token[!str_detect(pv$token, "\\*") & !(pv$token %in% cols_now)]))))
 
 shelf_wide <- psid_abridged[, publish, drop = FALSE]
-rm(psid_abridged); gc(FALSE)                        # free the full wide table now
+if (exists("psid_abridged")) rm(psid_abridged)
+.safe_gc()                                          # free the full wide table now
 names(shelf_wide) <- toupper(names(shelf_wide))
 
 # OCC_*1970C* carry a year *inside* the name; shield from the wave-suffix parse
@@ -82,10 +85,10 @@ for (j in seq_along(stubs)) {
   nm[p] <- stubs_final[j]
 }
 names(long) <- nm
-rm(shelf_wide); gc(FALSE)
+rm(shelf_wide); .safe_gc()
 ord <- order(long$ID, long$YEAR)                 # sort by ID, YEAR (matches Stata)
 for (k in seq_along(long)) long[[k]] <- long[[k]][ord]
-rm(ord); gc(FALSE)
+rm(ord); .safe_gc()
 message(sprintf("  LONG: %d rows x %d cols", length(long[[1]]), length(long)))
 
 # ---- 5. downcast to integer where possible, then reattach labels ------

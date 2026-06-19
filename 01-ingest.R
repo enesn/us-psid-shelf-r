@@ -262,6 +262,19 @@ message(sprintf("  individuals with PID records: %d / %d",
                 sum(psid_abridged$ER30001 %in% pid$PID2), nrow(psid_abridged)))
 message(elapsed(t6))
 
+# ── Materialise lazy vroom (ALTREP) columns ─────────────────────────────────
+# vroom returns a spec_tbl_df whose columns are read lazily. A later full gc()
+# (in 07-publish, to free the wide table before building the long one) tries to
+# finalise those lazy columns and errors — "object 'psid_abridged' not found" —
+# so the ~15 GB wide table is never reclaimed and publish gets OOM-killed.
+# Reading every column now (x[]) turns them into plain vectors and drops the
+# spec_tbl_df class, so gc() behaves and memory is freed as intended.
+banner("7 / 7  Materialise columns (drop lazy vroom ALTREP)")
+t7 <- Sys.time()
+psid_abridged <- as.data.frame(lapply(psid_abridged, function(x) x[]),
+                               stringsAsFactors = FALSE, check.names = FALSE)
+message(sprintf("  materialised %d columns", ncol(psid_abridged))); message(elapsed(t7))
+
 message(sprintf("\n  Total elapsed: %.1f s",
                 as.numeric(difftime(Sys.time(), t_total, units = "secs"))))
 
