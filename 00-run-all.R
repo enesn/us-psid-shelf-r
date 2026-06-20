@@ -19,7 +19,8 @@
 t_all <- Sys.time()
 
 # ---- packages --------------------------------------------------------
-need <- c("readr", "vroom", "stringr", "dplyr", "tidyr", "haven", "arrow", "jsonlite")
+need <- c("readr", "vroom", "stringr", "dplyr", "tidyr", "haven", "arrow", "jsonlite",
+          "yaml", "digest", "writexl")   # yaml/digest/writexl: 09-metadata.R (manifest + codebook)
 miss <- need[!vapply(need, requireNamespace, logical(1), quietly = TRUE)]
 if (length(miss)) {
   message("Installing missing packages: ", paste(miss, collapse = ", "))
