@@ -55,6 +55,9 @@ RUN --mount=type=cache,target=/root/.cache/R/pkgcache \
       install.packages('pak'); \
       pak::pkg_install(c( \
         'arrow', \
+        'writexl', \
+        'yaml', \
+        'digest', \
         'duckdb', \
         'DBI', \
         'data.table', \
