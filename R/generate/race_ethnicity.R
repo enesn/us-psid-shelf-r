@@ -11,7 +11,8 @@ rc_col <- function(stub, y) psid_abridged[[paste0(stub, "_", y)]]
 
 # race (1..7/9) x Spanish (1..7) -> 15-category extended classification
 race_eth_ext_fn <- function(race, span, k) {
-  sp <- inrange(span, 1, 7)
+  sp <- span %in% 1:7    # "is Spanish"; NA span -> FALSE (Stata inrange(.)==0), so a
+                         # known race with unknown ethnicity still classifies (not -1)
   out <- rep(-1, .n)
   out <- rc(out, race %in% 1 & !sp, 1); out <- rc(out, race %in% 2 & !sp, 2)
   out <- rc(out, race %in% 3 & !sp, 3); out <- rc(out, race %in% 4 & !sp, 4)
@@ -38,6 +39,7 @@ for (role in c("rp", "sp")) {
       race <- rc_col(sprintf("race_only_%dm_%s", k, role), y)
       if (is.null(race)) return(NULL)
       span <- rc_col(paste0("eth_only_span_", role), y)
+      if (is.null(span)) span <- rep(NA_real_, .n)   # ethnicity not asked this wave -> not Spanish
       race_eth_ext_fn(race, span, k)
     })
   gen_tv(paste0("race_eth_", role), function(y) {
