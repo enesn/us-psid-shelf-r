@@ -22,12 +22,22 @@ for (role in c("rp", "sp"))
     case_when(s %in% c(3, 4, 5) ~ 0, s %in% c(1, 2) ~ 1, .default = NA_real_)
   })
 
-# ghlth_poor (combined, from the individual's own measure; era-specific source)
+# ghlth_poor (combined): RP/SP role value, overwritten by the era-specific
+# individual measure where present; NA where that source is missing and the
+# person is not a current RP/SP (Stata Step_06 file 09).
 gen_tv("ghlth_poor", function(y) {
-  if (y == 1986)            { s <- g_col("ghlth_stat_ind", y); if (is.null(s)) return(NULL); case_when(s %in% c(3,4,5) ~ 0, s %in% c(1,2) ~ 1, .default = NA_real_) }
-  else if (y >= 1988 && y <= 1993) { s <- g_col("ghlth_good_ind", y); if (is.null(s)) return(NULL); case_when(s %in% 1 ~ 0, s %in% 0 ~ 1, .default = NA_real_) }
-  else if (y >= 1994)       { s <- g_col("ghlth_poor_ind", y); if (is.null(s)) return(NULL); case_when(s %in% 0 ~ 0, s %in% 1 ~ 1, .default = NA_real_) }
-  else return(NULL)
+  if (y < 1986 || y == 1987) return(NULL)              # only 1986, 1988-1993, 1994+
+  rel <- g_col("rel_ext", y); rex <- g_col("response_ext", y)
+  member <- inrange(rel, 100, 299) & rex %in% 0
+  out <- assign_rpsp(y, g_col("ghlth_poor_rp", y), g_col("ghlth_poor_sp", y))  # role fallback
+  s <- if (y == 1986) g_col("ghlth_stat_ind", y)
+       else if (y <= 1993) g_col("ghlth_good_ind", y)
+       else g_col("ghlth_poor_ind", y)
+  if (is.null(s)) s <- rep(NA_real_, .n)
+  if (y == 1986)      { out <- rc(out, s %in% c(3,4,5), 0); out <- rc(out, s %in% c(1,2), 1) }
+  else if (y <= 1993) { out <- rc(out, s %in% 1, 0);        out <- rc(out, s %in% 0, 1) }
+  else                { out <- rc(out, s %in% 0, 0);        out <- rc(out, s %in% 1, 1) }
+  rc(out, is.na(s) & !member, NA)                      # source missing & non-member -> NA
 })
 
 # role-mapped person-level measures

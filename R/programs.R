@@ -19,6 +19,7 @@
 #     exactly like Stata, which never matches `if` on a missing comparison.
 #   * val is a scalar (recycled) or a full-length vector (used element-wise).
 rc <- function(out, cond, val) {
+  if (length(cond) == 1L) cond <- rep(cond, length(out))  # recycle a scalar cond (e.g. TRUE) to all rows
   i <- which(cond)                      # which() drops NA -> FALSE semantics
   if (length(i)) out[i] <- if (length(val) == 1L) val else val[i]
   out
