@@ -102,6 +102,9 @@ ok(setequal(unique(our_key$YEAR), unique(ref_key$YEAR)),
 ours_k <- paste(our_key$ID, our_key$YEAR)
 ref_k  <- paste(ref_key$ID,  ref_key$YEAR)
 ok(setequal(ours_k, ref_k), "ID x YEAR key sets are identical")
+if (nrow(our_key) != nrow(ref_key))
+  emit(sprintf("        -> %+d rows = a person-count difference from ingestion (01-ingest.R), not construction logic",
+               nrow(our_key) - nrow(ref_key)))
 
 # ---- 3. value-level agreement ----------------------------------------
 value_vars <- setdiff(shared, c("ID", "YEAR"))
@@ -113,8 +116,29 @@ if (!is.na(n_value_vars) && n_value_vars < length(value_vars)) {
   banner(sprintf("3  value agreement (ALL %d shared variables)", length(value_vars)))
 }
 
+# classify the disagreements for one variable into a likely cause (data-driven,
+# plus one domain rule for the REL_* supplement vars).
+classify <- function(v, a, b, d) {
+  na_v  <- sum(d & is.na(a) & !is.na(b))     # ours NA, reference has a value
+  v_na  <- sum(d & !is.na(a) & is.na(b))     # ours has a value, reference NA
+  neg1  <- sum(d & a %in% -1)                # unassigned -1 sentinel
+  bd    <- d & !is.na(a) & !is.na(b); nboth <- sum(bd)
+  roundish <- if (nboth) sum(b[bd] == trunc(a[bd]) | b[bd] == round(a[bd]) | abs(a[bd] - b[bd]) < 1) else 0L
+  cause <-
+    if (sum(d) == 0)                          ""
+    else if (grepl("^REL_(CHI|MAR)", v))      "extract-vintage: CAH/MH supplement newer than the reference release"
+    else if (nboth > 0 && roundish >= 0.9 * nboth) "precision/rounding: reference stores an integer/rounded value (not a logic difference)"
+    else if (neg1 >= 0.5 * sum(d))            "unassigned -1 sentinel reaching the output"
+    else if (na_v >= max(v_na, nboth))        "coverage: ours is NA where the reference has a value"
+    else if (v_na >= max(na_v, nboth))        "ours has a value where the reference is NA"
+    else                                      "value / construction-logic difference"
+  data.frame(variable = v, n_compared = length(a), n_disagree = sum(d),
+             ours_NA = na_v, ref_NA = v_na, sentinel = neg1, both_differ = nboth,
+             cause = cause, stringsAsFactors = FALSE)
+}
+
 # compare in column batches so peak memory stays small (only the batch is held)
-agree_pct <- numeric(0); n_comp <- integer(0)
+res <- vector("list", length(value_vars)); ri <- 0L
 batch <- 60L
 for (start in seq(1, length(value_vars), by = batch)) {
   vs <- value_vars[start:min(start + batch - 1L, length(value_vars))]
@@ -127,12 +151,12 @@ for (start in seq(1, length(value_vars), by = batch)) {
     a <- as.numeric(ob[[v]]); b <- as.numeric(rb[[v]])
     agree <- (is.na(a) & is.na(b)) |
              (!is.na(a) & !is.na(b) & abs(a - b) <= 1e-6 * pmax(1, abs(b)))
-    agree_pct <- c(agree_pct, 100 * mean(agree)); n_comp <- c(n_comp, length(agree))
+    row <- classify(v, a, b, !agree); row$agree_pct <- 100 * mean(agree)
+    ri <- ri + 1L; res[[ri]] <- row
   }
-  message(sprintf("    ... %d / %d variables compared", length(agree_pct), length(value_vars)))
+  message(sprintf("    ... %d / %d variables compared", ri, length(value_vars)))
 }
-results <- data.frame(variable = value_vars, agree_pct = agree_pct, n_compared = n_comp,
-                      stringsAsFactors = FALSE)
+results <- do.call(rbind, res)
 results <- results[order(results$agree_pct), ]
 
 # full table -> report file; worst 40 also to console
@@ -145,6 +169,25 @@ banner(sprintf("mean agreement across %d variables: %.3f%%   (100%% on %d | >=99
                nrow(results), mean(results$agree_pct),
                sum(results$agree_pct >= 99.9995), sum(results$agree_pct >= 99),
                sum(results$agree_pct < 90)))
+
+# ---- 4. explain the variables below 100% -----------------------------
+allsub <- results[results$agree_pct < 99.9995, ]    # everything not exact
+sub    <- results[results$agree_pct < 99, ]          # the material gaps (detailed)
+banner(sprintf("4  why <100%%  (%d below 100%%; %d below 99%% detailed)", nrow(allsub), nrow(sub)))
+if (!nrow(allsub)) emit("  none — every compared variable matches the reference exactly.")
+for (i in seq_len(nrow(sub))) {
+  emit(sprintf("  %-28s %7.3f%%  | disagree=%d  [ours=NA/ref=val:%d  ours=val/ref=NA:%d  -1:%d  both-differ:%d]",
+               sub$variable[i], sub$agree_pct[i], sub$n_disagree[i],
+               sub$ours_NA[i], sub$ref_NA[i], sub$sentinel[i], sub$both_differ[i]))
+  emit(sprintf("        -> %s", sub$cause[i]))
+}
+ne <- nrow(allsub) - nrow(sub)
+if (ne) emit(sprintf("\n  (+ %d variable(s) at 99.0-99.999%% — a few differing rows each; see the full table above)", ne))
+if (nrow(allsub)) {
+  tab <- sort(table(allsub$cause), decreasing = TRUE)
+  emit("\n  all variables below 100%, grouped by likely cause:")
+  for (k in names(tab)) emit(sprintf("    %3d  %s", tab[[k]], k))
+}
 
 # ---- persist the report ----------------------------------------------
 emit(sprintf("\n  validation finished in %.1f min", as.numeric(difftime(Sys.time(), started, units = "mins"))))
