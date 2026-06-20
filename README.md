@@ -1,6 +1,8 @@
 # PSID-SHELF-R pipeline
 
-R pipeline that turns the raw PSID extract into the clean
+R version of the PSID-SHELF pipeline, originally developed in Pfeffer, Fabian T., Daumler, Davis, and Friedman, Esther. PSID-SHELF, 1968–2021: The PSID’s Social, Health, and Economic Longitudinal File (PSID-SHELF), Beta Release. Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributor], 2025-02-24. https://doi.org/10.3886/E194322V2. 
+
+The pipeline turns the raw PSID extract into the clean
 **PSID_SHELF_R_\<fromyear>_\<toyear>_LONG** file. All construction parameters
 (value labels, year→variable maps, publish lists) live in `spec/`, so the
 pipeline reads only `spec/` and the raw PSID data.
@@ -17,9 +19,13 @@ Outputs land in `output/` (3,533,040 rows × 552 cols):
   variable + value labels via `haven`)
 - `PSID_SHELF_R_1968_2021_WIDE.parquet` (196 MB)
 
-The build also writes a YAML run manifest to `metadata/<version>.yaml`
-(provenance, output schema, quality notes). Regenerate it with
-`Rscript 09-metadata.R` (`PSID_META_HASH_BIG=0` skips hashing the ~10 GB `.dta`).
+The build also writes, to `metadata/`, a YAML run manifest `<version>.yaml`
+(provenance, output schema, quality notes) and an Excel codebook
+`codebook_<version>.xlsx` — sheets for every variable + its labels, the value
+codes, the cross-year-index recoding (which raw PSID variable builds each SHELF
+variable in each wave), and a per-domain summary, all derived from `spec/` + the
+R recode files. Regenerate both with `Rscript 09-metadata.R`
+(`PSID_META_HASH_BIG=0` skips hashing the ~10 GB `.dta`).
 
 ## Architecture
 
@@ -32,7 +38,7 @@ The build also writes a YAML run manifest to `metadata/<version>.yaml`
 | Generate variables | `05-generate-variables.R` → `R/generate/<domain>.R` | derived variables |
 | Revise variables | `06-revise-variables.R` → `R/revise/<part>.R` | not-in-FU / family-size / inflation |
 | Publish (reshape) | `07-publish.R` | wide -> long, write parquet + dta |
-| Metadata manifest | `09-metadata.R` | write `metadata/<version>.yaml` |
+| Metadata + codebook | `09-metadata.R` | write `metadata/<version>.yaml` manifest + `codebook_<version>.xlsx` |
 | Orchestrator | `00-run-all.R` | runs the whole pipeline |
 
 `spec/` is machine-generated and safe to regenerate.
