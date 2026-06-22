@@ -108,26 +108,21 @@ mh <- vroom::vroom_fwf(
 )
 mh[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), mh, unname(labels_mh[names(mh)]))
 
-# Pivot MH to wide: one row per person, columns named MAR{n}_MH{col}
-# matching the shelf-abridged naming convention (MAR1–MAR8 only).
-# MH9 values 98/99 are PSID missing codes (DK / not ascertained);
-# orders >8 are 3 individuals — dropped to match shelf.
+# Pivot MH to wide: one row per person, columns named MAR{n}_MH{col}, where n is
+# the marriage's RECORD SEQUENCE within the person (file order = marriage order,
+# with unknown-order records last), NOT the marriage order (MH9) itself: 22,560
+# records carry MH9 == 99 (order DK/NA) and would be dropped by an MH9 key, which
+# loses rel_mar_rep (= MAR1_MH18) for those people. Each marriage keeps its own
+# MH9 (order) as a value. MAR1–MAR8 only (the few people with >8 are truncated).
+mh$.mar <- ave(seq_len(nrow(mh)), mh$MH2, mh$MH3, FUN = seq_along)  # 1..n per person, file order
+mh <- mh[mh$.mar <= 8, ]
 mh_wide <- pivot_wider(
-  filter(mh, MH9 %in% 1:8),
+  mh,
   id_cols     = c(MH2, MH3),
-  names_from  = MH9,
-  values_from = setdiff(names(mh), c("MH2", "MH3", "MH9")),
-  names_glue  = "MAR{MH9}_{.value}"
+  names_from  = .mar,
+  values_from = setdiff(names(mh), c("MH2", "MH3", ".mar")),
+  names_glue  = "MAR{.mar}_{.value}"
 )
-
-# MH2, MH3, MH9 were used as pivot keys so they were dropped from values.
-# Re-derive them per marriage slot to match shelf (NA where that marriage doesn't exist).
-for (n in 1:8) {
-  has_n <- !is.na(mh_wide[[sprintf("MAR%d_MH1", n)]])
-  mh_wide[[sprintf("MAR%d_MH2", n)]] <- ifelse(has_n, mh_wide$MH2,     NA_real_)
-  mh_wide[[sprintf("MAR%d_MH3", n)]] <- ifelse(has_n, mh_wide$MH3,     NA_real_)
-  mh_wide[[sprintf("MAR%d_MH9", n)]] <- ifelse(has_n, as.double(n),    NA_real_)
-}
 
 # Join key: ER30001 = 1968 interview number, ER30002 = person number
 #           MH2     = 1968 interview number, MH3     = person number
@@ -178,26 +173,27 @@ cah <- vroom::vroom_fwf(
 )
 cah[] <- Map(\(col, lbl) `attr<-`(col, "label", lbl), cah, unname(labels_cah[names(cah)]))
 
-# Pivot CAH to wide: one row per parent, columns named CHI{n}_CAH{col}
-# CAH3 = 1968 interview number of parent, CAH4 = person number of parent
-# CAH9 = birth order; 98/99 are PSID missing codes (DK / not ascertained)
+# Pivot CAH to wide: one row per parent, columns named CHI{n}_CAH{col}, where n
+# is the child's slot within the parent. The reference orders a parent's children
+# by BIRTH YEAR (CAH15) ascending, regardless of birth vs adoption — so an adopted
+# child born before a biological child precedes it. Missing-byear codes (9998/9999)
+# are > any real year, so they sort last automatically (verified: the reference
+# never places a known-byear child after a missing-byear one); file order (birth
+# order) breaks ties. Keying on birth order (CAH9) instead would be wrong here and
+# would drop/collide adoptions (which all carry CAH9 == 99). Each child keeps its
+# own CAH9 (birth order) and CAH2 (1 birth / 2 adopt) as values. CAH3 = 1968
+# interview number of parent, CAH4 = person number of parent.
+cah$.row <- seq_len(nrow(cah))
+cah <- cah[order(cah$CAH3, cah$CAH4, cah$CAH15, cah$.row), ]
+cah$.chi <- ave(cah$.row, cah$CAH3, cah$CAH4, FUN = seq_along)           # 1..n per parent, by birth year
+cah <- cah[cah$.chi <= 20, ]                                            # rel_chi1 .. rel_chi20
 cah_wide <- pivot_wider(
-  filter(cah, !CAH9 %in% c(98, 99)),
+  cah,
   id_cols     = c(CAH3, CAH4),
-  names_from  = CAH9,
-  values_from = setdiff(names(cah), c("CAH3", "CAH4", "CAH9")),
-  names_glue  = "CHI{CAH9}_{.value}"
+  names_from  = .chi,
+  values_from = setdiff(names(cah), c("CAH3", "CAH4", ".chi", ".row")),
+  names_glue  = "CHI{.chi}_{.value}"
 )
-
-# CAH3, CAH4, CAH9 were used as pivot keys so they were dropped from values.
-# Re-derive them per child slot to match shelf naming convention.
-birth_orders <- sort(unique(filter(cah, !CAH9 %in% c(98, 99))$CAH9))
-for (n in birth_orders) {
-  has_n <- !is.na(cah_wide[[sprintf("CHI%d_CAH1", n)]])
-  cah_wide[[sprintf("CHI%d_CAH3", n)]] <- ifelse(has_n, cah_wide$CAH3, NA_real_)
-  cah_wide[[sprintf("CHI%d_CAH4", n)]] <- ifelse(has_n, cah_wide$CAH4, NA_real_)
-  cah_wide[[sprintf("CHI%d_CAH9", n)]] <- ifelse(has_n, as.double(n),  NA_real_)
-}
 
 # Join key: ER30001 = 1968 interview number, ER30002 = person number of parent
 #           CAH3    = 1968 interview number, CAH4    = person number of parent
@@ -215,7 +211,7 @@ message(sprintf("  parents with CAH records: %d / %d",
                 sum(psid_abridged$ER30001 %in% cah$CAH3), nrow(psid_abridged)))
 message(elapsed(t5))
 
-rm(sas_cah, ib_cah, pos_cah, positions_cah, lab_cah, birth_orders)
+rm(sas_cah, ib_cah, pos_cah, positions_cah, lab_cah)
 
 
 # ── 6. Parent Identification (PID23) ────────────────────────────────────────
