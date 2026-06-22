@@ -82,9 +82,25 @@ ref_only <- setdiff(ref_cols_all, our_cols)
 our_only <- setdiff(our_cols, ref_cols_all)
 emit(sprintf("  reference: %d cols | ours: %d cols | shared: %d",
              length(ref_cols_all), length(our_cols), length(shared)))
-if (length(ref_only)) emit(paste0("  reference-only (", length(ref_only), "): ",
-                                  paste(head(ref_only, 25), collapse = ", "),
-                                  if (length(ref_only) > 25) " ..." else ""))
+# reference-only = in the reference but not built here. Explain each by category.
+ref_cause <- function(v) {
+  base <- sub("_(RP|SP)$", "", v)
+  if (base != v && base %in% our_cols)
+    "role variant (_RP/_SP); the combined per-person sibling IS produced"
+  else if (v %in% c("PSID_RETRIEVE", "PSIDSHELF_COMPILE", "PSIDSHELF_RELEASE"))
+    "release-metadata column (this pipeline carries it in metadata/<version>.yaml instead)"
+  else
+    "combined/summary variable not yet generated (built from _rp/_sp pieces in the reference)"
+}
+if (length(ref_only)) {
+  emit(sprintf("  reference-only (%d) — in the reference release but not built by this pipeline:", length(ref_only)))
+  rc_grp <- vapply(ref_only, ref_cause, character(1))
+  for (g in unique(rc_grp)) {
+    vs <- ref_only[rc_grp == g]
+    emit(sprintf("    [%d] %s", length(vs), g))
+    emit(paste0("        ", paste(vs, collapse = ", ")))
+  }
+}
 if (length(our_only)) emit(paste0("  ours-only (", length(our_only), "): ",
                                   paste(head(our_only, 25), collapse = ", "),
                                   if (length(our_only) > 25) " ..." else ""))
