@@ -40,10 +40,13 @@ for (k in names(.relid_par)) {
   psid_abridged[[paste0("rel_par_",k,"_pnum")]]    <- .relid_setv(pn,  sprintf("Ind's parent, %s, person number", .relid_leg[k]))
 }
 
-# ---- child record flag rf_rel_chi (rowmax of CAH106 split by birth/adopt) ----
+# ---- child record flag rf_rel_chi (rowmax of CAH116 split by birth/adopt) ----
+# NB: in this CAH vintage the "number of children" / "number of records" fields
+# are CAH116 / CAH118 (they were CAH106 / CAH108 in the older reference vintage;
+# CAH106-108 here are "why no contraception" items).
 .relid_bm <- .relid_am <- list()
 for (i in 1:20) {
-  c106 <- psid_abridged[[paste0("CHI",i,"_CAH106")]]; c2 <- psid_abridged[[paste0("CHI",i,"_CAH2")]]
+  c106 <- psid_abridged[[paste0("CHI",i,"_CAH116")]]; c2 <- psid_abridged[[paste0("CHI",i,"_CAH2")]]
   if (is.null(c106) || is.null(c2)) next
   .relid_bm[[length(.relid_bm)+1]] <- ifelse(c2 == 1, c106, NA)
   .relid_am[[length(.relid_am)+1]] <- ifelse(c2 == 2, c106, NA)
@@ -65,7 +68,7 @@ psid_abridged$rf_rel_chi <- .relid_setv(rf_chi, "Rec flag: Ind's child records (
 # ---- child records rel_chi{i}_* ----
 for (i in 1:20) {
   g  <- function(s) psid_abridged[[paste0("CHI",i,"_",s)]]
-  c106 <- g("CAH106"); c108 <- g("CAH108"); c10 <- g("CAH10"); c11 <- g("CAH11")
+  c106 <- g("CAH116"); c108 <- g("CAH118"); c10 <- g("CAH10"); c11 <- g("CAH11")
   c2 <- g("CAH2"); c12 <- g("CAH12"); c9 <- g("CAH9"); c15 <- g("CAH15")
   num <- rep(-1, .relid_n); rep_ <- rep(-1, .relid_n); id <- rep(-1, .relid_n); typ <- rep(-1, .relid_n)
   sx <- rep(-1, .relid_n); ord <- rep(-1, .relid_n); by <- rep(-1, .relid_n)

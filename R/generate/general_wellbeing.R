@@ -93,5 +93,8 @@ gen_tv("body_wght_lb", function(y) {
 })
 gen_tv("body_wght_kg", function(y) {
   lb <- g_col("body_wght_lb", y); if (is.null(lb)) return(NULL)
-  case_when(lb %in% c(0, 997) ~ lb, !is.na(lb) ~ lb / 2.20462262185, .default = NA_real_)
+  # reference rounds the lb->kg conversion to the nearest 0.5 kg
+  case_when(lb %in% c(0, 997) ~ lb,
+            !is.na(lb) ~ round(lb / 2.20462262185 * 2) / 2,
+            .default = NA_real_)
 })

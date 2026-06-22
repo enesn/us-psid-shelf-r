@@ -5,12 +5,16 @@
 # =====================================================================
 
 # range passthrough: keep [lo,hi], everything else (incl. .) -> NA
-rng <- function(lo, hi) function(x, y) recode(x, lo %..% hi ~ keep, NA ~ NA)
+# The reference stores nominal-dollar expenditures as integers (the raw PSID
+# amounts are truncated toward zero). trunc() leaves the -1 sentinel and NA
+# untouched. The family-size (_ndf) and inflation (_rd/_rdf) variants are derived
+# downstream from these _nd values, so truncating here matches all four variants.
+rng <- function(lo, hi) function(x, y) trunc(recode(x, lo %..% hi ~ keep, NA ~ NA))
 
 # expn_tot_nd changed range between 1999 and 2001+
 psid_abridged <- collect_tv(psid_abridged, "expn_tot_nd", function(x, y) {
-  if (y == 1999) recode(x, -5000 %..% 500000 ~ keep, NA ~ NA)
-  else           recode(x, 0 %..% 5000000 ~ keep, NA ~ NA)
+  if (y == 1999) trunc(recode(x, -5000 %..% 500000 ~ keep, NA ~ NA))
+  else           trunc(recode(x, 0 %..% 5000000 ~ keep, NA ~ NA))
 })
 
 dollar_ranges <- list(

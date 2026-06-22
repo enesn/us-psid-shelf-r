@@ -21,9 +21,10 @@ for (v in c("fw", "fw_latin_main", "fw_latin_only",
 # fw_cross has no `=0 if 0` rule in the source; iw_cross does. Both share the
 # 1..150000 passthrough; the 0-keep is harmless for fw_cross (0 is out of range
 # and would otherwise stay -1, but PSID cross weights are >=1 or missing).
-psid_abridged <- collect_tv(psid_abridged, "fw_cross", function(x, y) recode(x,
+# fw_cross is stored as an integer in the reference (raw weight truncated).
+psid_abridged <- collect_tv(psid_abridged, "fw_cross", function(x, y) trunc(recode(x,
   1 %..% 150000 ~ keep,
-  NA ~ NA))
+  NA ~ NA)))
 psid_abridged <- collect_tv(psid_abridged, "iw_cross", wt_cross)
 
 # stratum  [ER31996]
