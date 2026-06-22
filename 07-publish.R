@@ -124,7 +124,7 @@ class(long) <- "data.frame"; attr(long, "row.names") <- .set_row_names(length(lo
 
 stopifnot(!anyDuplicated(long[c("ID", "YEAR")]))
 write_parquet(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)))
-write_dta(long,     file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.dta", fw, lw)))
+#write_dta(long,     file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.dta", fw, lw)))
 
 banner(sprintf("[07-publish] wrote PSID_SHELF_R_%d_%d_LONG  (%d x %d)  parquet + dta",
                fw, lw, nrow(long), ncol(long)))
