@@ -43,12 +43,17 @@ gen_tv("ghlth_poor", function(y) {
 # role-mapped person-level measures
 for (m in c("ghlth_stat", "ghlth_chng", "hosp_any", "life_stat")) role_map(m)
 
-# hosp_num — nights (preferred) or weeks of hospitalization, assigned to RP/SP
+# hosp_num — nights (preferred), else weeks*7 converted to nights where nights
+# is missing (Stata Step_06 file 09, lines 408-412), assigned to RP/SP
 gen_tv("hosp_num", function(y) {
   tr <- ts <- NULL
   for (role in c("rp", "sp")) {
     nt <- g_col(paste0("hosp_num_nt_", role), y); wk <- g_col(paste0("hosp_num_wk_", role), y)
-    v <- if (!is.null(nt)) nt else wk
+    v <- if (is.null(nt) && is.null(wk)) NULL else {
+      out <- if (is.null(nt)) rep(NA_real_, .n) else nt
+      if (!is.null(wk)) out <- ifelse(is.na(out), wk * 7, out)
+      out
+    }
     if (role == "rp") tr <- v else ts <- v
   }
   if (is.null(tr) && is.null(ts)) return(NULL)
