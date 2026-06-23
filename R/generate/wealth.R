@@ -98,18 +98,34 @@ asset_comps <- function(y) Filter(Negate(is.null), list(
   wc("wlth_oass_net_nd", y)))
 debt_comps  <- function(y) Filter(Negate(is.null), list(
   wc("wlth_home_deb_nd", y), wc("wlth_odeb_net_nd", y)))
+ass_comps_xh  <- function(y) Filter(Negate(is.null), list(
+  wc("wlth_real_net_nd", y), wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y),
+  wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))
+ass_comps_xhr <- function(y) Filter(Negate(is.null), list(
+  wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y),
+  wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))
+
+# negative-valued asset components count toward debt, at their absolute value
+# (Stata Step_06 file 09, wlth_tot_deb_nd lines 631-669: "add in asset
+# components with negative values"). any_present mirrors sum_in_range's NA gate
+# but spans both the positive debt comps and the negative side of the assets.
+neg_as_debt <- function(z) ifelse(!is.na(z) & z < 0 & z >= -999999999, -z, 0)
+deb_with_spillover <- function(ac, dc) {
+  if (!length(ac) && !length(dc)) return(NULL)
+  pos_present <- if (length(dc)) Reduce(`|`, lapply(dc, function(z) !is.na(z))) else rep(FALSE, .n)
+  neg_present <- if (length(ac)) Reduce(`|`, lapply(ac, function(z) !is.na(z) & z < 0)) else rep(FALSE, .n)
+  pos <- if (length(dc)) { p <- sum_in_range(dc); ifelse(is.na(p), 0, p) } else rep(0, .n)
+  neg <- if (length(ac)) Reduce(`+`, lapply(ac, neg_as_debt)) else rep(0, .n)
+  ifelse(pos_present | neg_present, pos + neg, NA_real_)
+}
 
 gen_tv("wlth_tot_ass_nd", function(y) sum_in_range(asset_comps(y)))
-gen_tv("wlth_tot_deb_nd", function(y) sum_in_range(debt_comps(y)))
+gen_tv("wlth_tot_deb_nd", function(y) deb_with_spillover(asset_comps(y), debt_comps(y)))
 # excl-home and excl-home-&-real variants
-gen_tv("wlth_tot_ass_xh_nd",  function(y) sum_in_range(Filter(Negate(is.null), list(
-  wc("wlth_real_net_nd", y), wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y),
-  wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))))
-gen_tv("wlth_tot_ass_xhr_nd", function(y) sum_in_range(Filter(Negate(is.null), list(
-  wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y),
-  wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))))
-gen_tv("wlth_tot_deb_xh_nd",  function(y) { v <- wc("wlth_odeb_net_nd", y); if (is.null(v)) return(NULL); sum_in_range(list(v)) })
-gen_tv("wlth_tot_deb_xhr_nd", function(y) { v <- wc("wlth_odeb_net_nd", y); if (is.null(v)) return(NULL); sum_in_range(list(v)) })
+gen_tv("wlth_tot_ass_xh_nd",  function(y) sum_in_range(ass_comps_xh(y)))
+gen_tv("wlth_tot_ass_xhr_nd", function(y) sum_in_range(ass_comps_xhr(y)))
+gen_tv("wlth_tot_deb_xh_nd",  function(y) deb_with_spillover(ass_comps_xh(y),  Filter(Negate(is.null), list(wc("wlth_odeb_net_nd", y)))))
+gen_tv("wlth_tot_deb_xhr_nd", function(y) deb_with_spillover(ass_comps_xhr(y), Filter(Negate(is.null), list(wc("wlth_odeb_net_nd", y)))))
 
 for (suf in c("", "_xh", "_xhr"))
   gen_tv(paste0("wlth_tot_net", suf, "_nd"), function(y) {
