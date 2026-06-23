@@ -198,12 +198,25 @@ for (i in seq_len(nrow(sub))) {
   emit(sprintf("        -> %s", sub$cause[i]))
 }
 ne <- nrow(allsub) - nrow(sub)
-if (ne) emit(sprintf("\n  (+ %d variable(s) at 99.0-99.999%% — a few differing rows each; see the full table above)", ne))
+if (ne) {
+  emit(sprintf("\n  (+ %d variable(s) at 99.0-99.999%% — a few differing rows each; grouped by cause below)", ne))
+  rest <- allsub[allsub$agree_pct >= 99, ]
+  for (i in seq_len(nrow(rest)))
+    rec(sprintf("  %-28s %7.3f%%  | disagree=%d  [ours=NA/ref=val:%d  ours=val/ref=NA:%d  -1:%d  both-differ:%d] -> %s",
+                rest$variable[i], rest$agree_pct[i], rest$n_disagree[i],
+                rest$ours_NA[i], rest$ref_NA[i], rest$sentinel[i], rest$both_differ[i], rest$cause[i]))
+}
 if (nrow(allsub)) {
   tab <- sort(table(allsub$cause), decreasing = TRUE)
   emit("\n  all variables below 100%, grouped by likely cause:")
   for (k in names(tab)) emit(sprintf("    %3d  %s", tab[[k]], k))
 }
+
+# full per-variable results (incl. cause) -> CSV, for follow-up triage
+csv_path <- file.path("log", sprintf("validate-output_%s.csv", format(started, "%Y%m%d_%H%M%S")))
+write.csv(results, csv_path, row.names = FALSE)
+file.copy(csv_path, file.path("log", "validate-output_latest.csv"), overwrite = TRUE)
+message("  full per-variable results saved to ", csv_path, "  (+ log/validate-output_latest.csv)")
 
 # ---- persist the report ----------------------------------------------
 emit(sprintf("\n  validation finished in %.1f min", as.numeric(difftime(Sys.time(), started, units = "mins"))))
