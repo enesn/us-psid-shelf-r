@@ -32,6 +32,7 @@ covid_combine <- function(measure) {
     if (!is.null(sp))  out <- rc(out, out %in% -1 & univ %in% 2 & !is.na(sp), sp)
     if (!is.null(ind)) out <- rc(out, out %in% -1 & univ %in% c(1, 2, 3), ind)
     out <- rc(out, univ %in% 0, NA)
+    out <- rc(out, out %in% -1, NA)   # no source for this univ (e.g. univ==3 with no _ind variant) -> NA, never an unassigned -1
     .GlobalEnv$psid_abridged[[paste0(measure, "_", y)]] <- g_label(out, measure, y, set)
   }
 }
