@@ -30,13 +30,14 @@ for (stub in names(stub_q)) {
   }
 }
 
-# combined per-person versions of every measure: RP answer for the RP, SP answer
-# for the SP, NA for everyone else. Stata Step_06 file 09 (lines 457-469) sets
-# the value to . for anyone who is not the RP/SP responder — the _ind value is
-# assigned first but then overwritten by that final ". if !inrange(rel,100,299)"
-# line — so this is the combine_rpsp (RP/SP-only) shape, not combine_roles.
+# combined per-person versions of every measure: for 1992-1996 (ADL_*_ANY,
+# IADL_*) the source is the unconditional ind value (Stata Step_06 file 09,
+# lines 454-464/480-484); for 1999+/2003+ it's RP/SP gated by rel_ext/response_ext
+# (lines 466-471/485-490) — two disjoint year ranges, not one overwriting the
+# other. adl_q*_hlp has no _ind years at all, so combine_roles reduces to the
+# same RP/SP-only behavior combine_rpsp gave it.
 ind_var <- c("adl_sum_tot","adl_sum_any",
              as.vector(rbind(paste0("adl_q",1:7,"_any"), paste0("adl_q",1:7,"_hlp"))),
              "iadl_sum_tot","iadl_sum_any",
              as.vector(rbind(paste0("iadl_q",1:6,"_any"), paste0("iadl_q",1:6,"_hea"))))
-for (m in ind_var) combine_rpsp(m)
+for (m in ind_var) combine_roles(m)
