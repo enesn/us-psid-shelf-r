@@ -5,11 +5,25 @@
 # =====================================================================
 
 # range passthrough: keep [lo,hi], everything else (incl. .) -> NA
-# The reference stores nominal-dollar expenditures as integers (the raw PSID
-# amounts are truncated toward zero). trunc() leaves the -1 sentinel and NA
-# untouched. The family-size (_ndf) and inflation (_rd/_rdf) variants are derived
-# downstream from these _nd values, so truncating here matches all four variants.
-rng <- function(lo, hi) function(x, y) trunc(recode(x, lo %..% hi ~ keep, NA ~ NA))
+# Most nominal-dollar expenditure inputs are already whole dollars, but the
+# reference keeps expn_hlth_doc/pre_nd and expn_comp_tot_nd at their raw
+# fractional-cents value for some years (e.g. 892.29) -- those three must NOT
+# be truncated (confirmed empirically: trunc() strictly reduced their
+# agreement). expn_hlth_ins_nd/expn_ccar_tot_nd looked fractional in the same
+# spot-check but truncating them is in fact correct across the full series
+# (exempting them regressed agreement hard), so they stay truncated. Every
+# other expn_*_nd is truncated toward zero to match the reference; trunc()
+# leaves the -1 sentinel and NA untouched. The family-size (_ndf) and
+# inflation (_rd/_rdf) variants are derived downstream from these _nd values,
+# so the choice here propagates to all four variants.
+no_trunc <- c("expn_hlth_doc_nd", "expn_hlth_pre_nd", "expn_comp_tot_nd")
+rng <- function(lo, hi, v) {
+  keep_decimals <- v %in% no_trunc
+  function(x, y) {
+    out <- recode(x, lo %..% hi ~ keep, NA ~ NA)
+    if (keep_decimals) out else trunc(out)
+  }
+}
 
 # expn_tot_nd changed range between 1999 and 2001+
 psid_abridged <- collect_tv(psid_abridged, "expn_tot_nd", function(x, y) {
@@ -27,7 +41,7 @@ dollar_ranges <- list(
   expn_orec_tot_nd = c(-1000, 500000), expn_tran_tot_nd = c(-5000, 500000),
   expn_trip_tot_nd = c(-100, 1000000))
 for (v in names(dollar_ranges))
-  psid_abridged <- collect_tv(psid_abridged, v, rng(dollar_ranges[[v]][1], dollar_ranges[[v]][2]))
+  psid_abridged <- collect_tv(psid_abridged, v, rng(dollar_ranges[[v]][1], dollar_ranges[[v]][2], v))
 
 # if_expn_* flags: 0/1 passthrough
 flag01 <- function(x, y) recode(x, c(0, 1) ~ keep, NA ~ NA)
