@@ -82,7 +82,12 @@ path via `PSIDSHELF_REF` / first CLI argument):
   `_rp`/`_sp` and combined variants in the most complex generators).
 - **Rows**: ours 3,533,040 = 84,120 persons × 42 waves; reference has one more
   person — a difference that originates in ingestion (`01-ingest.R`).
-- **Value agreement** (40-variable sample): mean 99.18%, ≥99% on 34/40.
+- **Value agreement** (all 550 shared variables, every row): mean **99.92%**,
+  exact-100% on 349, ≥99% on 545, none below 90%. The few remaining sub-99%
+  variables are extract-vintage differences (our CAH/MH supplements are newer
+  than the Feb-2025 reference, so `REL_CHI_*`/`REL_MAR_*` counts differ slightly)
+  and `REL_CHI*_TYPE` rows for old child records that carry no birth year or id
+  (their slot order follows the reference's native CAH file sequence).
 
 Results print to the console and save to `log/validate-output_<timestamp>.txt`
 (latest copied to `log/validate-output_latest.txt`).
