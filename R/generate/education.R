@@ -8,10 +8,29 @@
 .n <- nrow(psid_abridged)
 ec <- function(stub, y) psid_abridged[[paste0(stub, "_", y)]]
 
-# combined per-person versions of the collected RP/SP education measures
-for (m in c("edu_grde", "edu_hsch", "edu_coll_att", "edu_coll_num", "edu_coll_gra",
-            "edu_coll_deg", "edu_icol_att", "edu_icol_deg"))
+# combined per-person versions of the collected RP/SP education measures, with
+# wave-to-wave carry-forward for active FU members (Stata Step_06 file 09,
+# lines 337-368): a year's missing value is backfilled from the last known
+# value, for years the person is a current FU member (response_ext == 0).
+# edu_grde only carries within its own 1968-1990 collection window; the rest
+# carry across all years.
+carry_vars <- c("edu_grde", "edu_hsch", "edu_coll_att", "edu_coll_num", "edu_coll_gra",
+                "edu_coll_deg", "edu_icol_att", "edu_icol_deg")
+for (m in carry_vars) {
   combine_rpsp(m)
+  set <- set_for(m); prev <- rep(NA_real_, .n)
+  for (y in year) {
+    cur <- ec(m, y)
+    if (is.null(cur)) next
+    carry_ok <- if (m == "edu_grde") inrange(y, 1968, 1990) else TRUE
+    if (carry_ok) {
+      member <- ec("response_ext", y) %in% 0
+      cur <- ifelse(is.na(cur) & member & !is.na(prev), prev, cur)
+      psid_abridged[[paste0(m, "_", y)]] <- g_label(cur, m, y, set)
+      prev <- ifelse(!is.na(cur), cur, prev)
+    }
+  }
+}
 
 # edu_year — years of schooling, carried forward across waves for current members
 prev <- rep(NA_real_, .n)
