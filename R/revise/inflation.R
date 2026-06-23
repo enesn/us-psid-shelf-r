@@ -15,7 +15,7 @@ if (!is.null(dc)) {
     ratio <- radix / pcepi[as.character(ref_year)]
     old <- psid_abridged[[col]]
     new <- ifelse(is.na(old), NA_real_, old * ratio)
-    for (tc in dollar_topcodes(varcat, y)) new[old %in% tc] <- tc
+    for (tc in dollar_topcodes(varcat, y, stage = "infl")) new[old %in% tc] <- tc
     newcol <- sub("_nd", "_rd", dc$stub[i])     # *_nd -> *_rd ; *_ndf -> *_rdf
     lab <- attr(old, "label")
     lab <- if (is.null(lab)) col else sub(" \\(nominal USD", sprintf(" (real USD %d", inflate_year), lab)
