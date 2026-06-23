@@ -88,7 +88,7 @@ wt_temp <- function(role, y) {
   if (is.null(lb) && is.null(kg)) return(NULL)
   t <- rep(NA_real_, .n)
   if (!is.null(lb)) { t <- rc(t, !(lb %in% c(0, 997)) & !is.na(lb), lb); t <- rc(t, lb %in% c(0, 997), lb) }
-  if (!is.null(kg)) { t <- rc(t, !(kg %in% c(0, 997)) & !is.na(kg), kg * 2.20462262185); t <- rc(t, kg %in% c(0, 997), kg) }
+  if (!is.null(kg)) { t <- rc(t, !(kg %in% c(0, 997)) & !is.na(kg), round(kg * 2.20462262185 * 2) / 2); t <- rc(t, kg %in% c(0, 997), kg) }
   t
 }
 gen_tv("body_wght_lb", function(y) {
