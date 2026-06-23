@@ -22,11 +22,17 @@ for (stub in names(stub_q)) {
       if (role == "sp") tot <- ifelse(inrange(rel, 200, 299) & rex %in% 0, tot, NA_real_)
       tot
     })
-    gen_tv(paste0(stub, "_sum_any_", role), function(y) {
-      s <- psid_abridged[[sprintf("%s_sum_tot_%s_%d", stub, role, y)]]
-      if (is.null(s)) return(NULL)
-      case_when(s %in% 0 ~ 0, inrange(s, 1, 99) ~ 1, .default = NA_real_)
-    })
+    # _sum_any_rp/_sp are derived from _sum_tot (Stata Step_06 file 09, lines
+    # 260-293: rp/sp loop only). _sum_any_ind is its own directly-collected
+    # 1992-1996 survey question (collect/disability.R bin5_n89) and must NOT
+    # be overwritten by a tot-based threshold here -- Stata never generates an
+    # _ind variant of this measure at all.
+    if (role != "ind")
+      gen_tv(paste0(stub, "_sum_any_", role), function(y) {
+        s <- psid_abridged[[sprintf("%s_sum_tot_%s_%d", stub, role, y)]]
+        if (is.null(s)) return(NULL)
+        case_when(s %in% 0 ~ 0, inrange(s, 1, 99) ~ 1, .default = NA_real_)
+      })
   }
 }
 
