@@ -267,11 +267,13 @@ modal_recent <- function(measure) {
 
 # ---- revise stage: nominal-dollar top-codes to preserve (not rescale) -------
 # Values that are PSID sentinels (top-code / "1-or-less") and must pass through
-# the family-size and inflation adjustments unchanged. Mirrors the per-category
-# lists in Step_09 files 14 & 15.
-dollar_topcodes <- function(varcat, y) {
+# unchanged. Mirrors the per-category lists in Step_09 files 14 & 15 -- but the
+# earn/finc list is specific to file 14 (family-size adjustment, stage="fam");
+# file 15 (inflation) never special-cases earn/finc/expn topcodes at all, only
+# home/wlth, so stage="infl" omits the earn/finc block entirely.
+dollar_topcodes <- function(varcat, y, stage = "fam") {
   tc <- numeric(0)
-  if (varcat %in% c("earn", "finc")) {
+  if (stage == "fam" && varcat %in% c("earn", "finc")) {
     if (y >= 1968 && y <= 1982) tc <- c(tc, 99999)
     if (y >= 1983 && y <= 1992) tc <- c(tc, 999999)
     if (y >= 1993 && y <= 2009) tc <- c(tc, 9999999)
