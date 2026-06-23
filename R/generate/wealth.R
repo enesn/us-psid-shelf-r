@@ -91,15 +91,25 @@ for (y in wlthyear) {
   psid_abridged[[paste0("wlth_home_deb_nd_", y)]] <- g_label(hd, "wlth_home_deb_nd", y)
 }
 
-# total assets / debts (sum of present in-range components), and net worth
+# total assets / debts (sum of present in-range components), and net worth.
+# Real estate is special: pre-2013 only a single unified net report exists
+# (wlth_real_uni_nd, already what net_cat folds into wlth_real_net_nd), but for
+# 2013+ Stata adds the *gross* wlth_real_ass_nd/wlth_real_deb_nd to assets/debts
+# separately -- like home -- rather than netting them (Step_06 file 09 lines
+# 507/518 add real_ass; line 623 adds real_deb). Using the netted wlth_real_net_nd
+# as a single asset-side component for 2013+ (as this used to) double-nets it
+# and undercounts debt for anyone with real-estate debt that wave.
+real_ass_comp <- function(y) { v <- wc("wlth_real_ass_nd", y); if (is.null(v)) wc("wlth_real_net_nd", y) else v }
+real_deb_comp <- function(y) wc("wlth_real_deb_nd", y)   # only present 2013+; NULL (omitted) pre-2013
+
 asset_comps <- function(y) Filter(Negate(is.null), list(
-  wc("wlth_home_ass_nd", y), wc("wlth_real_net_nd", y), wc("wlth_fbus_net_nd", y),
+  wc("wlth_home_ass_nd", y), real_ass_comp(y), wc("wlth_fbus_net_nd", y),
   wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y),
   wc("wlth_oass_net_nd", y)))
 debt_comps  <- function(y) Filter(Negate(is.null), list(
-  wc("wlth_home_deb_nd", y), wc("wlth_odeb_net_nd", y)))
+  wc("wlth_home_deb_nd", y), real_deb_comp(y), wc("wlth_odeb_net_nd", y)))
 ass_comps_xh  <- function(y) Filter(Negate(is.null), list(
-  wc("wlth_real_net_nd", y), wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y),
+  real_ass_comp(y), wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y),
   wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))
 ass_comps_xhr <- function(y) Filter(Negate(is.null), list(
   wc("wlth_fbus_net_nd", y), wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y),
@@ -124,7 +134,7 @@ gen_tv("wlth_tot_deb_nd", function(y) deb_with_spillover(asset_comps(y), debt_co
 # excl-home and excl-home-&-real variants
 gen_tv("wlth_tot_ass_xh_nd",  function(y) sum_in_range(ass_comps_xh(y)))
 gen_tv("wlth_tot_ass_xhr_nd", function(y) sum_in_range(ass_comps_xhr(y)))
-gen_tv("wlth_tot_deb_xh_nd",  function(y) deb_with_spillover(ass_comps_xh(y),  Filter(Negate(is.null), list(wc("wlth_odeb_net_nd", y)))))
+gen_tv("wlth_tot_deb_xh_nd",  function(y) deb_with_spillover(ass_comps_xh(y),  Filter(Negate(is.null), list(real_deb_comp(y), wc("wlth_odeb_net_nd", y)))))
 gen_tv("wlth_tot_deb_xhr_nd", function(y) deb_with_spillover(ass_comps_xhr(y), Filter(Negate(is.null), list(wc("wlth_odeb_net_nd", y)))))
 
 for (suf in c("", "_xh", "_xhr"))
