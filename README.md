@@ -92,3 +92,5 @@ path via `PSIDSHELF_REF` / first CLI argument):
 Results print to the console and save to `log/validate-output_<timestamp>.txt`
 (latest copied to `log/validate-output_latest.txt`).
 
+## EconOps Call
+This repository follows the [EconOps](https://github.com/enesn/EconOps) workflow. If you have the required authentication credentials, use [this script](https://github.com/enesn/EconOps/blob/main/implementation/step6.md#user-script-to-read-data) to query the dataset.
