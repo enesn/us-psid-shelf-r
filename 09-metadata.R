@@ -247,12 +247,27 @@ if (!requireNamespace("writexl", quietly = TRUE)) {
   names(VL) <- c("domain","variable","value_set","value","value_label")
 
   # --- Cross-year map sheet (which raw var builds each SHELF var, per wave) ---
-  CY <- rbind(imap[, c("newvar","year","input_var")],
-              if (nrow(isin)) data.frame(newvar = isin$newvar, year = NA_integer_,
-                                         input_var = isin$input_var) else NULL)
-  CY$domain <- vapply(CY$newvar, dom_of, character(1))
-  CY <- CY[order(CY$domain, CY$newvar, CY$year), c("domain","newvar","year","input_var")]
-  names(CY) <- c("domain","variable","wave","raw_input_var")
+  # Wide: one row per SHELF variable, one column per wave (time-invariant vars
+  # carry their single raw input in `time_invariant_input_var` instead).
+  CYl <- rbind(imap[, c("newvar","year","input_var")],
+               if (nrow(isin)) data.frame(newvar = isin$newvar, year = NA_integer_,
+                                          input_var = isin$input_var) else NULL)
+  CYl$domain <- vapply(CYl$newvar, dom_of, character(1))
+  years <- sort(unique(stats::na.omit(CYl$year)))
+  vars  <- sort(unique(vlab$newvar))    # every SHELF variable, not just collected ones
+  wide  <- matrix(NA_character_, nrow = length(vars), ncol = length(years),
+                  dimnames = list(vars, as.character(years)))
+  tv    <- CYl[!is.na(CYl$year), ]
+  wide[cbind(match(tv$newvar, vars), match(as.character(tv$year), colnames(wide)))] <- tv$input_var
+  inv   <- setNames(CYl$input_var[is.na(CYl$year)], CYl$newvar[is.na(CYl$year)])
+  CY <- data.frame(variable = vars, stringsAsFactors = FALSE, check.names = FALSE)
+  CY$domain <- vapply(CY$variable, dom_of, character(1))
+  CY$label  <- vlab$label[match(CY$variable, vlab$newvar)]
+  CY$scope  <- V$scope[match(CY$variable, V$variable)]
+  CY$time_invariant_input_var <- unname(inv[CY$variable])
+  CY <- cbind(CY, as.data.frame(wide, stringsAsFactors = FALSE, check.names = FALSE))
+  CY <- CY[order(CY$domain, CY$variable),
+           c("domain","variable","label","scope","time_invariant_input_var", as.character(years))]
 
   # --- Domain summary sheet ---
   doms <- sort(unique(stats::na.omit(V$domain)))
@@ -260,14 +275,14 @@ if (!requireNamespace("writexl", quietly = TRUE)) {
     domain       = doms,
     n_variables  = vapply(doms, function(d) sum(V$domain == d, na.rm = TRUE), integer(1)),
     n_published  = vapply(doms, function(d) sum(V$domain == d & V$published, na.rm = TRUE), integer(1)),
-    n_raw_inputs = vapply(doms, function(d) length(unique(CY$raw_input_var[CY$domain %in% d])), integer(1)),
+    n_raw_inputs = vapply(doms, function(d) length(unique(CYl$input_var[CYl$domain %in% d])), integer(1)),
     stringsAsFactors = FALSE)
 
   overview <- data.frame(sheet = c("Variables","Value_labels","Cross_year_map","Domain_summary"),
     description = c(
       "Every SHELF variable: domain, label, scope (time-varying/invariant/derived), value-label set, wave coverage, and the R file that holds its recode.",
       "Code -> text for every variable's value labels (one row per variable x value).",
-      "The cross-year-index recoding across waves: which raw PSID variable constructs each SHELF variable in each wave (wave = NA for time-invariant).",
+      "The cross-year-index recoding across waves, wide: one row per SHELF variable (with its label and scope), one column per wave giving the raw PSID variable that constructs it that wave (time-invariant variables instead populate time_invariant_input_var; derived/generated variables with no raw input have these left blank).",
       "Per-domain counts of variables, published variables, and distinct raw inputs used."),
     stringsAsFactors = FALSE)
   meta <- data.frame(field = c("dataset","version","generated","spec_dir","n_variables","n_value_labels"),

@@ -2,7 +2,7 @@ dataset:
   name: psid-shelf-r
   version: PSID_SHELF_R_1968_2021
   previous_version: ''
-  release_date: '2026-06-20'
+  release_date: '2026-06-24'
   created_by: enesn
 provenance:
   source_release:
@@ -38,7 +38,7 @@ provenance:
   pipeline:
     repo: github.com/enesn/us-psid
     branch: main
-    commit: ba6b6243f81feb038b7e44a685e331734b93d66a
+    commit: 7684004ecc63ad07abffeed0fb37b769e84d7303
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
@@ -48,9 +48,9 @@ provenance:
     - 06-revise-variables.R
     - 07-publish.R
     outputs_sha256:
-      PSID_SHELF_R_1968_2021_LONG.parquet: 4fb3903ea58040ed5002b137db65c3313df89b63d4d5129f24217a1e1495e08e
-      PSID_SHELF_R_1968_2021_LONG.dta: '(skipped: 10.6 GB)'
-      PSID_SHELF_R_1968_2021_WIDE.parquet: 4f16284299f74120dd6246fbca2daa3ddcda3b002fa3414419772e68c1e2bd11
+      PSID_SHELF_R_1968_2021_LONG.parquet: ce4df9b6bca5f4f4c9ba57809b7a194c09480bac7ff5d5644bcf4cf1b10c7e3b
+      PSID_SHELF_R_1968_2021_LONG.dta: 7ca2d0308ecae5e148a632a3703b5acfad51f731f49d75d733066874a4076658
+      PSID_SHELF_R_1968_2021_WIDE.parquet: 5904211f82262e87b04838ea6ab7b545fbd4cb2c63af1e8ee987c4c92eb0902f
     runtime:
       R: 4.5.3
       packages:
