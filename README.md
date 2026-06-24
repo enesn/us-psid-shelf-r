@@ -41,8 +41,6 @@ R recode files. Regenerate both with `Rscript 09-metadata.R`
 | Metadata + codebook | `09-metadata.R` | write `metadata/<version>.yaml` manifest + `codebook_<version>.xlsx` |
 | Orchestrator | `00-run-all.R` | runs the whole pipeline |
 
-`spec/` is machine-generated and safe to regenerate.
-
 ## How a domain is built
 
 Each collected variable starts at the sentinel `-1`, then `recode()` rules
