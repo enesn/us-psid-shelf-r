@@ -286,7 +286,8 @@ dollar_topcodes <- function(varcat, y, stage = "fam") {
     if (y >= 1994 && y <= 2019) tc <- c(tc, 9999997)
     if (y >= 2021)              tc <- c(tc, 99999997)
   } else if (varcat == "wlth") {
-    tc <- c(999999, 9999997, 9999999, 999999997, 999999999)
+    tc <- c(9999997, 9999999, 999999997, 999999999)
+    if (y >= 1984 && y <= 2005) tc <- c(tc, 999999)
   }
   unique(tc)
 }
