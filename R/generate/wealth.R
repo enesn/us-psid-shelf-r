@@ -107,19 +107,42 @@ real_deb_comp <- function(y) wc("wlth_real_deb_nd", y)   # only present 2013+; N
 # component double-nets it and undercounts debt for anyone with business debt.
 fbus_ass_comp <- function(y) { v <- wc("wlth_fbus_ass_nd", y); if (is.null(v)) wc("wlth_fbus_net_nd", y) else v }
 fbus_deb_comp <- function(y) wc("wlth_fbus_deb_nd", y)   # only present 2013+; NULL (omitted) pre-2013
+# investments are reported as separate stock/IRA components from 1999+ (Stata
+# Step_06 file 09 lines 498-499/508-509/519-520 add inve_stk/inve_ira to assets;
+# lines 645-646/655-656/666-667 add their *individual* negative values to debt)
+# -- 1984-1994 has only a unified report (wlth_inve_uni_nd, what wlth_inve_net_nd
+# reduces to that era). The [0,999999999] inclusion test and the negative-
+# component-as-debt spillover are applied to stk and ira separately in Stata, so
+# netting them first (as wlth_inve_net_nd does) hides an individually-negative
+# leg inside an overall-positive net and drops it from both sides.
+inve_comps <- function(y) {
+  parts <- Filter(Negate(is.null), list(wc("wlth_inve_stk_nd", y), wc("wlth_inve_ira_nd", y)))
+  if (length(parts)) parts else Filter(Negate(is.null), list(wc("wlth_inve_net_nd", y)))
+}
+# savings are reported as separate bank/bond components from 2019+ only (Stata
+# lines 516-517 add savi_bnk/savi_bnd to assets; lines 663-664 add their
+# individual negative values to debt); 1984-2017 has only a unified report
+# (wlth_savi_uni_nd, what wlth_savi_net_nd reduces to those years). Same
+# netting hazard as investments above.
+savi_comps <- function(y) {
+  parts <- Filter(Negate(is.null), list(wc("wlth_savi_bnk_nd", y), wc("wlth_savi_bnd_nd", y)))
+  if (length(parts)) parts else Filter(Negate(is.null), list(wc("wlth_savi_net_nd", y)))
+}
 
-asset_comps <- function(y) Filter(Negate(is.null), list(
-  wc("wlth_home_ass_nd", y), real_ass_comp(y), fbus_ass_comp(y),
-  wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y),
-  wc("wlth_oass_net_nd", y)))
+asset_comps <- function(y) Filter(Negate(is.null), c(
+  list(wc("wlth_home_ass_nd", y), real_ass_comp(y), fbus_ass_comp(y)),
+  savi_comps(y), inve_comps(y),
+  list(wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y))))
 debt_comps  <- function(y) Filter(Negate(is.null), list(
   wc("wlth_home_deb_nd", y), real_deb_comp(y), fbus_deb_comp(y), wc("wlth_odeb_net_nd", y)))
-ass_comps_xh  <- function(y) Filter(Negate(is.null), list(
-  real_ass_comp(y), fbus_ass_comp(y), wc("wlth_savi_net_nd", y),
-  wc("wlth_inve_net_nd", y), wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))
-ass_comps_xhr <- function(y) Filter(Negate(is.null), list(
-  fbus_ass_comp(y), wc("wlth_savi_net_nd", y), wc("wlth_inve_net_nd", y),
-  wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y)))
+ass_comps_xh  <- function(y) Filter(Negate(is.null), c(
+  list(real_ass_comp(y), fbus_ass_comp(y)),
+  savi_comps(y), inve_comps(y),
+  list(wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y))))
+ass_comps_xhr <- function(y) Filter(Negate(is.null), c(
+  list(fbus_ass_comp(y)),
+  savi_comps(y), inve_comps(y),
+  list(wc("wlth_vehi_net_nd", y), wc("wlth_oass_net_nd", y))))
 
 # negative-valued asset components count toward debt, at their absolute value
 # (Stata Step_06 file 09, wlth_tot_deb_nd lines 631-669: "add in asset
