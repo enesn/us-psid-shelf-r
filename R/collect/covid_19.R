@@ -16,8 +16,8 @@ mo_fn <- function(x, y) recode(x, 1 %..% 12 ~ keep, 21 %..% 24 ~ keep, c(98, 99,
 yr_fn <- function(x, y) recode(x, 2019 %..% 2099 ~ keep, c(9998, 9999, 0, NA) ~ NA)
 # 5-cat opinion reversed (5->1 .. 1->5)
 opi_fn <- function(x, y) recode(x, 5 ~ 1, 4 ~ 2, 3 ~ 3, 2 ~ 4, 1 ~ 5, c(8, 9, 0, NA) ~ NA)
-# 4-cat severity (1..4, 9->NA)
-sev_fn <- function(x, y) recode(x, 1 %..% 4 ~ keep, c(9, 0, NA) ~ NA)
+# 4-cat severity (1..4, 8/9->NA)
+sev_fn <- function(x, y) recode(x, 1 %..% 4 ~ keep, c(8, 9, 0, NA) ~ NA)
 
 apply_fn <- function(vars, fn)
   for (v in vars) psid_abridged <<- collect_tv(psid_abridged, v, fn)
@@ -28,7 +28,6 @@ apply_fn(c("covid_vacc_ind","covid_vacc_rp","covid_vacc_sp",
            "covid_test_rp","covid_test_sp",
            "covid_medi_talk_any_rp","covid_medi_talk_any_sp",
            "covid_medi_nodi_sym_rp","covid_medi_nodi_sym_sp",
-           "covid_test_ling_any_rp","covid_test_ling_any_sp",
            "covid_diag_hosp_oxy_rp","covid_diag_hosp_oxy_sp",
            "covid_diag_hosp_icu_rp","covid_diag_hosp_icu_sp",
            "covid_diag_hosp_ven_rp","covid_diag_hosp_ven_sp",
@@ -65,6 +64,9 @@ apply_fn(c("covid_test_ling_sev_rp","covid_test_ling_sev_sp",
 # covid_check_diag: 0->1, 5->2, 1->3
 apply_fn(c("covid_check_diag_rp","covid_check_diag_sp"), function(x, y) recode(x,
   0 ~ 1, 5 ~ 2, 1 ~ 3, NA ~ NA))
-apply_fn(c("covid_diag_hosp_any_rp","covid_diag_hosp_any_sp"), bin9)
+apply_fn(c("covid_diag_hosp_any_rp","covid_diag_hosp_any_sp"), bin5)
+# covid_test_ling_any: 2023 adds code 2 "Not sure" (not in earlier waves); treat as missing
+apply_fn(c("covid_test_ling_any_rp","covid_test_ling_any_sp"), function(x, y) recode(x,
+  5 ~ 0, 1 ~ 1, c(2, 8, 9, 0, NA) ~ NA))
 apply_fn(c("covid_diag_hosp_num_rp","covid_diag_hosp_num_sp"), function(x, y) recode(x,
-  1 %..% 60 ~ keep, c(99, 0, NA) ~ NA))
+  1 %..% 60 ~ keep, c(98, 99, 0, NA) ~ NA))
