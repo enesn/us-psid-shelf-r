@@ -23,6 +23,8 @@ lets you add **new waves, new variables, and new domains by editing these files*
 | `time_invariant_vars.txt` | one stub per line | variables that carry **no** `_<year>` suffix (constant across waves) |
 | `metadata.csv` | `key, value` | *optional* upstream Stata-release strings (release no. / retrieved / compiler), folded into the generated `metadata/<version>.yaml` provenance |
 | `unlabeled_sets.txt` | one set name per line | label sets defined dynamically in R, so the loader skips them silently |
+| `psid-cross-year-index.xlsx` | `TYPE, CATEGORY, TEXT, HEAD_WIFE, VAR_COUNT, Y<year>…` | the official PSID Cross-Year Index; one column per survey wave, one row per tracked concept |
+| `update_input_var_map.R` | *(script)* | reads `psid-cross-year-index.xlsx` and appends any wave years missing from `input_var_map.csv`; run after updating the index file |
 
 A SHELF variable named `foo`:
 - is **time-varying** if it appears in `input_var_map.csv` → the pipeline builds
@@ -201,18 +203,33 @@ When PSID releases the next wave (e.g. **2023**):
    Add the new year's **PCEPI** value to `pcepi` (and, if a newer base year is
    used, update `inflate_year`) so inflation adjustment covers the wave.
 
-3. **`input_var_map.csv`** — for **every** time-varying SHELF variable that was
-   asked in the new wave, add a row with that wave's raw variable name (look each
-   one up in the **Cross-Year Index**):
+3. **`psid-cross-year-index.xlsx`** — replace the file with the latest version
+   downloaded from the PSID Data Center ("Variable Cross-Year Index"). The new
+   wave appears as an additional `Y<year>` column.
+
+4. **`input_var_map.csv`** — run the helper script to bulk-populate the new wave:
+   ```sh
+   Rscript spec/update_input_var_map.R
+   ```
+   The script walks every `newvar` that has a prior-wave entry, looks up its raw
+   variable in the new wave's column of the Cross-Year Index, and appends a row
+   when a match exists. It prints a summary:
+   ```
+   Wave years to add: 2023
+     2023: 423 rows added, 30 skipped (no 2023 counterpart)
+   Done. Wrote 5979 rows to spec/input_var_map.csv (+423 new)
+   ```
+   **Skipped rows** are variables the script could not find in the new wave's
+   column (e.g. one-off supplements like COVID items). Review the skipped count
+   against your expectations — if a variable you know was asked is missing, add
+   its row manually:
    ```csv
    demo_age_rep,2023,ER36017
-   finc_tot_nd,2023,ER36...
-   …
    ```
-   This is the bulk of the work for a new wave. A variable with no 2023 row simply
-   has no `demo_age_rep_2023` column (→ `NA` for 2023 in long).
+   A variable with no entry for a given wave simply produces no `_<year>` column
+   for that wave (→ `NA` for that wave in long).
 
-4. **Run** `Rscript 00-run-all.R`. Because the wave list drives the build and the
+5. **Run** `Rscript 00-run-all.R`. Because the wave list drives the build and the
    reshape, the long file automatically gains the new `(ID, 2023)` rows.
 
 No recode R changes are needed for a new wave **unless** PSID changed a variable's
