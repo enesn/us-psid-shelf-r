@@ -46,6 +46,7 @@ message(sprintf("  %d published columns (%d publish tokens unresolved)",
                 length(unique(pv$token[!str_detect(pv$token, "\\*") & !(pv$token %in% cols_now)]))))
 
 shelf_wide <- psid_abridged[, publish, drop = FALSE]
+.safe_gc()                                          # drain ALTREP finalizer queue while psid_abridged still exists
 if (exists("psid_abridged")) rm(psid_abridged)
 .safe_gc()                                          # free the full wide table now
 names(shelf_wide) <- toupper(names(shelf_wide))
@@ -96,14 +97,19 @@ message(sprintf("  LONG: %d rows x %d cols", length(long[[1]]), length(long)))
 # Stata writes them as byte/int/long (≈ half the .dta size); fractional columns
 # (weights) and out-of-range columns (inflated real-dollar amounts) stay double.
 banner("publish: downcast + attach labels + write")
+.safe_gc()                                           # reclaim memory before peak allocation
 int_ok <- function(x) {
-  nn <- x[!is.na(x)]
-  length(nn) == 0L || (all(nn == floor(nn)) && max(abs(nn)) <= 2147483647)
+  if (is.integer(x)) return(TRUE)
+  if (!is.double(x)) return(FALSE)
+  r <- suppressWarnings(range(x, na.rm = TRUE))     # suppress the empty-range warning on all-NA cols
+  if (!is.finite(r[1])) return(TRUE)                # all NA (range -> Inf/-Inf) -> castable to integer NA
+  r[1] >= -2147483647 && r[2] <= 2147483647 && !any(x != floor(x), na.rm = TRUE)
 }
 for (k in seq_along(long)) {
   v <- names(long)[k]
   x <- long[[k]]
   if (int_ok(x)) x <- as.integer(x)
+  if (k %% 100L == 0L) .safe_gc()
   if (v == "YEAR") { long[[k]] <- haven::labelled(x, label = "Survey year"); next }
   lab <- var_label(tolower(v)); s <- set_for(tolower(v)); labs <- NULL
   if (!is.null(s)) {
