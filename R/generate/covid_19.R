@@ -5,11 +5,15 @@
 # =====================================================================
 
 .n <- nrow(psid_abridged)
-gc <- function(stub, y) psid_abridged[[paste0(stub, "_", y)]]
+# NB: must NOT be named `gc` — this file is sourced with local = FALSE, so a
+# `gc` here would shadow base::gc in .GlobalEnv and turn every gc()/.safe_gc()
+# call in 07-publish.R into a silent no-op (defeating the publish-stage OOM
+# guards). Use a private name like the other generate files (.gcol etc.).
+.gcy <- function(stub, y) psid_abridged[[paste0(stub, "_", y)]]
 
 # df_covid_univ — respondent universe for the COVID module
 gen_tv("df_covid_univ", function(y) {
-  rel <- gc("rel_ext", y); sq <- gc("seqnum", y); rep_ind <- gc("df_covid_rep_ind", y)
+  rel <- .gcy("rel_ext", y); sq <- .gcy("seqnum", y); rep_ind <- .gcy("df_covid_rep_ind", y)
   if (is.null(rel) || is.null(rep_ind)) return(NULL)   # COVID module not fielded
   notcur <- !inrange(rel, 100, 299) | !inrange(sq, 1, 20)
   case_when(
@@ -24,9 +28,9 @@ gen_tv("df_covid_univ", function(y) {
 covid_combine <- function(measure) {
   set <- set_for(measure)
   for (y in year) {
-    rp <- gc(paste0(measure, "_rp"), y); sp <- gc(paste0(measure, "_sp"), y); ind <- gc(paste0(measure, "_ind"), y)
+    rp <- .gcy(paste0(measure, "_rp"), y); sp <- .gcy(paste0(measure, "_sp"), y); ind <- .gcy(paste0(measure, "_ind"), y)
     if (is.null(rp) && is.null(sp) && is.null(ind)) next
-    univ <- gc("df_covid_univ", y)
+    univ <- .gcy("df_covid_univ", y)
     out <- rep(-1, .n)
     if (!is.null(rp))  out <- rc(out, out %in% -1 & univ %in% 1 & !is.na(rp), rp)
     if (!is.null(sp))  out <- rc(out, out %in% -1 & univ %in% 2 & !is.na(sp), sp)
