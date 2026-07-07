@@ -2,8 +2,8 @@
 # 01-ingest.R  --  Read PSID main extract + Marriage History supplement
 #
 # Inputs:
-#   raw-data/downloaded-from-psid/ascii/J362500.{txt,sas}
-#     fixed-width ASCII data (84,120 x 6,880, LRECL 15713)
+#   raw-data/downloaded-from-psid/ascii/J363407.{txt,sas}
+#     fixed-width ASCII data (x 5,947, LRECL 14004)
 #   raw-data/downloaded-from-psid/mh85_23/MH85_23.{txt,sas}
 #     Marriage History 1985-2023 (65,226 x 20, one row per marriage)
 #
@@ -34,8 +34,8 @@ ascii_dir <- file.path(base_dir, "ascii")
 mh_dir    <- file.path(base_dir, "mh85_23")
 stopifnot(dir.exists(ascii_dir), dir.exists(mh_dir))
 
-sas_file  <- file.path(ascii_dir, "J362500.sas")
-dat_file  <- file.path(ascii_dir, "J362500.txt")
+sas_file  <- file.path(ascii_dir, "J363407.sas")
+dat_file  <- file.path(ascii_dir, "J363407.txt")
 mh_sas    <- file.path(mh_dir,   "MH85_23.sas")
 mh_dat    <- file.path(mh_dir,   "MH85_23.txt")
 
@@ -54,14 +54,14 @@ positions <- data.frame(
   end   = as.integer(pos[, 4]),
   stringsAsFactors = FALSE
 )
-stopifnot(nrow(positions) == 6880L, max(positions$end) == 15713L)
+stopifnot(nrow(positions) == 5947L, max(positions$end) == 14004L)
 
 # (b) variable labels from the ATTRIB block:  NAME  LABEL="..."  FORMAT=Fx.
 lab <- str_match_all(sas, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
 labels <- setNames(str_squish(lab[, 3]), lab[, 2])
 
 message(elapsed(t2))
-banner("3 / 6  Read main extract (J362500)")
+banner("3 / 6  Read main extract (J363407)")
 t3 <- Sys.time()
 # ---- 3. read ALL columns -------------------------------------------
 # All PSID vars in this extract are numeric; read as double (177 vars are
@@ -269,6 +269,9 @@ banner("7 / 7  Materialise columns (drop lazy vroom ALTREP)")
 t7 <- Sys.time()
 psid_abridged <- as.data.frame(lapply(psid_abridged, function(x) x[]),
                                stringsAsFactors = FALSE, check.names = FALSE)
+# x[] forces each vroom ALTREP column in-place, converting lazy parse references
+# into plain R vectors before any downstream gc() needs to finalise them.
+gc(FALSE); gc(FALSE)
 message(sprintf("  materialised %d columns", ncol(psid_abridged))); message(elapsed(t7))
 
 message(sprintf("\n  Total elapsed: %.1f s",
