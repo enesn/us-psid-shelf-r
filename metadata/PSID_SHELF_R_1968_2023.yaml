@@ -61,7 +61,7 @@ provenance:
         digest: 0.6.39
         yaml: 2.3.12
     environment:
-      image: rocker/tidyverse:4.5
+      image: https://github.com/enesn/us-psid-shelf-r/pkgs/container/r-econops
 schema:
   codebook_ref: spec/psid-cross-year-index.xlsx
   n_rows: 3678048
