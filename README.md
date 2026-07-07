@@ -23,9 +23,9 @@ Rscript 08-validate-output.R    # compare LONG output to a reference release
 ```
 
 Outputs land in `output/` (3,533,040 rows × 552 cols):
-- `PSID_SHELF_R_1968_2021_LONG.parquet` (185 MB) and `…_LONG.dta` (9.9 GB, with
+- `PSID_SHELF_R_1968_2023_LONG.parquet` (185 MB) and `…_LONG.dta` (9.9 GB, with
   variable + value labels via `haven`)
-- `PSID_SHELF_R_1968_2021_WIDE.parquet` (196 MB)
+- `PSID_SHELF_R_1968_2023_WIDE.parquet` (196 MB)
 
 The build also writes, to `metadata/`, a YAML run manifest `<version>.yaml`
 (provenance, output schema, quality notes) and an Excel codebook
