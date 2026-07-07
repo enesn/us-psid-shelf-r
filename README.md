@@ -7,7 +7,7 @@ The pipeline turns the raw PSID extract into the clean
 (value labels, year→variable maps, publish lists) live in `spec/`, so the
 pipeline reads only `spec/` and the raw PSID data.
 
-> **📖 New here? Read [`spec/README.md`](spec/README.md) first — it is the entry
+> **📖 Read [`spec/README.md`](spec/README.md) first — it is the entry
 > point for this pipeline.** Everything the pipeline needs to know about *what*
 > to build (which raw PSID variable feeds each SHELF variable, what the codes
 > mean, what gets published) is a CSV or JSON file in `spec/`; the R scripts in
@@ -105,22 +105,8 @@ Results print to the console and save to `log/validate-output_<timestamp>.txt`
 - 552 / 593 reference variables reproduced; 99.943% mean value agreement across all shared variables and rows.
 - Outputs: `PSID_SHELF_R_1968_2021_LONG.parquet` / `.dta`, `_WIDE.parquet`; YAML manifest + Excel codebook in `metadata/`.
 
-### 2023 wave extension 
 
-Preparatory work to extend the file from 2021 to 2023. 
-
-**Spec / pipeline changes (committed):**
-
-| Commit | Change |
-|--------|--------|
-| `515b654` | Added `spec/update_input_var_map.R` — reusable script to bulk-populate `input_var_map.csv` for any new wave using the cross-year index |
-| `aa7270e` | Added 423 rows to `spec/input_var_map.csv` for the 2023 wave (30 COVID supplement variables had no 2023 counterpart and were skipped) |
-| `c04ef9e` | Added `spec/psid-cross-year-index.xlsx`; updated `spec/README.md` with new-wave workflow |
-| `927c1f6` | Fixed `R/collect/covid_19.R`: 5 recode harmonization issues identified by comparing 2021 vs 2023 codebooks — `bin9→bin5` for `hosp_any`, `8→NA` added to `sev_fn`, new code `2` ("Not sure") handled for `test_ling_any`, code `98` added to NA catch for `hosp_num` |
-| `c68ef68` | Removed stale `spec/metadata.csv` |
-| `7aaa6a7` | Updated `spec/parameters.json`: `psid_lastwave`, `year[]`, `wlthyear[]` extended to 2023 |
-
-### 2023 wave — build complete & validated
+### 2023 wave extension - build complete & validated
 
 The file now extends to **2023 (43 waves, 1968–2023)**. A full rebuild
 (`Rscript 00-run-all.R`) produces `PSID_SHELF_R_1968_2023_LONG.parquet` /
