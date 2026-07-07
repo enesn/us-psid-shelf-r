@@ -1,22 +1,19 @@
 dataset:
   name: psid-shelf-r
-  version: PSID_SHELF_R_1968_2021
+  version: PSID_SHELF_R_1968_2023
   previous_version: ''
-  release_date: '2026-07-06'
+  release_date: '2026-07-07'
   created_by: enesn
 provenance:
-  source_release:
-    release_num: 2025-01
-    retrieved: 2023/11/16
-    compiled_by: Davis Daumler
+  source_release: ~
   raw_sources:
   - name: main_extract
     folder: raw-data/downloaded-from-psid/ascii
     description: PSID main 1968-2023 individual+family fixed-width extract (variable
       cart)
     files_sha256:
-      J362500.txt: 407e896d76bfd83a16520ae3539eff989638bf98d7ae93dd7ab731b22d1946eb
-      J362500.sas: 0879206fde1d7863f876a27b558b97a682254840d65157325b02bc936137d489
+      J363407.txt: eb7e57202ac223c872d1f49e017492c986a8a347600b29668c673cb062303a96
+      J363407.sas: 7e7618ba1bcaef0a8d9b20addd8594275128622b74d2adec39f59a04c7360529
   - name: marriage_history
     folder: raw-data/downloaded-from-psid/mh85_23
     description: Marriage History 1985-2023 supplement
@@ -37,8 +34,8 @@ provenance:
       PID23.sas: 1f2b8b59ab32fa95378ea0dd1ba30db883c60026d1af47d23372d7c28e5042f0
   pipeline:
     repo: github.com/enesn/us-psid
-    branch: main
-    commit: 7a24cff0587c3191ecd59cadf864c0418fe05085
+    branch: newwave2023
+    commit: 7aaa6a7f556a5d66c49845d831f279de1b7f7599
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
@@ -48,8 +45,8 @@ provenance:
     - 06-revise-variables.R
     - 07-publish.R
     outputs_sha256:
-      PSID_SHELF_R_1968_2021_LONG.parquet: 341bd895bad351502d87fd035f9676775c0a47d3184a36e9e5ba5ec2d3820a8f
-      PSID_SHELF_R_1968_2021_WIDE.parquet: c226a448bb5b2cd2fe92138bddf3190ff224f380ad078f8c86f6408c4fd842fc
+      PSID_SHELF_R_1968_2023_LONG.parquet: 6c306a0516e1bff4e994eebbf6e08ccde760372739d62d8a509e3d033c2dd7c3
+      PSID_SHELF_R_1968_2023_WIDE.parquet: 815f80c7409e581e7f2277a26f04391d07971c5abbc6db2ec9ee9e33199f265c
     runtime:
       R: 4.5.3
       packages:
@@ -67,7 +64,7 @@ provenance:
       image: rocker/tidyverse:4.5
 schema:
   codebook_ref: spec/psid-cross-year-index.xlsx
-  n_rows: 3533040
+  n_rows: 3678048
   n_cols: 552
   unit_of_observation: Individual × wave (person-year), keyed by (ID, YEAR)
   panel_waves:
@@ -113,6 +110,7 @@ schema:
   - 2017
   - 2019
   - 2021
+  - 2023
   key_variables:
     ID: Individual identifier = ER30001 * 1000 + ER30002 (1968 interview no. + person
       no.)
@@ -128,6 +126,42 @@ changelog:
     a labelled LONG .dta + parquet.'
   variables_affected: all
   rationale: First version of the R reproduction of the longitudinal file.
+- type: new_wave
+  wave: 2023.0
+  git_commits:
+  - '515b654 — add spec/update_input_var_map.R: script to extend input_var_map.csv
+    from cross-year index'
+  - aa7270e — add 2023 wave to spec/input_var_map.csv (423 new variable-wave rows;
+    30 COVID supplement vars skipped)
+  - c04ef9e — add spec/psid-cross-year-index.xlsx; update spec/README.md with new-wave
+    workflow
+  - '927c1f6 — fix R/collect/covid_19.R: 5 recode harmonization issues found via 2021-vs-2023
+    codebook comparison'
+  - c68ef68 — remove stale spec/metadata.csv
+  - '7aaa6a7 — update spec/parameters.json: psid_lastwave, year[], wlthyear[] extended
+    to 2023'
+  spec_changes:
+    input_var_map: 423 new rows added for 2023 wave via spec/update_input_var_map.R
+      (cross-year-index lookup); 30 COVID supplement variables have no 2023 counterpart
+      and were skipped.
+    parameters_json: psid_lastwave bumped to 2023; 2023 appended to year[] and wlthyear[].
+    cross_year_index: spec/psid-cross-year-index.xlsx added; Y2023 column used to
+      populate input_var_map for the new wave.
+  recode_fixes:
+  - variable: covid_diag_hosp_any_rp/sp
+    fix: 'bin9 -> bin5: code 8 (DK) added in 2023 was unhandled'
+  - variable: covid_diag_noho_sev_rp/sp
+    fix: 'sev_fn: added 8 to NA catch (code 8 added in 2023)'
+  - variable: covid_test_ling_any_rp/sp
+    fix: new code 2 'Not sure' added in 2023; mapped to NA (was producing sentinel
+      -1)
+  - variable: covid_diag_hosp_num_rp/sp
+    fix: code 98 (DK) added in 2023; added to NA catch alongside 99
+  variables_affected: all time-varying variables; 2023 wave adds one new person-year
+    row per respondent
+  rationale: Extension of the longitudinal file from 2021 to 2023. Recode logic is
+    wave-invariant except for the four COVID variables above, which had genuine coding
+    changes between 2021 and 2023.
 quality:
   completeness:
     ID: OK (0 nulls)
