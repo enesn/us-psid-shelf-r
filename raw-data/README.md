@@ -32,16 +32,16 @@ blocks). Put each product in its own subfolder with these exact names:
 
 | Subfolder | PSID product | Files `01-ingest.R` reads | What it is |
 |-----------|--------------|---------------------------|------------|
-| `ascii/` | your custom main extract | `J######.txt` + `J######.sas` | the main 1968–2021 individual+family panel (84,120 persons × ~6,880 vars) — the bulk of the data |
+| `ascii/` | your custom main extract | `J######.txt` + `J######.sas` | the main 1968–2023 individual+family panel (85,536 persons × ~5,947 vars) — the bulk of the data |
 | `mh85_23/` | Marriage History 1985–2023 | `MH85_23.txt` + `MH85_23.sas` | one row per marriage; pivoted to `MAR{n}_MH{col}` and joined on person |
 | `cah85_23/` | Childbirth & Adoption History 1985–2023 | `CAH85_23.txt` + `CAH85_23.sas` | one row per child; pivoted to `CHI{n}_CAH{col}` and joined on parent |
 | `pid23/` | Parent Identification File 2023 | `PID23.txt` + `PID23.sas` | one row per individual; joined on person |
 
 > **⚠ The main extract's job number.** When PSID builds your cart it names the files
-> after a job number — `J362500.txt`/`J362500.sas` in the reference build. **Your
+> after a job number — `J363407.txt`/`J363407.sas` in the current build. **Your
 > cart will have a different number.** `01-ingest.R` currently hard-codes
-> `J362500.*` ([lines 37–38](../01-ingest.R#L37-L38)), so either rename your files
-> to `J362500.txt`/`J362500.sas`, or edit those two paths to match. The supplement
+> `J363407.*` ([lines 37–38](../01-ingest.R#L37-L38)), so either rename your files
+> to `J363407.txt`/`J363407.sas`, or edit those two paths to match. The supplement
 > file names (`MH85_23`, `CAH85_23`, `PID23`) are stable and don't change.
 
 The supplements join to the main extract on the 1968 person key
@@ -65,7 +65,7 @@ the pipeline maps in [`spec/input_var_map.csv`](../spec/input_var_map.csv) /
    **Add to cart**, then **generate** the data cart.
 3. Choose the **ASCII Data With SAS Statements** download format.
 4. Unzip into `raw-data/downloaded-from-psid/ascii/` and rename the `J######.txt`
-   / `J######.sas` to `J362500.*` (or update the paths in `01-ingest.R` — see the
+   / `J######.sas` to `J363407.*` (or update the paths in `01-ingest.R` — see the
    note above).
 
 > Use the **PSID Cross-Year Index** to find the per-wave variable name for each
@@ -107,7 +107,7 @@ looks for them:
 
 ```sh
 cd raw-data/downloaded-from-psid
-ls ascii/J362500.txt ascii/J362500.sas \
+ls ascii/J363407.txt ascii/J363407.sas \
    mh85_23/MH85_23.txt mh85_23/MH85_23.sas \
    cah85_23/CAH85_23.txt cah85_23/CAH85_23.sas \
    pid23/PID23.txt pid23/PID23.sas
