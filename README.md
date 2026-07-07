@@ -100,13 +100,13 @@ Results print to the console and save to `log/validate-output_<timestamp>.txt`
 
 ## Release notes
 
-### v1 — PSID-SHELF-R 1968–2021 (initial release)
+### PSID-SHELF-R 1968–2021 (initial release)
 - R port of the Stata PSID-SHELF construction covering 42 waves (1968–2021).
 - 552 / 593 reference variables reproduced; 99.943% mean value agreement across all shared variables and rows.
 - Outputs: `PSID_SHELF_R_1968_2021_LONG.parquet` / `.dta`, `_WIDE.parquet`; YAML manifest + Excel codebook in `metadata/`.
 
 
-### 2023 wave extension - build complete & validated
+### PSID-SHELF-R 1968–2023 (2023 wave extension)
 
 The file now extends to **2023 (43 waves, 1968–2023)**. A full rebuild
 (`Rscript 00-run-all.R`) produces `PSID_SHELF_R_1968_2023_LONG.parquet` /
