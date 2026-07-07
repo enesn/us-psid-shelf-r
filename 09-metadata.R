@@ -48,13 +48,13 @@ out    <- "output"
 
 # upstream Stata release this R port reproduces (optional provenance input)
 src_release <- NULL
-if (file.exists("spec/metadata.csv")) {
-  m <- read.csv("spec/metadata.csv", stringsAsFactors = FALSE)
-  kv <- setNames(as.list(m$value), m$key)
-  src_release <- list(release_num = kv[["release_num"]],
-                      retrieved   = kv[["retrieve_date"]],
-                      compiled_by = kv[["compile_name"]])
-}
+#if (file.exists("spec/metadata.csv")) {
+ # m <- read.csv("spec/metadata.csv", stringsAsFactors = FALSE)
+  #kv <- setNames(as.list(m$value), m$key)
+  #src_release <- list(release_num = kv[["release_num"]],
+                    #  retrieved   = kv[["retrieve_date"]],
+                     # compiled_by = kv[["compile_name"]])
+#}
 
 # ---- schema (read cheaply from the published LONG parquet) ----------
 long_pq <- file.path(out, paste0(stub, "_LONG.parquet"))
@@ -92,7 +92,7 @@ manifest <- list(
     raw_sources = list(
       list(name = "main_extract", folder = file.path(raw_base, "ascii"),
            description = "PSID main 1968-2023 individual+family fixed-width extract (variable cart)",
-           files_sha256 = files_sha256(file.path(raw_base, "ascii"), c("J362500.txt", "J362500.sas"))),
+           files_sha256 = files_sha256(file.path(raw_base, "ascii"), c("J363407.txt", "J363407.sas"))),
       list(name = "marriage_history", folder = file.path(raw_base, "mh85_23"),
            description = "Marriage History 1985-2023 supplement",
            files_sha256 = files_sha256(file.path(raw_base, "mh85_23"), c("MH85_23.txt", "MH85_23.sas"))),
@@ -137,14 +137,41 @@ manifest <- list(
       IW = "Individual-level longitudinal expansion weight"
     )
   ),
-  changelog = list(
-    list(type = "initial",
-         description = paste("Initial PSID-SHELF-R release — R port of the Stata PSID-SHELF construction:",
-                             "ingest main extract + MH/CAH/PID supplements, collect input variables,",
-                             "generate derived variables, revise (not-in-FU / family-size / PCEPI inflation),",
-                             "and publish a labelled LONG .dta + parquet."),
-         variables_affected = "all",
-         rationale = "First version of the R reproduction of the longitudinal file.")
+  changelog = c(
+    list(
+      list(type = "initial",
+           description = paste("Initial PSID-SHELF-R release — R port of the Stata PSID-SHELF construction:",
+                               "ingest main extract + MH/CAH/PID supplements, collect input variables,",
+                               "generate derived variables, revise (not-in-FU / family-size / PCEPI inflation),",
+                               "and publish a labelled LONG .dta + parquet."),
+           variables_affected = "all",
+           rationale = "First version of the R reproduction of the longitudinal file.")
+    ),
+    if (lw >= 2023) list(
+      list(type = "new_wave",
+           wave = 2023,
+           git_commits = c(
+             "515b654 — add spec/update_input_var_map.R: script to extend input_var_map.csv from cross-year index",
+             "aa7270e — add 2023 wave to spec/input_var_map.csv (423 new variable-wave rows; 30 COVID supplement vars skipped)",
+             "c04ef9e — add spec/psid-cross-year-index.xlsx; update spec/README.md with new-wave workflow",
+             "927c1f6 — fix R/collect/covid_19.R: 5 recode harmonization issues found via 2021-vs-2023 codebook comparison",
+             "c68ef68 — remove stale spec/metadata.csv",
+             "7aaa6a7 — update spec/parameters.json: psid_lastwave, year[], wlthyear[] extended to 2023"
+           ),
+           spec_changes = list(
+             input_var_map    = "423 new rows added for 2023 wave via spec/update_input_var_map.R (cross-year-index lookup); 30 COVID supplement variables have no 2023 counterpart and were skipped.",
+             parameters_json  = "psid_lastwave bumped to 2023; 2023 appended to year[] and wlthyear[].",
+             cross_year_index = "spec/psid-cross-year-index.xlsx added; Y2023 column used to populate input_var_map for the new wave."
+           ),
+           recode_fixes = list(
+             list(variable = "covid_diag_hosp_any_rp/sp", fix = "bin9 -> bin5: code 8 (DK) added in 2023 was unhandled"),
+             list(variable = "covid_diag_noho_sev_rp/sp", fix = "sev_fn: added 8 to NA catch (code 8 added in 2023)"),
+             list(variable = "covid_test_ling_any_rp/sp", fix = "new code 2 'Not sure' added in 2023; mapped to NA (was producing sentinel -1)"),
+             list(variable = "covid_diag_hosp_num_rp/sp", fix = "code 98 (DK) added in 2023; added to NA catch alongside 99")
+           ),
+           variables_affected = "all time-varying variables; 2023 wave adds one new person-year row per respondent",
+           rationale = "Extension of the longitudinal file from 2021 to 2023. Recode logic is wave-invariant except for the four COVID variables above, which had genuine coding changes between 2021 and 2023.")
+    )
   ),
   quality = list(
     completeness = completeness,
@@ -296,3 +323,24 @@ if (!requireNamespace("writexl", quietly = TRUE)) {
   message(sprintf("  wrote %s  (%d variables, %d value labels, %d cross-year rows, %d domains)",
                   out_xlsx, nrow(V), nrow(VL), nrow(CY), nrow(DS)))
 }
+
+# =====================================================================
+# Raw variable name list  (metadata/raw_vars_<version>.txt)
+#
+# All unique raw PSID variable names drawn from spec/input_var_map.csv
+# (time-varying) and spec/input_var_single.csv (time-invariant).
+# One name per line, sorted alphabetically. Useful for auditing the
+# extract cart against what the pipeline actually uses.
+# =====================================================================
+banner("09  write metadata/raw_vars_<version>.txt")
+
+rd2 <- function(f) read.csv(file.path("spec", f), stringsAsFactors = FALSE)
+imap2 <- rd2("input_var_map.csv")
+isin2 <- rd2("input_var_single.csv")
+
+raw_vars <- sort(unique(c(imap2$input_var, isin2$input_var)))
+
+out_vars <- file.path("metadata", paste0("raw_vars_", stub, ".txt"))
+dir.create("metadata", showWarnings = FALSE)
+writeLines(raw_vars, out_vars)
+message(sprintf("  wrote %s  (%d unique raw variable names)", out_vars, length(raw_vars)))
