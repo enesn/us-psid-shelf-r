@@ -218,6 +218,219 @@ write.csv(results, csv_path, row.names = FALSE)
 file.copy(csv_path, file.path("log", "validate-output_latest.csv"), overwrite = TRUE)
 message("  full per-variable results saved to ", csv_path, "  (+ log/validate-output_latest.csv)")
 
+# ---- 5. latest-wave sanity checks (no reference required) ---------------
+# These are purely self-contained: they only use the pipeline's own output and
+# check for construction-logic problems that the reference comparison can't catch
+# (the reference only covers waves up to its release year).
+banner("5  latest-wave sanity checks")
+
+zn <- function(x) suppressWarnings(as.numeric(haven::zap_labels(x)))
+
+# -- wave inventory ---------------------------------------------------------
+yr_all <- zn(our_ds %>% select(YEAR) %>% collect() %>% pull(YEAR))
+waves  <- sort(unique(yr_all))
+wn     <- as.integer(table(yr_all))           # person-count per wave
+lw     <- waves[length(waves)]               # latest wave
+plw    <- waves[length(waves) - 1L]          # penultimate wave
+gap    <- lw - plw                           # survey gap in years
+is_lw  <- yr_all == lw
+is_plw <- yr_all == plw
+
+emit(sprintf("  latest=%d  penultimate=%d  gap=%d yr  |  %d waves, %d people per wave",
+             lw, plw, gap, length(waves), wn[1]))
+
+# 5a. balanced panel --------------------------------------------------------
+ok(length(unique(wn)) == 1L,
+   sprintf("5a. balanced panel — %d waves each with N=%d", length(waves), wn[1]))
+
+# -- single batch-scan for 5b + 5e ------------------------------------------
+# Each batch loads 60 cols × all rows; we compute -1 counts and NA rates for
+# the latest and penultimate waves without holding the full dataset in memory.
+neg1_tab  <- list()
+na_lw_t   <- setNames(rep(NA_real_, length(our_cols)), our_cols)
+na_plw_t  <- setNames(rep(NA_real_, length(our_cols)), our_cols)
+
+for (start in seq(1, length(our_cols), by = batch)) {
+  vs  <- our_cols[start:min(start + batch - 1L, length(our_cols))]
+  vs2 <- setdiff(vs, c("ID", "YEAR"))
+  # YEAR must be read *with every batch* so yr_b aligns row-for-row with each
+  # column here; selecting it only when it happens to fall in this batch leaves
+  # yr_b empty for all other batches (crashing the -1 tapply, and silently
+  # leaving na_lw_t/na_plw_t as NA for every variable outside YEAR's batch).
+  ob  <- as.data.frame(our_ds %>% select(all_of(union("YEAR", vs2))) %>% collect())
+  yr_b  <- zn(ob$YEAR)
+  lw_b  <- yr_b == lw
+  plw_b <- yr_b == plw
+  for (v in vs2) {
+    x <- zn(ob[[v]])
+    n1 <- sum(x == -1L, na.rm = TRUE)
+    if (n1 > 0) {
+      bw <- tapply(x == -1L, yr_b, sum, na.rm = TRUE)
+      neg1_tab[[v]] <- bw[bw > 0]
+    }
+    if (any(lw_b))  na_lw_t[v]  <- mean(is.na(x[lw_b]))
+    if (any(plw_b)) na_plw_t[v] <- mean(is.na(x[plw_b]))
+  }
+  message(sprintf("    [5] scanned %d / %d columns",
+                  min(start + batch - 1L, length(our_cols)), length(our_cols)))
+}
+
+# 5b. -1 sentinel scan ------------------------------------------------------
+# recode() uses -1 as an "unhandled code" sentinel and must never reach output.
+emit("\n  5b. -1 sentinel scan (recode unhandled codes — should be zero in every wave)")
+ok(length(neg1_tab) == 0,
+   sprintf("-1 sentinel: %s",
+           if (!length(neg1_tab)) "CLEAN — no unhandled codes in any wave"
+           else sprintf("%d variable(s) have -1 values", length(neg1_tab))))
+for (v in names(neg1_tab)) {
+  wv <- neg1_tab[[v]]
+  emit(sprintf("    %-42s  waves: %s", v,
+               paste(sprintf("%s(n=%d)", names(wv), as.integer(wv)), collapse=", ")))
+}
+
+# 5c. birth-year stability --------------------------------------------------
+emit(sprintf("\n  5c. DEMO_BIRTH_YEAR stability (%d vs %d, same person)", lw, plw))
+if ("DEMO_BIRTH_YEAR" %in% our_cols) {
+  by_d <- as.data.frame(our_ds %>% select(ID, YEAR, DEMO_BIRTH_YEAR) %>% collect())
+  by_d[] <- lapply(by_d, zn)
+  lw_d  <- by_d[by_d$YEAR == lw,  c("ID","DEMO_BIRTH_YEAR")]
+  plw_d <- by_d[by_d$YEAR == plw, c("ID","DEMO_BIRTH_YEAR")]
+  cm <- merge(lw_d, plw_d, by = "ID", suffixes = c("_lw","_plw"))
+  both_obs <- !is.na(cm$DEMO_BIRTH_YEAR_lw) & !is.na(cm$DEMO_BIRTH_YEAR_plw)
+  disc     <- both_obs & cm$DEMO_BIRTH_YEAR_lw != cm$DEMO_BIRTH_YEAR_plw
+  ok(!any(disc),
+     sprintf("DEMO_BIRTH_YEAR identical in both waves for %d/%d persons observed in both",
+             sum(both_obs) - sum(disc), sum(both_obs)))
+  if (any(disc)) {
+    emit(sprintf("        -> %d person(s) have different DEMO_BIRTH_YEAR in waves %d and %d",
+                 sum(disc), lw, plw))
+    ex <- cm[disc, ][1:min(5, sum(disc)), ]
+    for (i in seq_len(nrow(ex)))
+      emit(sprintf("           ID=%d  %d=%d  %d=%d", ex$ID[i],
+                   plw, ex$DEMO_BIRTH_YEAR_plw[i], lw, ex$DEMO_BIRTH_YEAR_lw[i]))
+  }
+} else { emit("  DEMO_BIRTH_YEAR not in output — skipping") }
+
+# 5d. age progression -------------------------------------------------------
+emit(sprintf("\n  5d. DEMO_AGE_REP progression (%d – %d; expected median ≈ %d)", lw, plw, gap))
+if ("DEMO_AGE_REP" %in% our_cols) {
+  age_d <- as.data.frame(our_ds %>% select(ID, YEAR, DEMO_AGE_REP) %>% collect())
+  age_d[] <- lapply(age_d, zn)
+  lw_a  <- age_d[age_d$YEAR == lw,  c("ID","DEMO_AGE_REP")]
+  plw_a <- age_d[age_d$YEAR == plw, c("ID","DEMO_AGE_REP")]
+  am   <- merge(lw_a, plw_a, by = "ID", suffixes = c("_lw","_plw"))
+  both <- !is.na(am$DEMO_AGE_REP_lw) & !is.na(am$DEMO_AGE_REP_plw)
+  if (sum(both) > 0) {
+    diffs <- am$DEMO_AGE_REP_lw[both] - am$DEMO_AGE_REP_plw[both]
+    med_d <- median(diffs)
+    ok(abs(med_d - gap) <= 1,
+       sprintf("median age diff %.0f (expected %d; n=%d with both waves observed)",
+               med_d, gap, sum(both)))
+    ext <- sum(abs(diffs - gap) > 4)
+    if (ext > 0)
+      emit(sprintf("        -> %d person(s) with |age diff - %d| > 4 yr (large deviation)", ext, gap))
+    dt <- as.data.frame(table(diffs)); names(dt) <- c("diff","n")
+    dt$diff <- as.integer(dt$diff)
+    emit(sprintf("        distribution: %s",
+                 paste(sprintf("%+d(%s)", dt$diff, dt$n), collapse=", ")))
+  }
+} else { emit("  DEMO_AGE_REP not in output — skipping") }
+
+# 5e. coverage continuity ---------------------------------------------------
+# Flag variables where the NA rate jumped >20 pp from penultimate to latest wave.
+# Expected: COVID variables go to 100% NA in waves where the module is not fielded.
+# Unexpected: time-invariant or health-status variables suddenly dropping coverage.
+emit(sprintf("\n  5e. coverage continuity (NA rate, %d → %d; flagging > 20 pp increase)", plw, lw))
+always_na  <- !is.na(na_plw_t) & na_plw_t > 0.995  # entirely absent in penultimate too
+jump       <- na_lw_t - na_plw_t
+big_jump   <- names(jump)[!always_na & !is.na(jump) & jump > 0.20]
+ok(!length(big_jump),
+   sprintf("coverage continuity: %s with >20pp NA increase from %d to %d",
+           if (!length(big_jump)) "no variables" else sprintf("%d variable(s)", length(big_jump)),
+           plw, lw))
+if (length(big_jump)) {
+  emit(sprintf("    (Variables going from observed in %d to mostly-NA in %d:)", plw, lw))
+  for (v in head(big_jump, 30))
+    emit(sprintf("    %-42s  %d: %4.0f%%NA  %d: %4.0f%%NA  (+%.0f pp)",
+                 v, plw, 100*na_plw_t[v], lw, 100*na_lw_t[v], 100*jump[v]))
+  if (length(big_jump) > 30)
+    emit(sprintf("    (+ %d more; see CSV)", length(big_jump) - 30))
+}
+
+# ---- 6. new-wave validation (waves beyond the reference release) --------
+# Sections 1-4 can only diff waves the reference release also contains; any wave
+# this build adds on top of it has NO reference to compare against. This section
+# validates those genuinely-new waves on their own terms: the wave exists with a
+# full person-count, its variables are populated (not silently all-NA from a
+# missing input_var_map entry), it carries no unexpected -1 sentinels, and it
+# shows no coverage cliff vs the last shared wave.
+banner("6  new-wave validation (waves beyond the reference)")
+ref_yrs   <- sort(unique(as.integer(ref_key$YEAR)))
+new_waves <- waves[waves > max(ref_yrs)]
+if (!length(new_waves)) {
+  emit(sprintf("  our latest wave (%d) is within reference coverage (<= %d) — no beyond-reference wave to validate here.",
+               lw, max(ref_yrs)))
+} else {
+  nw <- lw                                             # newest wave = the primary new wave
+  emit(sprintf("  reference covers waves <= %d; this build adds %d new wave(s): %s",
+               max(ref_yrs), length(new_waves), paste(new_waves, collapse = ", ")))
+
+  # 6a. new wave present with the expected (balanced) person-count
+  ok(sum(yr_all == nw) == wn[1],
+     sprintf("6a. wave %d present with N=%d persons (matches every other wave)", nw, sum(yr_all == nw)))
+
+  # 6b. variable population. "newly empty" = fully-NA in the new wave but
+  #     meaningfully populated (> 0.5% of persons) in the last shared wave — a
+  #     real coverage cliff (likely a missing/broken input_var_map for the new
+  #     wave). A variable already essentially absent (a niche or not-fielded
+  #     module) dropping to zero is NOT a defect; the 0.995 threshold matches 5e.
+  val_cols    <- setdiff(our_cols, c("ID", "YEAR"))
+  empty_nw    <- val_cols[!is.na(na_lw_t[val_cols])  & na_lw_t[val_cols]  >= 0.99999]
+  newly_empty <- empty_nw[!is.na(na_plw_t[empty_nw]) & na_plw_t[empty_nw] <= 0.995]
+  # A newly-empty COVID variable is expected: PSID fielded a reduced COVID module
+  # in the 2023 wave, so several 2021 COVID items have no 2023 counterpart (they
+  # are simply not asked). Only a newly-empty NON-COVID variable is suspicious —
+  # it points at a missing/broken input_var_map entry for the new wave.
+  covid_ne <- grep("^COVID_|^DF_COVID_", newly_empty, value = TRUE)
+  unexp_ne <- setdiff(newly_empty, covid_ne)
+  emit(sprintf("\n  6b. variable population in wave %d", nw))
+  emit(sprintf("      %d / %d variables populated  (%d entirely NA; of those %d already absent in %d, %d newly empty [%d COVID-module, %d other])",
+               length(val_cols) - length(empty_nw), length(val_cols),
+               length(empty_nw), length(empty_nw) - length(newly_empty), plw,
+               length(newly_empty), length(covid_ne), length(unexp_ne)))
+  ok(length(unexp_ne) == 0,
+     sprintf("no well-populated non-COVID variable lost all coverage entering wave %d (%d unexpected newly-empty; %d COVID-module vars expected-empty)",
+             nw, length(unexp_ne), length(covid_ne)))
+  for (v in head(unexp_ne, 30))
+    emit(sprintf("      newly empty (unexpected): %-30s (%.1f%% NA in %d -> 100%% NA in %d)", v, 100*na_plw_t[v], plw, nw))
+  for (v in head(covid_ne, 30))
+    emit(sprintf("      newly empty (COVID module, expected): %-20s (%.1f%% NA in %d -> 100%% NA in %d)", v, 100*na_plw_t[v], plw, nw))
+
+  # 6c. -1 sentinels reaching the new wave. NB: the nominal/real-dollar variables
+  #     (*_ND/*_NDF/*_RD/*_RDF) also carry a handful of -1 in the reference for the
+  #     shared waves (an upstream PSID/Stata construction quirk, faithfully
+  #     reproduced), so -1 confined to those is expected; -1 in any OTHER variable
+  #     is a real unhandled-code defect for the new wave.
+  nw_sent   <- Filter(function(wv) as.character(nw) %in% names(wv), neg1_tab)
+  is_dollar <- grepl("(_ND|_NDF|_RD|_RDF)$", names(nw_sent))
+  sent_bad  <- names(nw_sent)[!is_dollar]
+  emit(sprintf("\n  6c. -1 sentinels in wave %d", nw))
+  ok(length(sent_bad) == 0,
+     if (!length(sent_bad))
+       sprintf("no unexpected -1 in wave %d (%d dollar-var(s) carry -1, matching the reference pattern)", nw, sum(is_dollar))
+     else sprintf("%d non-dollar variable(s) carry an unhandled-code -1 in wave %d", length(sent_bad), nw))
+  for (v in names(nw_sent)) {
+    n1 <- as.integer(nw_sent[[v]][as.character(nw)])
+    emit(sprintf("      %-42s wave %d: n=%d%s", v, nw, n1,
+                 if (grepl("(_ND|_NDF|_RD|_RDF)$", v)) "  (dollar-var; expected, matches reference)" else "  <-- unhandled code"))
+  }
+
+  # 6d. birth-year stability + age progression into the new wave are already
+  #     validated by 5c/5d (which compare the penultimate = last shared wave to
+  #     the latest = new wave).
+  emit(sprintf("\n  6d. birth-year stability & ~%d-yr age progression into wave %d: see 5c/5d above.", gap, nw))
+}
+
 # ---- persist the report ----------------------------------------------
 emit(sprintf("\n  validation finished in %.1f min", as.numeric(difftime(Sys.time(), started, units = "mins"))))
 dir.create("log", showWarnings = FALSE)
