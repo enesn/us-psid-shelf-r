@@ -30,8 +30,7 @@ SPEC <- list(
   input_var_map       = read_csv("spec/input_var_map.csv",       show_col_types = FALSE),
   var_value_label_map = read_csv("spec/var_value_label_map.csv", show_col_types = FALSE),
   publish_vars        = read_csv("spec/publish_vars.csv",        show_col_types = FALSE),
-  time_invariant      = readLines("spec/time_invariant_vars.txt"),
-  metadata            = read_csv("spec/metadata.csv",            show_col_types = FALSE))
+  time_invariant      = readLines("spec/time_invariant_vars.txt"))
 
 # ---- shared helpers --------------------------------------------------
 source("R/programs.R")
