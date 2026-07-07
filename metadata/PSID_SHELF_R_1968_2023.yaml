@@ -1,7 +1,7 @@
 dataset:
   name: psid-shelf-r
   version: PSID_SHELF_R_1968_2023
-  previous_version: ''
+  previous_version: 'PSID_SHELF_R_1968_2021'
   release_date: '2026-07-07'
   created_by: enesn
 provenance:
@@ -33,9 +33,9 @@ provenance:
       PID23.txt: d853a5b34f46cf7546e0cde7765f6613b4b1001844552f9a8f43e8d4de887b64
       PID23.sas: 1f2b8b59ab32fa95378ea0dd1ba30db883c60026d1af47d23372d7c28e5042f0
   pipeline:
-    repo: github.com/enesn/us-psid
+    repo: github.com/enesn/us-psid-shelf-r
     branch: newwave2023
-    commit: 7aaa6a7f556a5d66c49845d831f279de1b7f7599
+    commit: 98265f75f02fc638b2aa4134c58d98ab77bb00f4
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
