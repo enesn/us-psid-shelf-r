@@ -7,12 +7,13 @@ The pipeline turns the raw PSID extract into the clean
 (value labels, year→variable maps, publish lists) live in `spec/`, so the
 pipeline reads only `spec/` and the raw PSID data.
 
-> **To add variables, waves, or domains — start in [`spec/`](spec/README.md).**
-> Everything the pipeline needs to know about *what* to build (which raw PSID
-> variable feeds each SHELF variable, what the codes mean, what gets published)
-> is a CSV or JSON file there. The R scripts contain only *logic*. The
-> [`spec/README.md`](spec/README.md) has step-by-step recipes for all three
-> extension types.
+> **📖 New here? Read [`spec/README.md`](spec/README.md) first — it is the entry
+> point for this pipeline.** Everything the pipeline needs to know about *what*
+> to build (which raw PSID variable feeds each SHELF variable, what the codes
+> mean, what gets published) is a CSV or JSON file in `spec/`; the R scripts in
+> this folder contain only *logic*. To add variables, waves, or domains, start
+> there — [`spec/README.md`](spec/README.md) has step-by-step recipes for all
+> three extension types.
 
 ## Run it
 
@@ -118,6 +119,32 @@ Preparatory work to extend the file from 2021 to 2023.
 | `927c1f6` | Fixed `R/collect/covid_19.R`: 5 recode harmonization issues identified by comparing 2021 vs 2023 codebooks — `bin9→bin5` for `hosp_any`, `8→NA` added to `sev_fn`, new code `2` ("Not sure") handled for `test_ling_any`, code `98` added to NA catch for `hosp_num` |
 | `c68ef68` | Removed stale `spec/metadata.csv` |
 | `7aaa6a7` | Updated `spec/parameters.json`: `psid_lastwave`, `year[]`, `wlthyear[]` extended to 2023 |
+
+### 2023 wave — build complete & validated
+
+The file now extends to **2023 (43 waves, 1968–2023)**. A full rebuild
+(`Rscript 00-run-all.R`) produces `PSID_SHELF_R_1968_2023_LONG.parquet` /
+`_WIDE.parquet` — **3,678,048 rows × 552 cols** (85,536 persons × 43 waves) —
+plus the refreshed YAML manifest and Excel codebook in `metadata/`.
+
+**New-wave validation.** `08-validate-output.R` gained a self-contained
+new-wave section that validates the wave(s) added *beyond* the reference release
+(which the reference comparison cannot cover): balanced panel, `-1` sentinel
+scan, birth-year stability, ~2-yr age progression, coverage continuity, and
+per-variable population. All 2023 checks pass — the only newly-empty variable
+(`COVID_TEST`) reflects PSID's reduced 2023 COVID module, and the few `-1`
+values in nominal-dollar variables match the reference release exactly.
+
+**Fixes shipped with the new wave:**
+- `R/generate/covid_19.R` — renamed a `gc` helper that was shadowing `base::gc`
+  in `.GlobalEnv` (domain files are sourced with `local = FALSE`), which had
+  silently turned the publish-stage memory guards into no-ops.
+- `09-metadata.R` — corrected the main-extract filename (`J362500` → `J363407`)
+  so the run manifest records its provenance SHA-256 instead of an empty hash.
+- `08-validate-output.R` — the new-wave scan now reads `YEAR` with every column
+  batch; previously it crashed on out-of-batch `-1` values and only evaluated
+  coverage for the ~60 variables sharing `YEAR`'s batch.
+- `07-publish.R` — silenced a spurious all-NA range warning in the integer downcast.
 
 ---
 
