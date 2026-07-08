@@ -34,8 +34,8 @@ ascii_dir <- file.path(base_dir, "ascii")
 mh_dir    <- file.path(base_dir, "mh85_23")
 stopifnot(dir.exists(ascii_dir), dir.exists(mh_dir))
 
-sas_file  <- file.path(ascii_dir, "J363407.sas")
-dat_file  <- file.path(ascii_dir, "J363407.txt")
+sas_file  <- file.path(ascii_dir, "J363473.sas")
+dat_file  <- file.path(ascii_dir, "J363473.txt")
 mh_sas    <- file.path(mh_dir,   "MH85_23.sas")
 mh_dat    <- file.path(mh_dir,   "MH85_23.txt")
 
