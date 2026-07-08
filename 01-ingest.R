@@ -2,8 +2,8 @@
 # 01-ingest.R  --  Read PSID main extract + Marriage History supplement
 #
 # Inputs:
-#   raw-data/downloaded-from-psid/ascii/J363407.{txt,sas}
-#     fixed-width ASCII data (x 5,947, LRECL 14004)
+#   raw-data/downloaded-from-psid/ascii/J363473.{txt,sas}
+#     fixed-width ASCII data (x 7,063, LRECL 19807)
 #   raw-data/downloaded-from-psid/mh85_23/MH85_23.{txt,sas}
 #     Marriage History 1985-2023 (65,226 x 20, one row per marriage)
 #
@@ -54,14 +54,14 @@ positions <- data.frame(
   end   = as.integer(pos[, 4]),
   stringsAsFactors = FALSE
 )
-stopifnot(nrow(positions) == 5947L, max(positions$end) == 14004L)
+stopifnot(nrow(positions) == 7063L, max(positions$end) == 19807L)
 
 # (b) variable labels from the ATTRIB block:  NAME  LABEL="..."  FORMAT=Fx.
 lab <- str_match_all(sas, '([A-Za-z_]\\w*)\\s+LABEL="([^"]*)"')[[1]]
 labels <- setNames(str_squish(lab[, 3]), lab[, 2])
 
 message(elapsed(t2))
-banner("3 / 6  Read main extract (J363407)")
+banner("3 / 6  Read main extract (J363473)")
 t3 <- Sys.time()
 # ---- 3. read ALL columns -------------------------------------------
 # All PSID vars in this extract are numeric; read as double (177 vars are
