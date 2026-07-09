@@ -6,11 +6,15 @@
 #   * uppercase names,
 #   * reshape long on time-varying stubs (those with a _<wave> suffix),
 #   * reattach variable + value labels,
-#   * write a single PSID_SHELF_R_<fromyear>_<toyear>_LONG.{parquet,dta}  (+ _WIDE.parquet).
+#   * write a single PSID_SHELF_R_<fromyear>_<toyear>_LONG.{parquet,dta}  (+ _WIDE.parquet;
+#     set PSIDSHELF_WRITE_WIDE=0 to skip the WIDE file on dev iterations).
 #
-# The long table (~3.5M x ~552) is built ONE COLUMN AT A TIME (not via a
+# The long table (~3.7M x ~744) is built ONE COLUMN AT A TIME (not via a
 # multi-copy pivot) so peak memory stays well within RAM; the wide tables are
-# freed before the long table is materialised.
+# freed before the long table is materialised. Leftover objects leaked into
+# .GlobalEnv by earlier stages (domain files are sourced with local = FALSE)
+# are dropped up front, and both parquet files are streamed in row chunks so
+# the Arrow conversion never holds a full second copy of a table.
 #
 # Prerequisites: 01/03/04/05/06 already sourced.
 # =====================================================================
@@ -23,6 +27,44 @@ fw <- min(year); lw <- psid_lastwave
 # gc() here is only a memory optimisation; never let a gc-internal hiccup halt publish
 .safe_gc <- function() tryCatch(gc(FALSE), error = function(e) message("  (gc skipped: ", conditionMessage(e), ")"))
 banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("-", 60), m, strrep("-", 60)))
+
+# Stream a data.frame to parquet in row chunks. write_parquet(df) converts the
+# whole table to an Arrow copy at once (~doubles peak memory, the OOM point on
+# large builds); this caps the extra copy at one chunk. Base `[` drops the
+# label attribute on plain vectors (haven_labelled keeps its attrs), so it is
+# re-attached per chunk.
+write_parquet_chunked <- function(df, path, chunk_rows = 250000L) {
+  n <- nrow(df)
+  chunk_df <- function(i) {
+    out <- lapply(df, function(col) {
+      x <- col[i]
+      lb <- attr(col, "label", exact = TRUE)
+      if (!is.null(lb) && is.null(attr(x, "label", exact = TRUE))) attr(x, "label") <- lb
+      x
+    })
+    class(out) <- "data.frame"
+    attr(out, "row.names") <- .set_row_names(length(i))
+    out
+  }
+  starts <- seq(1L, n, by = chunk_rows)
+  first  <- arrow::as_arrow_table(chunk_df(starts[1]:min(starts[1] + chunk_rows - 1L, n)))
+  sink   <- arrow::FileOutputStream$create(path)
+  writer <- arrow::ParquetFileWriter$create(
+    schema = first$schema, sink = sink,
+    properties = arrow::ParquetWriterProperties$create(
+      column_names = names(df), compression = "snappy"))
+  writer$WriteTable(first, chunk_size = chunk_rows)
+  rm(first)
+  for (k in seq_along(starts)[-1]) {
+    writer$WriteTable(
+      arrow::as_arrow_table(chunk_df(starts[k]:min(starts[k] + chunk_rows - 1L, n))),
+      chunk_size = chunk_rows)
+    if (k %% 4L == 0L) .safe_gc()
+  }
+  writer$Close()
+  sink$close()
+  invisible(path)
+}
 
 # ---- 1. ordered publish list (expand Stata varlist wildcards) ---------
 banner("publish: select & order finalized variables")
@@ -50,6 +92,24 @@ shelf_wide <- psid_abridged[, publish, drop = FALSE]
 .safe_gc()                                          # drain ALTREP finalizer queue while psid_abridged still exists
 if (exists("psid_abridged")) rm(psid_abridged)
 .safe_gc()                                          # free the full wide table now
+
+# ---- 1b. drop leftovers leaked by earlier stages ----------------------
+# R/collect + R/generate + R/revise files are sourced with local = FALSE and
+# leak their intermediates into .GlobalEnv (can be GBs). Publish needs only
+# shelf_wide + the spec objects/helpers below; functions are always kept.
+# 09-metadata reads everything from spec/ + output/ on disk.
+.keep <- c("shelf_wide", "SPEC", "year", "psid_lastwave", "pcepi", "params",
+           "n_year", "wlthyear", "inflate_year", "out_dir", "fw", "lw",
+           "publish", "keep", "t_all", "t0", "need", "miss")
+.drop <- setdiff(ls(.GlobalEnv), .keep)
+.drop <- .drop[!vapply(.drop, function(nm) is.function(.GlobalEnv[[nm]]), logical(1))]
+if (length(.drop)) {
+  message(sprintf("  freeing %d leftover objects from earlier stages (e.g. %s)",
+                  length(.drop), paste(head(.drop, 8), collapse = ", ")))
+  rm(list = .drop, envir = .GlobalEnv)
+}
+.safe_gc()
+
 names(shelf_wide) <- toupper(names(shelf_wide))
 
 # OCC_*1970C* carry a year *inside* the name; shield from the wave-suffix parse
@@ -59,8 +119,17 @@ for (k in names(occ_shield))
 restore_occ <- function(x) { for (k in names(occ_shield)) x <- str_replace(x, paste0("OCC_", occ_shield[k]), paste0("OCC_", k)); x }
 
 # ---- 2. write WIDE (parquet) ------------------------------------------
-banner("publish: write WIDE parquet")
-write_parquet(shelf_wide, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_WIDE.parquet", fw, lw)))
+# PSIDSHELF_WRITE_WIDE=0 skips this write on dev iterations (08-validate reads
+# only the LONG file); leave unset for release builds so the WIDE artifact
+# stays in sync with the LONG one.
+if (Sys.getenv("PSIDSHELF_WRITE_WIDE", "1") != "0") {
+  banner("publish: write WIDE parquet")
+  write_parquet_chunked(shelf_wide,
+                        file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_WIDE.parquet", fw, lw)),
+                        chunk_rows = 16000L)   # ~11.7k cols: keep each Arrow chunk ~1.5 GB
+} else {
+  banner("publish: SKIP WIDE parquet (PSIDSHELF_WRITE_WIDE=0)")
+}
 
 # ---- 3. identify time-varying stubs ----------------------------------
 wave_rx <- paste0("_(", paste(year, collapse = "|"), ")$")
@@ -84,7 +153,8 @@ int_ok <- function(x) {
 n <- nrow(shelf_wide); ny <- length(year); na_dbl <- rep(NA_real_, n)
 long <- vector("list", 2 + length(ti_cols) + length(stubs))
 nm   <- character(length(long))
-long[[1]] <- rep(shelf_wide$ID, ny);            nm[1] <- "ID"
+idv <- rep(shelf_wide$ID, ny)
+long[[1]] <- if (int_ok(idv)) as.integer(idv) else idv; nm[1] <- "ID"; rm(idv)
 long[[2]] <- rep(as.integer(year), each = n);   nm[2] <- "YEAR"
 # consume shelf_wide column-by-column, freeing each source column once copied,
 # so the wide and long tables never fully coexist (peak memory ~ max, not sum)
@@ -111,18 +181,23 @@ rm(shelf_wide); .safe_gc()
 ord <- order(long$ID, long$YEAR)                 # sort by ID, YEAR (matches Stata)
 for (k in seq_along(long)) long[[k]] <- long[[k]][ord]
 rm(ord); .safe_gc()
+# (ID, YEAR) duplicates must now be adjacent — O(n) check; anyDuplicated on the
+# full data.frame pastes every row into a string (slow + large temporaries)
+.nl <- length(long$ID)
+stopifnot(!any(long$ID[-1L] == long$ID[-.nl] & long$YEAR[-1L] == long$YEAR[-.nl]))
+rm(.nl)
 message(sprintf("  LONG: %d rows x %d cols", length(long[[1]]), length(long)))
 
 # ---- 5. downcast to integer where possible, then reattach labels ------
 # Columns that are whole-valued and fit in a 32-bit int are stored as integer so
 # Stata writes them as byte/int/long (≈ half the .dta size); fractional columns
 # (weights) and out-of-range columns (inflated real-dollar amounts) stay double.
-banner("publish: downcast + attach labels + write")
+banner("publish: attach labels + write")
+# every long column was already int-downcast as it was built in step 4
 .safe_gc()                                           # reclaim memory before peak allocation
 for (k in seq_along(long)) {
   v <- names(long)[k]
   x <- long[[k]]
-  if (int_ok(x)) x <- as.integer(x)
   if (k %% 100L == 0L) .safe_gc()
   if (v == "YEAR") { long[[k]] <- haven::labelled(x, label = "Survey year"); next }
   lab <- var_label(tolower(v)); s <- set_for(tolower(v)); labs <- NULL
@@ -142,9 +217,8 @@ for (k in seq_along(long)) {
 }
 class(long) <- "data.frame"; attr(long, "row.names") <- .set_row_names(length(long[[1]]))
 
-stopifnot(!anyDuplicated(long[c("ID", "YEAR")]))
-write_parquet(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)))
+write_parquet_chunked(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)))
 #write_dta(long,     file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.dta", fw, lw)))
 
-banner(sprintf("[07-publish] wrote PSID_SHELF_R_%d_%d_LONG  (%d x %d)  parquet + dta",
+banner(sprintf("[07-publish] wrote PSID_SHELF_R_%d_%d_LONG  (%d x %d)  parquet",
                fw, lw, nrow(long), ncol(long)))
