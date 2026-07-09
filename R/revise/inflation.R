@@ -11,7 +11,8 @@ dc <- dollar_cols("_nd")            # matches both _nd and _ndf stubs
 if (!is.null(dc)) {
   for (i in seq_len(nrow(dc))) {
     col <- dc$col[i]; y <- dc$year[i]; varcat <- dc$varcat[i]
-    ref_year <- if (varcat %in% c("earn", "expn", "finc")) y - 1L else y
+    ref_year <- if (varcat %in% c("earn", "expn", "finc",
+                                  "labo", "capi", "farm", "busi", "taxa")) y - 1L else y
     ratio <- radix / pcepi[as.character(ref_year)]
     old <- psid_abridged[[col]]
     new <- ifelse(is.na(old), NA_real_, old * ratio)
