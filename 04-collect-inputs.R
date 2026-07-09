@@ -20,7 +20,7 @@ collect_domains <- c(
   "disability", "general_wellbeing",
   "earnings", "employment", "expenditures", "family_income",
   "occupations", "primary_home", "wealth",
-  "relationship_id")
+  "relationship_id", "labor_income", "capital_income", "income")
 
 banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("-", 60), m, strrep("-", 60)))
 
