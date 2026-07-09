@@ -1,8 +1,8 @@
 dataset:
   name: psid-shelf-r
   version: PSID_SHELF_R_1968_2023
-  previous_version: 'PSID_SHELF_R_1968_2021'
-  release_date: '2026-07-07'
+  previous_version: ''
+  release_date: '2026-07-08'
   created_by: enesn
 provenance:
   source_release: ~
@@ -11,9 +11,7 @@ provenance:
     folder: raw-data/downloaded-from-psid/ascii
     description: PSID main 1968-2023 individual+family fixed-width extract (variable
       cart)
-    files_sha256:
-      J363407.txt: eb7e57202ac223c872d1f49e017492c986a8a347600b29668c673cb062303a96
-      J363407.sas: 7e7618ba1bcaef0a8d9b20addd8594275128622b74d2adec39f59a04c7360529
+    files_sha256: {}
   - name: marriage_history
     folder: raw-data/downloaded-from-psid/mh85_23
     description: Marriage History 1985-2023 supplement
@@ -33,9 +31,9 @@ provenance:
       PID23.txt: d853a5b34f46cf7546e0cde7765f6613b4b1001844552f9a8f43e8d4de887b64
       PID23.sas: 1f2b8b59ab32fa95378ea0dd1ba30db883c60026d1af47d23372d7c28e5042f0
   pipeline:
-    repo: github.com/enesn/us-psid-shelf-r
-    branch: newwave2023
-    commit: 98265f75f02fc638b2aa4134c58d98ab77bb00f4
+    repo: github.com/enesn/us-psid
+    branch: add-income-vars
+    commit: 8d85f405097c86d84d45fbfbc74a527e746ecc99
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
@@ -45,8 +43,8 @@ provenance:
     - 06-revise-variables.R
     - 07-publish.R
     outputs_sha256:
-      PSID_SHELF_R_1968_2023_LONG.parquet: 6c306a0516e1bff4e994eebbf6e08ccde760372739d62d8a509e3d033c2dd7c3
-      PSID_SHELF_R_1968_2023_WIDE.parquet: 815f80c7409e581e7f2277a26f04391d07971c5abbc6db2ec9ee9e33199f265c
+      PSID_SHELF_R_1968_2023_LONG.parquet: 1052687c06ab923e9ba031a0fe67f9484578215019c52319dc13ffa2b8363f39
+      PSID_SHELF_R_1968_2023_WIDE.parquet: e73335a6fad52d822d0037f6b0ea9c900baf085040c0247018eb028b595e6f0a
     runtime:
       R: 4.5.3
       packages:
@@ -61,11 +59,11 @@ provenance:
         digest: 0.6.39
         yaml: 2.3.12
     environment:
-      image: https://github.com/enesn/us-psid-shelf-r/pkgs/container/r-econops
+      image: rocker/tidyverse:4.5
 schema:
   codebook_ref: spec/psid-cross-year-index.xlsx
   n_rows: 3678048
-  n_cols: 552
+  n_cols: 594
   unit_of_observation: Individual × wave (person-year), keyed by (ID, YEAR)
   panel_waves:
   - 1968
