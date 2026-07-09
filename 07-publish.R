@@ -30,7 +30,8 @@ dom_order <- c("survey_identifiers","panel_status","sample_design","demographics
                "education","family_type","geography","race_ethnicity","time_use",
                "chronic_conditions","covid_19","dementia","depression","disability",
                "general_wellbeing","earnings","employment","expenditures",
-               "family_income","occupations","primary_home","wealth","relationship_id")
+               "family_income","occupations","primary_home","wealth","relationship_id",
+               "labor_income","capital_income","income")
 pv <- SPEC$publish_vars
 pv$dom_rank <- match(pv$domain, dom_order)
 pv <- pv[order(pv$dom_rank, pv$order), ]
@@ -71,20 +72,40 @@ message(sprintf("  %d time-varying stubs, %d time-invariant columns", length(stu
 
 # ---- 4. build LONG one column at a time (wave-major), then sort -------
 banner("publish: reshape wide -> long")
+# int_ok is also used here (not just in step 5): whole-valued columns are
+# downcast to integer AS they are built, halving the long table's footprint.
+int_ok <- function(x) {
+  if (is.integer(x)) return(TRUE)
+  if (!is.double(x)) return(FALSE)
+  r <- suppressWarnings(range(x, na.rm = TRUE))     # suppress the empty-range warning on all-NA cols
+  if (!is.finite(r[1])) return(TRUE)                # all NA (range -> Inf/-Inf) -> castable to integer NA
+  r[1] >= -2147483647 && r[2] <= 2147483647 && !any(x != floor(x), na.rm = TRUE)
+}
 n <- nrow(shelf_wide); ny <- length(year); na_dbl <- rep(NA_real_, n)
 long <- vector("list", 2 + length(ti_cols) + length(stubs))
 nm   <- character(length(long))
 long[[1]] <- rep(shelf_wide$ID, ny);            nm[1] <- "ID"
 long[[2]] <- rep(as.integer(year), each = n);   nm[2] <- "YEAR"
+# consume shelf_wide column-by-column, freeing each source column once copied,
+# so the wide and long tables never fully coexist (peak memory ~ max, not sum)
+shelf_wide <- as.list(shelf_wide)
 p <- 2L
-for (c in ti_cols) { p <- p + 1L; long[[p]] <- rep(as.vector(shelf_wide[[c]]), ny); nm[p] <- restore_occ(c) }
+for (c in ti_cols) {
+  p <- p + 1L; x <- rep(as.vector(shelf_wide[[c]]), ny)
+  long[[p]] <- if (int_ok(x)) as.integer(x) else x; nm[p] <- restore_occ(c)
+  shelf_wide[[c]] <- NULL
+}
 for (j in seq_along(stubs)) {
   p <- p + 1L
-  long[[p]] <- unlist(lapply(year, function(y) {
+  x <- unlist(lapply(year, function(y) {
     col <- shelf_wide[[paste0(stubs[j], "_", y)]]; if (is.null(col)) na_dbl else as.vector(col)
   }), use.names = FALSE)
+  long[[p]] <- if (int_ok(x)) as.integer(x) else x
   nm[p] <- stubs_final[j]
+  for (y in year) shelf_wide[[paste0(stubs[j], "_", y)]] <- NULL
+  if (j %% 50L == 0L) .safe_gc()
 }
+rm(x)
 names(long) <- nm
 rm(shelf_wide); .safe_gc()
 ord <- order(long$ID, long$YEAR)                 # sort by ID, YEAR (matches Stata)
@@ -98,13 +119,6 @@ message(sprintf("  LONG: %d rows x %d cols", length(long[[1]]), length(long)))
 # (weights) and out-of-range columns (inflated real-dollar amounts) stay double.
 banner("publish: downcast + attach labels + write")
 .safe_gc()                                           # reclaim memory before peak allocation
-int_ok <- function(x) {
-  if (is.integer(x)) return(TRUE)
-  if (!is.double(x)) return(FALSE)
-  r <- suppressWarnings(range(x, na.rm = TRUE))     # suppress the empty-range warning on all-NA cols
-  if (!is.finite(r[1])) return(TRUE)                # all NA (range -> Inf/-Inf) -> castable to integer NA
-  r[1] >= -2147483647 && r[2] <= 2147483647 && !any(x != floor(x), na.rm = TRUE)
-}
 for (k in seq_along(long)) {
   v <- names(long)[k]
   x <- long[[k]]
