@@ -273,7 +273,9 @@ modal_recent <- function(measure) {
 # home/wlth, so stage="infl" omits the earn/finc block entirely.
 dollar_topcodes <- function(varcat, y, stage = "fam") {
   tc <- numeric(0)
-  if (stage == "fam" && varcat %in% c("earn", "finc")) {
+  # labo/capi/farm/busi/taxa: the labor_/capital_/income-domain *_nd vars share
+  # the earn/finc era top-code ladder (standardized to 9999999 at collect).
+  if (stage == "fam" && varcat %in% c("earn", "finc", "labo", "capi", "farm", "busi", "taxa")) {
     if (y >= 1968 && y <= 1982) tc <- c(tc, 99999)
     if (y >= 1983 && y <= 1992) tc <- c(tc, 999999)
     if (y >= 1993 && y <= 2009) tc <- c(tc, 9999999)
@@ -295,7 +297,7 @@ dollar_topcodes <- function(varcat, y, stage = "fam") {
 # returned as a data.frame(col, stub, varcat, year).
 dollar_cols <- function(pattern = "_nd") {
   yr <- paste0("(", paste(year, collapse = "|"), ")")
-  rx <- paste0(pattern, "[f]?(_rp|_sp)?_", yr, "$")
+  rx <- paste0(pattern, "[f]?(_rp|_sp|_rc)?_", yr, "$")
   cols <- grep(rx, names(psid_abridged), value = TRUE)
   if (!length(cols)) return(NULL)
   y  <- as.integer(sub(paste0(".*_(", paste(year, collapse = "|"), ")$"), "\\1", cols))
