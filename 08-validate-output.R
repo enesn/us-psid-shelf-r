@@ -431,6 +431,118 @@ if (!length(new_waves)) {
   emit(sprintf("\n  6d. birth-year stability & ~%d-yr age progression into wave %d: see 5c/5d above.", gap, nw))
 }
 
+# ---- 7. new-domain validation (labor_income / capital_income / income) --
+# The labor_/capital_/income-domain *_ND variables are new to this build and
+# absent from the reference release, so sections 1-4 never compare them.
+# Validate them on their own terms: every specced variable reached the output
+# (7a); each is populated in exactly the waves its input_var_map covers (7b);
+# -1 sentinels only where the Stata-SHELF wage pattern intentionally leaves
+# them (7c); and the five series that read the same input variables as the
+# earnings domain agree with their earn_* twins row-for-row (7d).
+banner("7  new-domain validation (labor_income / capital_income / income)")
+ivm     <- read.csv("spec/input_var_map.csv", stringsAsFactors = FALSE)
+pub     <- read.csv("spec/publish_vars.csv",  stringsAsFactors = FALSE)
+new_dom <- c("labor_income", "capital_income", "income")
+nd_stub <- toupper(unique(sub("_(19|20)\\*$", "", pub$token[pub$domain %in% new_dom])))
+# the _NDF/_RD/_RDF revise derivatives inherit wave coverage from their _ND
+# parent; map every stub to its parent for the input_var_map lookups below
+parent_of <- function(v) sub("_(NDF|RDF|RD)_", "_ND_", v)
+no_map  <- nd_stub[!(parent_of(nd_stub) %in% toupper(ivm$newvar))]   # unmapped -> can't be built
+if (length(no_map))
+  emit(sprintf("  (%d token stub(s) have no input_var_map entries yet — excluded: %s and derivatives)",
+               length(no_map), paste(unique(parent_of(no_map)), collapse = ", ")))
+nd_stub <- setdiff(nd_stub, no_map)
+
+# 7a. presence in the published output
+miss7 <- setdiff(nd_stub, our_cols)
+ok(!length(miss7), sprintf("7a. all %d mapped new-domain variables in the published output (%d missing)",
+                           length(nd_stub), length(miss7)))
+for (v in miss7) emit(sprintf("      missing: %s", v))
+nd_have <- setdiff(nd_stub, miss7)
+
+# 7b. per-wave population matches input_var_map: a mapped wave that is entirely
+#     NA means a broken input (or ingest) for that wave; a populated unmapped
+#     wave means a stray column. (Not-in-FU recoding empties values, never a
+#     whole wave, so all-NA is a real defect signal here.)
+nd_dat <- as.data.frame(our_ds %>% select(all_of(c("YEAR", nd_have))) %>% collect())
+yr_nd  <- zn(nd_dat$YEAR)
+cov_msg <- character(0)
+for (v in nd_have) {
+  x      <- zn(nd_dat[[v]])
+  mapped <- sort(unique(ivm$year[toupper(ivm$newvar) == parent_of(v)]))
+  na_w   <- tapply(is.na(x), yr_nd, mean)
+  popw   <- as.integer(names(na_w))[na_w < 1]
+  empty_mapped <- setdiff(mapped, popw)
+  stray        <- setdiff(popw, mapped)
+  if (length(empty_mapped) || length(stray))
+    cov_msg <- c(cov_msg, sprintf("      %-42s %s%s", v,
+      if (length(empty_mapped)) paste0("all-NA in mapped wave(s): ", paste(empty_mapped, collapse = ","), "  ") else "",
+      if (length(stray))        paste0("populated in unmapped wave(s): ", paste(stray, collapse = ",")) else ""))
+}
+ok(!length(cov_msg), sprintf("7b. wave coverage matches input_var_map for %d/%d variables",
+                             length(nd_have) - length(cov_msg), length(nd_have)))
+for (m in cov_msg) emit(m)
+rm(nd_dat)
+
+# 7c. -1 values: two expected sources, anything else is an unhandled code.
+#     (i)  LABOR_WAGE_INCOME_ND_RP keeps -1 in 1994/95/97 (the sample-conditional
+#          wild-code rule mirrored from EARN_WAGE_ND_RP / Stata SHELF leaves
+#          non-Latino/Immigrant-sample members of wild-coded families
+#          unassigned); its _NDF derivative keeps -1 where fam_size = 1.
+#     (ii) in the loss-capable dollar variables -1 is also a LEGITIMATE value
+#          (a $1 net loss kept by the negative range) — the same sentinel/value
+#          collision the reference release carries in the wealth vars (see 6c).
+loss_capable <- paste0("^(LABOR_GARDEN_INCOME|CAPITAL_(BUSINESS_INCOME|FARM_INCOME|",
+                       "RENTAL_INCOME|RENT_DIV_INTST_TRST_INCOME)|BUSINESS_INCOME|",
+                       "BUSINESS_NETPROFIT|FARM_INCOME|TAXABLE_INCOME)_NDF?_")
+sent_nd  <- neg1_tab[names(neg1_tab) %in% nd_have]
+sent_why <- vapply(names(sent_nd), function(v) {
+  if (v %in% c("LABOR_WAGE_INCOME_ND_RP", "LABOR_WAGE_INCOME_NDF_RP") &&
+      all(names(sent_nd[[v]]) %in% c("1994", "1995", "1997")))
+    "expected; mirrors EARN_WAGE_ND_RP wild-code handling"
+  else if (grepl(loss_capable, v))
+    "expected; -1 is a legitimate $1 net loss in a loss-capable dollar var"
+  else ""
+}, character(1))
+ok(all(nzchar(sent_why)),
+   sprintf("7c. -1 only from the wage wild-code rule or as a legitimate $1 loss (%d variable(s) with -1; %d unexpected)",
+           length(sent_nd), sum(!nzchar(sent_why))))
+for (v in names(sent_nd)) {
+  wv <- sent_nd[[v]]
+  emit(sprintf("      %-42s waves: %s  %s", v,
+               paste(sprintf("%s(n=%d)", names(wv), as.integer(wv)), collapse = ", "),
+               if (nzchar(sent_why[[v]])) paste0("(", sent_why[[v]], ")") else "<-- unhandled code"))
+}
+
+# 7d. earnings twins: these five pairs read identical input variables in every
+#     wave and use identical recodes, so they must agree row-for-row (NA = NA).
+#     labor_wage_income_nd_sp is NOT a twin (different 2015+ inputs).
+twins <- c(LABOR_WAGE_INCOME_ND_RP     = "EARN_WAGE_ND_RP",
+           LABOR_BUSINESS_INCOME_ND_RP = "EARN_BUSI_ND_RP",
+           LABOR_BUSINESS_INCOME_ND_SP = "EARN_BUSI_ND_SP",
+           LABOR_FARM_INCOME_ND_RP     = "EARN_FARM_ND_RP",
+           LABOR_FARM_INCOME_ND_SP     = "EARN_FARM_ND_SP")
+twins <- twins[names(twins) %in% our_cols & twins %in% our_cols]
+if (!length(twins)) {
+  # the earn_* component variables are not part of the published output (only
+  # earn_tot_* is), so the identity cannot be re-checked here; it is asserted
+  # in-pipeline at collect time instead ("twin check" lines in the 04 log,
+  # R/collect/labor_income.R), where both sides are in memory.
+  ok(TRUE, "7d. earnings-twin identity asserted in-pipeline at collect (components not published; see 04 log)")
+} else {
+  tw_dat <- as.data.frame(our_ds %>% select(all_of(unname(c(names(twins), twins)))) %>% collect())
+  tw_bad <- 0L
+  for (v in names(twins)) {
+    a <- zn(tw_dat[[v]]); b <- zn(tw_dat[[twins[[v]]]])
+    agree <- (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+    if (!all(agree)) tw_bad <- tw_bad + 1L
+    emit(sprintf("      %-42s vs %-18s %9.4f%% agree%s", v, twins[[v]], 100 * mean(agree),
+                 if (all(agree)) "" else sprintf("  (%d rows differ)", sum(!agree))))
+  }
+  ok(tw_bad == 0, sprintf("7d. earnings-twin agreement exact for %d/%d pairs", length(twins) - tw_bad, length(twins)))
+  rm(tw_dat)
+}
+
 # ---- persist the report ----------------------------------------------
 emit(sprintf("\n  validation finished in %.1f min", as.numeric(difftime(Sys.time(), started, units = "mins"))))
 dir.create("log", showWarnings = FALSE)
