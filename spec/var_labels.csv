@@ -1215,3 +1215,203 @@ pcepi_adj_index,"PCEPI value used to adj to real USD ${psidshelf_inflate_year} (
 psid_retrieve,"Retrieval date of PSID Main Study, for generating PSID-SHELF"
 psidshelf_compile,"Compile date of PSID-SHELF, current data file"
 psidshelf_release,"Release number of PSID-SHELF, current data file"
+labor_tot_income_nd_rp,Head/RP total labor income (incl.farm & business labor) (nominal USD)
+labor_tot_income_ndf_rp,"Head/RP total labor income (incl.farm & business labor) (nominal USD, fam size adj)"
+labor_tot_income_rd_rp,Head/RP total labor income (incl.farm & business labor) (real USD YYYY)
+labor_tot_income_rdf_rp,"Head/RP total labor income (incl.farm & business labor) (real USD YYYY, fam size adj)"
+labor_tot_income_excbussfarm_nd_rp,Head/RP total labor income (excl. farm & business labor) (nominal USD)
+labor_tot_income_excbussfarm_ndf_rp,"Head/RP total labor income (excl. farm & business labor) (nominal USD, fam size adj)"
+labor_tot_income_excbussfarm_rd_rp,Head/RP total labor income (excl. farm & business labor) (real USD YYYY)
+labor_tot_income_excbussfarm_rdf_rp,"Head/RP total labor income (excl. farm & business labor) (real USD YYYY, fam size adj)"
+labor_tot_income_nd_sp,Spouse total labor income (incl. farm & business labor parts) (nominal USD)
+labor_tot_income_ndf_sp,"Spouse total labor income (incl. farm & business labor parts) (nominal USD, fam size adj)"
+labor_tot_income_rd_sp,Spouse total labor income (incl. farm & business labor parts) (real USD YYYY)
+labor_tot_income_rdf_sp,"Spouse total labor income (incl. farm & business labor parts) (real USD YYYY, fam size adj)"
+labor_tot_income_excbussfarm_nd_sp,Spouse total labor income (excl. farm & business labor) (nominal USD)
+labor_tot_income_excbussfarm_ndf_sp,"Spouse total labor income (excl. farm & business labor) (nominal USD, fam size adj)"
+labor_tot_income_excbussfarm_rd_sp,Spouse total labor income (excl. farm & business labor) (real USD YYYY)
+labor_tot_income_excbussfarm_rdf_sp,"Spouse total labor income (excl. farm & business labor) (real USD YYYY, fam size adj)"
+labor_wage_income_nd_rp,Head/RP wages and salaries (memo) (nominal USD)
+labor_wage_income_ndf_rp,"Head/RP wages and salaries (memo) (nominal USD, fam size adj)"
+labor_wage_income_rd_rp,Head/RP wages and salaries (memo) (real USD YYYY)
+labor_wage_income_rdf_rp,"Head/RP wages and salaries (memo) (real USD YYYY, fam size adj)"
+labor_wage_income_nd_sp,Wages and salaries (imputed) (nominal USD)
+labor_wage_income_ndf_sp,"Wages and salaries (imputed) (nominal USD, fam size adj)"
+labor_wage_income_rd_sp,Wages and salaries (imputed) (real USD YYYY)
+labor_wage_income_rdf_sp,"Wages and salaries (imputed) (real USD YYYY, fam size adj)"
+labor_business_income_nd_rp,Head/RP labor part of business income (nominal USD)
+labor_business_income_ndf_rp,"Head/RP labor part of business income (nominal USD, fam size adj)"
+labor_business_income_rd_rp,Head/RP labor part of business income (real USD YYYY)
+labor_business_income_rdf_rp,"Head/RP labor part of business income (real USD YYYY, fam size adj)"
+labor_business_income_nd_sp,Spouse labor part of business income (nominal USD)
+labor_business_income_ndf_sp,"Spouse labor part of business income (nominal USD, fam size adj)"
+labor_business_income_rd_sp,Spouse labor part of business income (real USD YYYY)
+labor_business_income_rdf_sp,"Spouse labor part of business income (real USD YYYY, fam size adj)"
+labor_farm_income_nd_rp,Head/RP labor part of farm income (nominal USD)
+labor_farm_income_ndf_rp,"Head/RP labor part of farm income (nominal USD, fam size adj)"
+labor_farm_income_rd_rp,Head/RP labor part of farm income (real USD YYYY)
+labor_farm_income_rdf_rp,"Head/RP labor part of farm income (real USD YYYY, fam size adj)"
+labor_farm_income_nd_sp,Spouse labor part of farm income (nominal USD)
+labor_farm_income_ndf_sp,"Spouse labor part of farm income (nominal USD, fam size adj)"
+labor_farm_income_rd_sp,Spouse labor part of farm income (real USD YYYY)
+labor_farm_income_rdf_sp,"Spouse labor part of farm income (real USD YYYY, fam size adj)"
+labor_profes_income_nd_rp,Head/RP professional practice or trade (nominal USD)
+labor_profes_income_ndf_rp,"Head/RP professional practice or trade (nominal USD, fam size adj)"
+labor_profes_income_rd_rp,Head/RP professional practice or trade (real USD YYYY)
+labor_profes_income_rdf_rp,"Head/RP professional practice or trade (real USD YYYY, fam size adj)"
+labor_profes_income_nd_sp,Spouse professional practice (nominal USD)
+labor_profes_income_ndf_sp,"Spouse professional practice (nominal USD, fam size adj)"
+labor_profes_income_rd_sp,Spouse professional practice (real USD YYYY)
+labor_profes_income_rdf_sp,"Spouse professional practice (real USD YYYY, fam size adj)"
+labor_garden_income_nd_rp,Head/RP market gardening (nominal USD)
+labor_garden_income_ndf_rp,"Head/RP market gardening (nominal USD, fam size adj)"
+labor_garden_income_rd_rp,Head/RP market gardening (real USD YYYY)
+labor_garden_income_rdf_rp,"Head/RP market gardening (real USD YYYY, fam size adj)"
+labor_bonus_income_nd_rp,Head/RP's Bonuses (nominal USD)
+labor_bonus_income_ndf_rp,"Head/RP's Bonuses (nominal USD, fam size adj)"
+labor_bonus_income_rd_rp,Head/RP's Bonuses (real USD YYYY)
+labor_bonus_income_rdf_rp,"Head/RP's Bonuses (real USD YYYY, fam size adj)"
+labor_bonus_income_nd_sp,Spouse's Bonuses (imputed) (nominal USD)
+labor_bonus_income_ndf_sp,"Spouse's Bonuses (imputed) (nominal USD, fam size adj)"
+labor_bonus_income_rd_sp,Spouse's Bonuses (imputed) (real USD YYYY)
+labor_bonus_income_rdf_sp,"Spouse's Bonuses (imputed) (real USD YYYY, fam size adj)"
+labor_overtime_income_nd_rp,Head/RP's Overtime (nominal USD)
+labor_overtime_income_ndf_rp,"Head/RP's Overtime (nominal USD, fam size adj)"
+labor_overtime_income_rd_rp,Head/RP's Overtime (real USD YYYY)
+labor_overtime_income_rdf_rp,"Head/RP's Overtime (real USD YYYY, fam size adj)"
+labor_overtime_income_nd_sp,Spouse's Overtime (imputed) (nominal USD)
+labor_overtime_income_ndf_sp,"Spouse's Overtime (imputed) (nominal USD, fam size adj)"
+labor_overtime_income_rd_sp,Spouse's Overtime (imputed) (real USD YYYY)
+labor_overtime_income_rdf_sp,"Spouse's Overtime (imputed) (real USD YYYY, fam size adj)"
+labor_tips_income_nd_rp,Head/RP's Tips (nominal USD)
+labor_tips_income_ndf_rp,"Head/RP's Tips (nominal USD, fam size adj)"
+labor_tips_income_rd_rp,Head/RP's Tips (real USD YYYY)
+labor_tips_income_rdf_rp,"Head/RP's Tips (real USD YYYY, fam size adj)"
+labor_tips_income_nd_sp,Spouse's Tips (imputed) (nominal USD)
+labor_tips_income_ndf_sp,"Spouse's Tips (imputed) (nominal USD, fam size adj)"
+labor_tips_income_rd_sp,Spouse's Tips (imputed) (real USD YYYY)
+labor_tips_income_rdf_sp,"Spouse's Tips (imputed) (real USD YYYY, fam size adj)"
+labor_comissions_income_nd_rp,Head/RP's Commissions (nominal USD)
+labor_comissions_income_ndf_rp,"Head/RP's Commissions (nominal USD, fam size adj)"
+labor_comissions_income_rd_rp,Head/RP's Commissions (real USD YYYY)
+labor_comissions_income_rdf_rp,"Head/RP's Commissions (real USD YYYY, fam size adj)"
+labor_comissions_income_nd_sp,Spouse's Commissions (imputed) (nominal USD)
+labor_comissions_income_ndf_sp,"Spouse's Commissions (imputed) (nominal USD, fam size adj)"
+labor_comissions_income_rd_sp,Spouse's Commissions (imputed) (real USD YYYY)
+labor_comissions_income_rdf_sp,"Spouse's Commissions (imputed) (real USD YYYY, fam size adj)"
+labor_extrawork_income_nd_rp,Head/RP's Extra jobs / second jobs (nominal USD)
+labor_extrawork_income_ndf_rp,"Head/RP's Extra jobs / second jobs (nominal USD, fam size adj)"
+labor_extrawork_income_rd_rp,Head/RP's Extra jobs / second jobs (real USD YYYY)
+labor_extrawork_income_rdf_rp,"Head/RP's Extra jobs / second jobs (real USD YYYY, fam size adj)"
+labor_extrawork_income_nd_sp,Spouse's Extra jobs (imputed) (nominal USD)
+labor_extrawork_income_ndf_sp,"Spouse's Extra jobs (imputed) (nominal USD, fam size adj)"
+labor_extrawork_income_rd_sp,Spouse's Extra jobs (imputed) (real USD YYYY)
+labor_extrawork_income_rdf_sp,"Spouse's Extra jobs (imputed) (real USD YYYY, fam size adj)"
+labor_miscellaneous_income_nd_rp,Head/RP's Miscellaneous labor income (nominal USD)
+labor_miscellaneous_income_ndf_rp,"Head/RP's Miscellaneous labor income (nominal USD, fam size adj)"
+labor_miscellaneous_income_rd_rp,Head/RP's Miscellaneous labor income (real USD YYYY)
+labor_miscellaneous_income_rdf_rp,"Head/RP's Miscellaneous labor income (real USD YYYY, fam size adj)"
+labor_miscellaneous_income_nd_sp,Spouse's Misc labor income (imputed) (nominal USD)
+labor_miscellaneous_income_ndf_sp,"Spouse's Misc labor income (imputed) (nominal USD, fam size adj)"
+labor_miscellaneous_income_rd_sp,Spouse's Misc labor income (imputed) (real USD YYYY)
+labor_miscellaneous_income_rdf_sp,"Spouse's Misc labor income (imputed) (real USD YYYY, fam size adj)"
+labor_gig_income_nd_rp,Head/RP's Gig work amount (raw) (nominal USD)
+labor_gig_income_ndf_rp,"Head/RP's Gig work amount (raw) (nominal USD, fam size adj)"
+labor_gig_income_rd_rp,Head/RP's Gig work amount (raw) (real USD YYYY)
+labor_gig_income_rdf_rp,"Head/RP's Gig work amount (raw) (real USD YYYY, fam size adj)"
+labor_gig_income_nd_sp,Spouse's Gig work amount (raw) (nominal USD)
+labor_gig_income_ndf_sp,"Spouse's Gig work amount (raw) (nominal USD, fam size adj)"
+labor_gig_income_rd_sp,Spouse's Gig work amount (raw) (real USD YYYY)
+labor_gig_income_rdf_sp,"Spouse's Gig work amount (raw) (real USD YYYY, fam size adj)"
+capital_business_income_nd_rc,"Business asset part, head+spouse (nominal USD)"
+capital_business_income_ndf_rc,"Business asset part, head+spouse (nominal USD, fam size adj)"
+capital_business_income_rd_rc,"Business asset part, head+spouse (real USD YYYY)"
+capital_business_income_rdf_rc,"Business asset part, head+spouse (real USD YYYY, fam size adj)"
+capital_business_income_nd_rp,"Business asset part, head/RP (nominal USD)"
+capital_business_income_ndf_rp,"Business asset part, head/RP (nominal USD, fam size adj)"
+capital_business_income_rd_rp,"Business asset part, head/RP (real USD YYYY)"
+capital_business_income_rdf_rp,"Business asset part, head/RP (real USD YYYY, fam size adj)"
+capital_business_income_nd_sp,"Business asset part, spouse (nominal USD)"
+capital_business_income_ndf_sp,"Business asset part, spouse (nominal USD, fam size adj)"
+capital_business_income_rd_sp,"Business asset part, spouse (real USD YYYY)"
+capital_business_income_rdf_sp,"Business asset part, spouse (real USD YYYY, fam size adj)"
+capital_farm_income_nd_rc,"Farm asset part, head+spouse (nominal USD)"
+capital_farm_income_ndf_rc,"Farm asset part, head+spouse (nominal USD, fam size adj)"
+capital_farm_income_rd_rc,"Farm asset part, head+spouse (real USD YYYY)"
+capital_farm_income_rdf_rc,"Farm asset part, head+spouse (real USD YYYY, fam size adj)"
+capital_rent_div_intst_trst_income_nd_rp,Head/RP's rent + dividends + interest (+trusts) combined (nominal USD)
+capital_rent_div_intst_trst_income_ndf_rp,"Head/RP's rent + dividends + interest (+trusts) combined (nominal USD, fam size adj)"
+capital_rent_div_intst_trst_income_rd_rp,Head/RP's rent + dividends + interest (+trusts) combined (real USD YYYY)
+capital_rent_div_intst_trst_income_rdf_rp,"Head/RP's rent + dividends + interest (+trusts) combined (real USD YYYY, fam size adj)"
+capital_rental_income_nd_rp,"Head/RP's Rent, annual (nominal USD)"
+capital_rental_income_ndf_rp,"Head/RP's Rent, annual (nominal USD, fam size adj)"
+capital_rental_income_rd_rp,"Head/RP's Rent, annual (real USD YYYY)"
+capital_rental_income_rdf_rp,"Head/RP's Rent, annual (real USD YYYY, fam size adj)"
+capital_div_intst_trst_income_nd_rp,Head/RP's Dividends + interest + trusts combined (nominal USD)
+capital_div_intst_trst_income_ndf_rp,"Head/RP's Dividends + interest + trusts combined (nominal USD, fam size adj)"
+capital_div_intst_trst_income_rd_rp,Head/RP's Dividends + interest + trusts combined (real USD YYYY)
+capital_div_intst_trst_income_rdf_rp,"Head/RP's Dividends + interest + trusts combined (real USD YYYY, fam size adj)"
+capital_div_income_nd_rp,"Head/RP's Dividends, annual (nominal USD)"
+capital_div_income_ndf_rp,"Head/RP's Dividends, annual (nominal USD, fam size adj)"
+capital_div_income_rd_rp,"Head/RP's Dividends, annual (real USD YYYY)"
+capital_div_income_rdf_rp,"Head/RP's Dividends, annual (real USD YYYY, fam size adj)"
+capital_intst_income_nd_rp,"Head/RP's Interest, annual (nominal USD)"
+capital_intst_income_ndf_rp,"Head/RP's Interest, annual (nominal USD, fam size adj)"
+capital_intst_income_rd_rp,"Head/RP's Interest, annual (real USD YYYY)"
+capital_intst_income_rdf_rp,"Head/RP's Interest, annual (real USD YYYY, fam size adj)"
+capital_trst_royalties_nd_rp,"Head/RP's Trust funds & royalties, annual (nominal USD)"
+capital_trst_royalties_ndf_rp,"Head/RP's Trust funds & royalties, annual (nominal USD, fam size adj)"
+capital_trst_royalties_rd_rp,"Head/RP's Trust funds & royalties, annual (real USD YYYY)"
+capital_trst_royalties_rdf_rp,"Head/RP's Trust funds & royalties, annual (real USD YYYY, fam size adj)"
+capital_rent_div_intst_trst_income_nd_sp,Spouse's Alimony + rent + dividends + interest combined (nominal USD)
+capital_rent_div_intst_trst_income_ndf_sp,"Spouse's Alimony + rent + dividends + interest combined (nominal USD, fam size adj)"
+capital_rent_div_intst_trst_income_rd_sp,Spouse's Alimony + rent + dividends + interest combined (real USD YYYY)
+capital_rent_div_intst_trst_income_rdf_sp,"Spouse's Alimony + rent + dividends + interest combined (real USD YYYY, fam size adj)"
+capital_rental_income_nd_sp,"Spouse's Rent, annual (nominal USD)"
+capital_rental_income_ndf_sp,"Spouse's Rent, annual (nominal USD, fam size adj)"
+capital_rental_income_rd_sp,"Spouse's Rent, annual (real USD YYYY)"
+capital_rental_income_rdf_sp,"Spouse's Rent, annual (real USD YYYY, fam size adj)"
+capital_div_income_nd_sp,"Spouse's Dividends, annual (nominal USD)"
+capital_div_income_ndf_sp,"Spouse's Dividends, annual (nominal USD, fam size adj)"
+capital_div_income_rd_sp,"Spouse's Dividends, annual (real USD YYYY)"
+capital_div_income_rdf_sp,"Spouse's Dividends, annual (real USD YYYY, fam size adj)"
+capital_intst_income_nd_sp,"Spouse's Interest, annual (nominal USD)"
+capital_intst_income_ndf_sp,"Spouse's Interest, annual (nominal USD, fam size adj)"
+capital_intst_income_rd_sp,"Spouse's Interest, annual (real USD YYYY)"
+capital_intst_income_rdf_sp,"Spouse's Interest, annual (real USD YYYY, fam size adj)"
+capital_trst_royalties_nd_sp,"Spouse's Trust funds, annual (nominal USD)"
+capital_trst_royalties_ndf_sp,"Spouse's Trust funds, annual (nominal USD, fam size adj)"
+capital_trst_royalties_rd_sp,"Spouse's Trust funds, annual (real USD YYYY)"
+capital_trst_royalties_rdf_sp,"Spouse's Trust funds, annual (real USD YYYY, fam size adj)"
+farm_grossrevenue_nd_rc,Gross farm receipts (raw) (nominal USD)
+farm_grossrevenue_ndf_rc,"Gross farm receipts (raw) (nominal USD, fam size adj)"
+farm_grossrevenue_rd_rc,Gross farm receipts (raw) (real USD YYYY)
+farm_grossrevenue_rdf_rc,"Gross farm receipts (raw) (real USD YYYY, fam size adj)"
+farm_expense_nd_rc,Farm expenses (raw) (nominal USD)
+farm_expense_ndf_rc,"Farm expenses (raw) (nominal USD, fam size adj)"
+farm_expense_rd_rc,Farm expenses (raw) (real USD YYYY)
+farm_expense_rdf_rc,"Farm expenses (raw) (real USD YYYY, fam size adj)"
+business_netprofit_nd_rc,Business 1: net profit/loss (raw) (nominal USD)
+business_netprofit_ndf_rc,"Business 1: net profit/loss (raw) (nominal USD, fam size adj)"
+business_netprofit_rd_rc,Business 1: net profit/loss (raw) (real USD YYYY)
+business_netprofit_rdf_rc,"Business 1: net profit/loss (raw) (real USD YYYY, fam size adj)"
+business_grossrevenue_nd_rc,Business 1: gross receipts (raw) (nominal USD)
+business_grossrevenue_ndf_rc,"Business 1: gross receipts (raw) (nominal USD, fam size adj)"
+business_grossrevenue_rd_rc,Business 1: gross receipts (raw) (real USD YYYY)
+business_grossrevenue_rdf_rc,"Business 1: gross receipts (raw) (real USD YYYY, fam size adj)"
+business_expense_nd_rc,Business 1: expenses (raw) (nominal USD)
+business_expense_ndf_rc,"Business 1: expenses (raw) (nominal USD, fam size adj)"
+business_expense_rd_rc,Business 1: expenses (raw) (real USD YYYY)
+business_expense_rdf_rc,"Business 1: expenses (raw) (real USD YYYY, fam size adj)"
+business_income_nd_rc,"Net business income, head+spouse (generated) (nominal USD)"
+business_income_ndf_rc,"Net business income, head+spouse (generated) (nominal USD, fam size adj)"
+business_income_rd_rc,"Net business income, head+spouse (generated) (real USD YYYY)"
+business_income_rdf_rc,"Net business income, head+spouse (generated) (real USD YYYY, fam size adj)"
+farm_income_nd_rc,"Farm income, head+spouse (labor+asset, unsplit) (nominal USD)"
+farm_income_ndf_rc,"Farm income, head+spouse (labor+asset, unsplit) (nominal USD, fam size adj)"
+farm_income_rd_rc,"Farm income, head+spouse (labor+asset, unsplit) (real USD YYYY)"
+farm_income_rdf_rc,"Farm income, head+spouse (labor+asset, unsplit) (real USD YYYY, fam size adj)"
+taxable_income_nd_rc,Taxable income of head/RP + spouse (nominal USD)
+taxable_income_ndf_rc,"Taxable income of head/RP + spouse (nominal USD, fam size adj)"
+taxable_income_rd_rc,Taxable income of head/RP + spouse (real USD YYYY)
+taxable_income_rdf_rc,"Taxable income of head/RP + spouse (real USD YYYY, fam size adj)"
