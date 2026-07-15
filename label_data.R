@@ -22,7 +22,47 @@
 # From R:
 #   source("label_data.R")
 #   df <- attach_shelf_labels(df, spec_dir = "spec")
+#
+# Parquet files written by 07-publish.R also EMBED the labels as JSON in
+# the schema metadata (key "shelf_labels"), so no spec/ directory is
+# needed and no data has to be read:
+#   labs <- read_shelf_labels("PSID_SHELF_R_1968_2023_LONG.parquet")
+#   df   <- apply_shelf_labels(df, labs)
 # =====================================================================
+
+# read_shelf_labels(parquet): recover the label dictionary embedded in a
+# PSID-SHELF parquet from the schema alone (milliseconds — no data is read).
+# Returns a named list: labs$COL$label (variable label) and labs$COL$values
+# (named list, "<code>" -> "<label text>") where the column has value labels.
+read_shelf_labels <- function(parquet) {
+  md <- arrow::ParquetFileReader$create(parquet)$GetSchema()$metadata
+  if (is.null(md$shelf_labels))
+    stop("no embedded 'shelf_labels' metadata in ", parquet,
+         " (file predates embedded labels -- use attach_shelf_labels() instead)")
+  jsonlite::fromJSON(md$shelf_labels, simplifyVector = FALSE)
+}
+
+# apply_shelf_labels(df, labs): attach an embedded label dictionary (from
+# read_shelf_labels) to a data.frame, e.g. one that came back unlabelled
+# through DuckDB/Python. Columns are matched by name; codes become
+# haven_labelled values exactly as in the published file.
+apply_shelf_labels <- function(df, labs) {
+  df <- as.data.frame(df)
+  for (nmk in intersect(names(df), names(labs))) {
+    x  <- df[[nmk]]
+    lb <- labs[[nmk]]$label
+    vl <- labs[[nmk]]$values
+    if (!is.null(vl) && length(vl) && is.numeric(x)) {
+      codes <- if (is.integer(x)) as.integer(names(vl)) else as.numeric(names(vl))
+      df[[nmk]] <- haven::labelled(x, labels = setNames(codes, unlist(vl)), label = lb)
+    } else if (is.numeric(x) || is.character(x)) {
+      df[[nmk]] <- haven::labelled(x, label = lb)
+    } else {
+      df[[nmk]] <- structure(x, label = lb)
+    }
+  }
+  df
+}
 
 # attach_shelf_labels(df, spec_dir): return a labelled data.frame — every
 # recognised column becomes a haven_labelled vector carrying its variable
