@@ -5,7 +5,9 @@
 #   * keep & order the published variables (spec/publish_vars.csv),
 #   * uppercase names,
 #   * reshape long on time-varying stubs (those with a _<wave> suffix),
-#   * reattach variable + value labels,
+#   * reattach variable + value labels (also embedded as a portable JSON
+#     dictionary in the parquet schema metadata, key "shelf_labels", so any
+#     reader — R, Python, DuckDB — can recover them from the schema alone),
 #   * write a single PSID_SHELF_R_<fromyear>_<toyear>_LONG.{parquet,dta}  (+ _WIDE.parquet;
 #     set PSIDSHELF_WRITE_WIDE=0 to skip the WIDE file on dev iterations).
 #
@@ -33,7 +35,8 @@ banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("-", 60), m, strr
 # large builds); this caps the extra copy at one chunk. Base `[` drops the
 # label attribute on plain vectors (haven_labelled keeps its attrs), so it is
 # re-attached per chunk.
-write_parquet_chunked <- function(df, path, chunk_rows = 250000L) {
+write_parquet_chunked <- function(df, path, chunk_rows = 250000L,
+                                  extra_metadata = NULL) {
   n <- nrow(df)
   chunk_df <- function(i) {
     out <- lapply(df, function(col) {
@@ -48,6 +51,8 @@ write_parquet_chunked <- function(df, path, chunk_rows = 250000L) {
   }
   starts <- seq(1L, n, by = chunk_rows)
   first  <- arrow::as_arrow_table(chunk_df(starts[1]:min(starts[1] + chunk_rows - 1L, n)))
+  if (!is.null(extra_metadata))
+    first <- first$ReplaceSchemaMetadata(c(first$schema$metadata, extra_metadata))
   sink   <- arrow::FileOutputStream$create(path)
   writer <- arrow::ParquetFileWriter$create(
     schema = first$schema, sink = sink,
@@ -64,6 +69,27 @@ write_parquet_chunked <- function(df, path, chunk_rows = 250000L) {
   writer$Close()
   sink$close()
   invisible(path)
+}
+
+# Compact JSON dictionary of every column's variable label + value labels,
+# embedded in the parquet schema metadata under the "shelf_labels" key. Unlike
+# the R-serialized "r" blob arrow adds on its own, this is readable from ANY
+# parquet client without touching the data:
+#   R:      jsonlite::fromJSON(arrow::ParquetFileReader$create(f)$GetSchema()$metadata$shelf_labels)
+#   Python: json.loads(pyarrow.parquet.read_schema(f).metadata[b"shelf_labels"])
+# Shape: {"COL": {"label": "...", "values": {"<code>": "<label text>", ...}}, ...}
+shelf_labels_json <- function(df) {
+  labs <- lapply(df, function(col) {
+    out <- list()
+    lb <- attr(col, "label", exact = TRUE)
+    if (!is.null(lb)) out$label <- as.character(lb)[1]
+    vl <- attr(col, "labels", exact = TRUE)
+    if (!is.null(vl) && length(vl))
+      out$values <- setNames(as.list(names(vl)), as.character(unname(vl)))
+    out
+  })
+  labs <- labs[vapply(labs, length, integer(1)) > 0L]
+  as.character(jsonlite::toJSON(labs, auto_unbox = TRUE))
 }
 
 # ---- 1. ordered publish list (expand Stata varlist wildcards) ---------
@@ -126,7 +152,8 @@ if (Sys.getenv("PSIDSHELF_WRITE_WIDE", "1") != "0") {
   banner("publish: write WIDE parquet")
   write_parquet_chunked(shelf_wide,
                         file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_WIDE.parquet", fw, lw)),
-                        chunk_rows = 16000L)   # ~11.7k cols: keep each Arrow chunk ~1.5 GB
+                        chunk_rows = 16000L,   # ~11.7k cols: keep each Arrow chunk ~1.5 GB
+                        extra_metadata = c(shelf_labels = shelf_labels_json(shelf_wide)))
 } else {
   banner("publish: SKIP WIDE parquet (PSIDSHELF_WRITE_WIDE=0)")
 }
@@ -217,7 +244,8 @@ for (k in seq_along(long)) {
 }
 class(long) <- "data.frame"; attr(long, "row.names") <- .set_row_names(length(long[[1]]))
 
-write_parquet_chunked(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)))
+write_parquet_chunked(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)),
+                      extra_metadata = c(shelf_labels = shelf_labels_json(long)))
 #write_dta(long,     file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.dta", fw, lw)))
 
 banner(sprintf("[07-publish] wrote PSID_SHELF_R_%d_%d_LONG  (%d x %d)  parquet",
