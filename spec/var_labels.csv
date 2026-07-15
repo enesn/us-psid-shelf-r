@@ -1488,3 +1488,7 @@ capital_trst_royalties_nd_rc,"Head/RP + spouse's Trust funds & royalties, annual
 capital_trst_royalties_ndf_rc,"Head/RP + spouse's Trust funds & royalties, annual (nominal USD, fam size adj)"
 capital_trst_royalties_rd_rc,"Head/RP + spouse's Trust funds & royalties, annual (real USD YYYY)"
 capital_trst_royalties_rdf_rc,"Head/RP + spouse's Trust funds & royalties, annual (real USD YYYY, fam size adj)"
+total_years_worked_sp,Spouse number of years worked full time
+total_years_worked_rp,Head number of years worked full time
+last_year_working_hour_sp,Spouse total work hours in prior year
+last_year_working_hour_rp,Head total work hours in prior year
