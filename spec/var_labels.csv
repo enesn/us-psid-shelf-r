@@ -1415,3 +1415,4 @@ taxable_income_nd_rc,Taxable income of head/RP + spouse (nominal USD)
 taxable_income_ndf_rc,"Taxable income of head/RP + spouse (nominal USD, fam size adj)"
 taxable_income_rd_rc,Taxable income of head/RP + spouse (real USD YYYY)
 taxable_income_rdf_rc,"Taxable income of head/RP + spouse (real USD YYYY, fam size adj)"
+income_topcoded,Data flag: any income variable top-coded

@@ -551,3 +551,4 @@ respondent,respondent_3cat
 rel,rel_4cat
 refcouple,refcouple_2cat
 sampstat,sampstat_5cat
+income_topcoded,topcodeflag_2cat

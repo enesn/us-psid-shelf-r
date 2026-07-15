@@ -1205,3 +1205,5 @@ income,taxable_income_rd_rc_19*,57
 income,taxable_income_rd_rc_20*,58
 income,taxable_income_rdf_rc_19*,59
 income,taxable_income_rdf_rc_20*,60
+income,income_topcoded_19*,61
+income,income_topcoded_20*,62

@@ -866,3 +866,5 @@ imputehome_5cat,1,Imputed (minor assignment)
 imputehome_5cat,2,Imputed (major assignment)
 imputehome_5cat,3,Imputed (complex property)
 imputehome_5cat,9,Estimate not accurate
+topcodeflag_2cat,0,No income variable at a top-code
+topcodeflag_2cat,1,At least one income variable at a top-code

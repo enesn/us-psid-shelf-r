@@ -33,7 +33,7 @@ provenance:
   pipeline:
     repo: github.com/enesn/us-psid
     branch: add-income-vars
-    commit: 4dab02820113611745a9bff86418b12ca706a35c
+    commit: b6b696cc077053cb9c157f077e822ba23168d744
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
@@ -43,8 +43,8 @@ provenance:
     - 06-revise-variables.R
     - 07-publish.R
     outputs_sha256:
-      PSID_SHELF_R_1968_2023_LONG.parquet: d8052a947a42f157506f43b062878e838af43d19bdd12f5b75e71ebf2c5f43b2
-      PSID_SHELF_R_1968_2023_WIDE.parquet: ba3bb1bf558cdd6059ed5a014241639f80dc3b199bbcd178a8b3b775389841cf
+      PSID_SHELF_R_1968_2023_LONG.parquet: d2ff2e827836e552008f68162c9cc107b6340806416e9cf16c48ac603d804883
+      PSID_SHELF_R_1968_2023_WIDE.parquet: 121e4a824182db026c5e1aeefa7285ad135761d4aa00e64a3b2d167e35bf044c
     runtime:
       R: 4.5.3
       packages:
@@ -63,7 +63,7 @@ provenance:
 schema:
   codebook_ref: spec/psid-cross-year-index.xlsx
   n_rows: 3678048
-  n_cols: 744
+  n_cols: 745
   unit_of_observation: Individual × wave (person-year), keyed by (ID, YEAR)
   panel_waves:
   - 1968

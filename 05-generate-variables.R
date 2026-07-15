@@ -18,7 +18,8 @@ generate_domains <- c(
   "disability", "general_wellbeing",
   "earnings", "employment", "expenditures", "family_income",
   "occupations", "primary_home", "wealth",
-  "relationship_id")
+  "relationship_id",
+  "income")   # income_topcoded flag: needs every income domain collected first
 
 banner <- function(m) message(sprintf("\n%s\n  %s\n%s", strrep("-", 60), m, strrep("-", 60)))
 
