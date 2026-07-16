@@ -11,12 +11,13 @@
 #   * write a single PSID_SHELF_R_<fromyear>_<toyear>_LONG.{parquet,dta}  (+ _WIDE.parquet;
 #     set PSIDSHELF_WRITE_WIDE=0 to skip the WIDE file on dev iterations).
 #
-# The long table (~3.7M x ~744) is built ONE COLUMN AT A TIME (not via a
-# multi-copy pivot) so peak memory stays well within RAM; the wide tables are
-# freed before the long table is materialised. Leftover objects leaked into
-# .GlobalEnv by earlier stages (domain files are sourced with local = FALSE)
-# are dropped up front, and both parquet files are streamed in row chunks so
-# the Arrow conversion never holds a full second copy of a table.
+# The long table (~3.7M x ~800) is never fully materialised: it is emitted in
+# ID-chunks, each already in final (ID, YEAR) order, and streamed straight to
+# parquet, so peak memory is one chunk + the resident wide table (~10-12 GB) and
+# stays flat as new domains add columns. Leftover objects leaked into .GlobalEnv
+# by earlier stages (domain files are sourced with local = FALSE) are dropped up
+# front, and the WIDE parquet is likewise streamed in row chunks so the Arrow
+# conversion never holds a full second copy of a table.
 #
 # Prerequisites: 01/03/04/05/06 already sourced.
 # =====================================================================
@@ -164,69 +165,50 @@ tv_cols <- grep(wave_rx, names(shelf_wide), value = TRUE)
 ti_cols <- setdiff(names(shelf_wide), c(tv_cols, "ID"))
 stubs   <- unique(str_replace(tv_cols, wave_rx, ""))
 stubs_final <- restore_occ(stubs)
+ti_final    <- restore_occ(ti_cols)
 message(sprintf("  %d time-varying stubs, %d time-invariant columns", length(stubs), length(ti_cols)))
 
-# ---- 4. build LONG one column at a time (wave-major), then sort -------
-banner("publish: reshape wide -> long")
-# int_ok is also used here (not just in step 5): whole-valued columns are
-# downcast to integer AS they are built, halving the long table's footprint.
-int_ok <- function(x) {
+# ---- 4. reshape wide -> long, STREAMED in ID-chunks -------------------
+# The wide table holds one row per ID and every wave block shares that same ID
+# ordering, so the final (ID, YEAR) sort is a deterministic interleave: for each
+# ID we emit its waves in year order, IDs ascending. We therefore build the long
+# table directly IN sorted order, one ID-chunk at a time, and stream each chunk
+# straight to parquet. The full long table (~20 GB and growing with every new
+# domain) is never materialised — peak memory is one chunk + the resident wide
+# table (~10-12 GB total), independent of the published column count. Equivalence
+# to the former unlist()+global-sort build is regression-tested against the WIDE
+# parquet (see scratchpad verify_reshape.R in the memory notes).
+banner("publish: reshape wide -> long (streamed)")
+int_ok <- function(x) {                              # whole-valued & 32-bit-safe -> integer
   if (is.integer(x)) return(TRUE)
   if (!is.double(x)) return(FALSE)
-  r <- suppressWarnings(range(x, na.rm = TRUE))     # suppress the empty-range warning on all-NA cols
-  if (!is.finite(r[1])) return(TRUE)                # all NA (range -> Inf/-Inf) -> castable to integer NA
+  r <- suppressWarnings(range(x, na.rm = TRUE))      # suppress empty-range warning on all-NA cols
+  if (!is.finite(r[1])) return(TRUE)                 # all NA (range -> Inf/-Inf) -> castable to integer NA
   r[1] >= -2147483647 && r[2] <= 2147483647 && !any(x != floor(x), na.rm = TRUE)
 }
-n <- nrow(shelf_wide); ny <- length(year); na_dbl <- rep(NA_real_, n)
-long <- vector("list", 2 + length(ti_cols) + length(stubs))
-nm   <- character(length(long))
-idv <- rep(shelf_wide$ID, ny)
-long[[1]] <- if (int_ok(idv)) as.integer(idv) else idv; nm[1] <- "ID"; rm(idv)
-long[[2]] <- rep(as.integer(year), each = n);   nm[2] <- "YEAR"
-# consume shelf_wide column-by-column, freeing each source column once copied,
-# so the wide and long tables never fully coexist (peak memory ~ max, not sum)
+n  <- nrow(shelf_wide); ny <- length(year)
+ys <- year[order(year)]                              # years ascending (Stata (ID,YEAR) order)
 shelf_wide <- as.list(shelf_wide)
-p <- 2L
-for (c in ti_cols) {
-  p <- p + 1L; x <- rep(as.vector(shelf_wide[[c]]), ny)
-  long[[p]] <- if (int_ok(x)) as.integer(x) else x; nm[p] <- restore_occ(c)
-  shelf_wide[[c]] <- NULL
-}
-for (j in seq_along(stubs)) {
-  p <- p + 1L
-  x <- unlist(lapply(year, function(y) {
-    col <- shelf_wide[[paste0(stubs[j], "_", y)]]; if (is.null(col)) na_dbl else as.vector(col)
-  }), use.names = FALSE)
-  long[[p]] <- if (int_ok(x)) as.integer(x) else x
-  nm[p] <- stubs_final[j]
-  for (y in year) shelf_wide[[paste0(stubs[j], "_", y)]] <- NULL
-  if (j %% 50L == 0L) .safe_gc()
-}
-rm(x)
-names(long) <- nm
-rm(shelf_wide); .safe_gc()
-ord <- order(long$ID, long$YEAR)                 # sort by ID, YEAR (matches Stata)
-for (k in seq_along(long)) long[[k]] <- long[[k]][ord]
-rm(ord); .safe_gc()
-# (ID, YEAR) duplicates must now be adjacent — O(n) check; anyDuplicated on the
-# full data.frame pastes every row into a string (slow + large temporaries)
-.nl <- length(long$ID)
-stopifnot(!any(long$ID[-1L] == long$ID[-.nl] & long$YEAR[-1L] == long$YEAR[-.nl]))
-rm(.nl)
-message(sprintf("  LONG: %d rows x %d cols", length(long[[1]]), length(long)))
+id <- shelf_wide$ID
+# (ID, YEAR) uniqueness reduces to unique wide IDs (each ID emits one row/year);
+# O(n) on the wide key, far cheaper than an adjacency scan of the n*ny long table
+stopifnot(!anyDuplicated(id))
+id_perm <- order(id)                                 # wide-row positions in ascending-ID order
 
-# ---- 5. downcast to integer where possible, then reattach labels ------
-# Columns that are whole-valued and fit in a 32-bit int are stored as integer so
-# Stata writes them as byte/int/long (≈ half the .dta size); fractional columns
-# (weights) and out-of-range columns (inflated real-dollar amounts) stay double.
-banner("publish: attach labels + write")
-# every long column was already int-downcast as it was built in step 4
-.safe_gc()                                           # reclaim memory before peak allocation
-for (k in seq_along(long)) {
-  v <- names(long)[k]
-  x <- long[[k]]
-  if (k %% 100L == 0L) .safe_gc()
-  if (v == "YEAR") { long[[k]] <- haven::labelled(x, label = "Survey year"); next }
+# Integer-castability is decided ONCE per output column so every streamed
+# row-group shares a schema. A stub is int-castable iff every PRESENT wave is
+# (the union of in-range whole values stays in-range and whole).
+id_int   <- int_ok(id)
+ti_int   <- vapply(ti_cols, function(c) int_ok(shelf_wide[[c]]), logical(1))
+stub_int <- vapply(stubs, function(s) all(vapply(ys, function(y) {
+  col <- shelf_wide[[paste0(s, "_", y)]]; is.null(col) || int_ok(col) }, logical(1))), logical(1))
+
+out_names <- c("ID", "YEAR", ti_final, stubs_final)
+
+# attach labels exactly as the former step 5 did (var label always; value-label
+# set when one is assigned; integer stays integer, else promoted to double)
+label_col <- function(v, x) {
+  if (v == "YEAR") return(haven::labelled(x, label = "Survey year"))
   lab <- var_label(tolower(v)); s <- set_for(tolower(v)); labs <- NULL
   if (!is.null(s)) {
     vl <- SPEC$value_labels[which(SPEC$value_labels$label_set == s), ]
@@ -237,16 +219,62 @@ for (k in seq_along(long)) {
   }
   if (!is.null(labs)) {
     if (is.integer(x)) labs <- setNames(as.integer(labs), names(labs)) else x <- as.numeric(x)
-    long[[k]] <- haven::labelled(x, labels = labs, label = lab)
-  } else {
-    long[[k]] <- structure(x, label = lab)
-  }
+    haven::labelled(x, labels = labs, label = lab)
+  } else structure(x, label = lab)
 }
-class(long) <- "data.frame"; attr(long, "row.names") <- .set_row_names(length(long[[1]]))
 
-write_parquet_chunked(long, file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw)),
-                      extra_metadata = c(shelf_labels = shelf_labels_json(long)))
+# Build one (ID,YEAR)-sorted long block for a chunk of wide-row positions `rows`.
+# ti value -> repeated over the ny waves; stub -> the ny wave values interleaved
+# per ID (t(matrix) flatten = ID-major then year). Types match the global decision.
+build_chunk <- function(rows) {
+  m <- length(rows)
+  cast <- function(x, as_int) if (as_int) as.integer(x) else x
+  cols <- vector("list", length(out_names)); names(cols) <- out_names
+  cols[["ID"]]   <- cast(rep(id[rows], each = ny), id_int)
+  cols[["YEAR"]] <- rep(as.integer(ys), times = m)
+  for (i in seq_along(ti_cols))
+    cols[[ti_final[i]]] <- cast(rep(as.vector(shelf_wide[[ti_cols[i]]])[rows], each = ny), ti_int[[i]])
+  for (j in seq_along(stubs)) {
+    M <- vapply(ys, function(y) {
+      col <- shelf_wide[[paste0(stubs[j], "_", y)]]
+      if (is.null(col)) rep(NA_real_, m) else as.vector(col)[rows]
+    }, numeric(m))
+    if (!is.matrix(M)) M <- matrix(M, nrow = m)      # m == 1 guard
+    cols[[stubs_final[j]]] <- cast(as.vector(t(M)), stub_int[[j]])
+  }
+  for (v in out_names) cols[[v]] <- label_col(v, cols[[v]])
+  class(cols) <- "data.frame"; attr(cols, "row.names") <- .set_row_names(m * ny)
+  cols
+}
+
+# ---- 5. stream the long blocks to parquet -----------------------------
+# Each chunk is written as its own row-group; the schema + shelf_labels metadata
+# come from the first block (its label attrs are identical across blocks).
+banner("publish: attach labels + write (streamed)")
+chunk_ids <- as.integer(Sys.getenv("PSIDSHELF_LONG_CHUNK_IDS", "6000"))  # ~6000*ny rows/block
+starts <- seq(1L, length(id_perm), by = chunk_ids)
+message(sprintf("  LONG: %d rows x %d cols, streamed in %d ID-chunk(s) of <=%d IDs",
+                n * ny, length(out_names), length(starts), chunk_ids))
+
+long_path <- file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.parquet", fw, lw))
+first_df  <- build_chunk(id_perm[starts[1]:min(starts[1] + chunk_ids - 1L, length(id_perm))])
+first     <- arrow::as_arrow_table(first_df)
+first     <- first$ReplaceSchemaMetadata(
+  c(first$schema$metadata, shelf_labels = shelf_labels_json(first_df)))
+sink   <- arrow::FileOutputStream$create(long_path)
+writer <- arrow::ParquetFileWriter$create(
+  schema = first$schema, sink = sink,
+  properties = arrow::ParquetWriterProperties$create(
+    column_names = out_names, compression = "snappy"))
+writer$WriteTable(first, chunk_size = nrow(first_df))
+rm(first, first_df); .safe_gc()
+for (k in seq_along(starts)[-1]) {
+  df <- build_chunk(id_perm[starts[k]:min(starts[k] + chunk_ids - 1L, length(id_perm))])
+  writer$WriteTable(arrow::as_arrow_table(df), chunk_size = nrow(df))
+  rm(df); if (k %% 4L == 0L) .safe_gc()
+}
+writer$Close(); sink$close()
 #write_dta(long,     file.path(out_dir, sprintf("PSID_SHELF_R_%d_%d_LONG.dta", fw, lw)))
 
 banner(sprintf("[07-publish] wrote PSID_SHELF_R_%d_%d_LONG  (%d x %d)  parquet",
-               fw, lw, nrow(long), ncol(long)))
+               fw, lw, n * ny, length(out_names)))
