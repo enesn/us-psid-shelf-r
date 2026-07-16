@@ -110,10 +110,18 @@ expand_token <- function(tok) {
   if (str_detect(tok, "\\*")) cols_now[str_detect(cols_now, paste0("^", str_replace_all(tok, "\\*", ".*"), "$"))]
   else if (tok %in% cols_now) tok else character(0)
 }
-publish <- union("id", intersect(unique(unlist(lapply(pv$token, expand_token))), cols_now))
+expansions <- lapply(pv$token, expand_token)
+publish    <- union("id", intersect(unique(unlist(expansions)), cols_now))
+unresolved <- unique(pv$token[lengths(expansions) == 0L])
 message(sprintf("  %d published columns (%d publish tokens unresolved)",
-                length(publish),
-                length(unique(pv$token[!str_detect(pv$token, "\\*") & !(pv$token %in% cols_now)]))))
+                length(publish), length(unresolved)))
+# A large unresolved count means an upstream stage (04/05/06) did not complete:
+# revise-derived *_ndf/*_rd/*_rdf tokens resolve only after 06 ran in full.
+if (length(unresolved))
+  warning("07-publish: ", length(unresolved), " publish token(s) match no column ",
+          "(did 04/05/06 all complete?): ",
+          paste(head(unresolved, 8), collapse = ", "),
+          if (length(unresolved) > 8) " ...", call. = FALSE)
 
 shelf_wide <- psid_abridged[, publish, drop = FALSE]
 .safe_gc()                                          # drain ALTREP finalizer queue while psid_abridged still exists
