@@ -33,7 +33,7 @@ provenance:
   pipeline:
     repo: github.com/enesn/us-psid
     branch: add-income-vars
-    commit: 572e68a4cebc044618fd54a31b1f2baba90ed005
+    commit: 3e547421d2c89aac1acc2c266e28e56f396bff07
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
