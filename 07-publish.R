@@ -97,7 +97,7 @@ banner("publish: select & order finalized variables")
 dom_order <- c("survey_identifiers","panel_status","sample_design","demographics",
                "education","family_type","geography","race_ethnicity","time_use",
                "chronic_conditions","covid_19","dementia","depression","disability",
-               "general_wellbeing","earnings","employment","expenditures",
+               "general_wellbeing","earnings","employment","work_history","expenditures",
                "family_income","occupations","primary_home","wealth","relationship_id",
                "labor_income","capital_income","income")
 pv <- SPEC$publish_vars

@@ -552,3 +552,7 @@ rel,rel_4cat
 refcouple,refcouple_2cat
 sampstat,sampstat_5cat
 income_topcoded,topcodeflag_2cat
+total_years_worked_rp,years_worked_fulltime
+total_years_worked_sp,years_worked_fulltime
+last_year_working_hour_rp,work_hours_annual
+last_year_working_hour_sp,work_hours_annual

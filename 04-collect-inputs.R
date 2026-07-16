@@ -18,7 +18,7 @@ collect_domains <- c(
   "race_ethnicity", "time_use",
   "chronic_conditions", "covid_19", "dementia", "depression",
   "disability", "general_wellbeing",
-  "earnings", "employment", "expenditures", "family_income",
+  "earnings", "employment", "work_history", "expenditures", "family_income",
   "occupations", "primary_home", "wealth",
   "relationship_id", "labor_income", "capital_income", "income")
 

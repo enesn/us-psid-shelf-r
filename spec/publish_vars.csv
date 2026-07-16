@@ -1355,3 +1355,11 @@ capital_income,capital_business_income_nd_rc_20*,137
 capital_income,capital_business_income_ndf_rc_20*,138
 capital_income,capital_business_income_rd_rc_20*,139
 capital_income,capital_business_income_rdf_rc_20*,140
+work_history,total_years_worked_rp_19*,1
+work_history,total_years_worked_rp_20*,2
+work_history,total_years_worked_sp_19*,3
+work_history,total_years_worked_sp_20*,4
+work_history,last_year_working_hour_rp_19*,5
+work_history,last_year_working_hour_rp_20*,6
+work_history,last_year_working_hour_sp_19*,7
+work_history,last_year_working_hour_sp_20*,8

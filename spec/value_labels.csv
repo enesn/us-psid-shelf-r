@@ -868,3 +868,8 @@ imputehome_5cat,3,Imputed (complex property)
 imputehome_5cat,9,Estimate not accurate
 topcodeflag_2cat,0,No income variable at a top-code
 topcodeflag_2cat,1,At least one income variable at a top-code
+years_worked_fulltime,0,None; never worked full time
+years_worked_fulltime,1,One year or less
+years_worked_fulltime,95,Less than one year (age 18 or younger)
+years_worked_fulltime,96,All years since 18
+work_hours_annual,0,None; did not work
