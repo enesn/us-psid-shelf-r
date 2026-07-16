@@ -1492,3 +1492,5 @@ total_years_worked_sp,Spouse number of years worked full time
 total_years_worked_rp,Head number of years worked full time
 last_year_working_hour_sp,Spouse total work hours in prior year
 last_year_working_hour_rp,Head total work hours in prior year
+total_years_worked_rc,Head + spouse number of years worked full time
+last_year_working_hour_rc,Head + spouse total work hours in prior year
