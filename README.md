@@ -106,7 +106,7 @@ Results print to the console and save to `log/validate-output_<timestamp>.txt`
 - Outputs: `PSID_SHELF_R_1968_2021_LONG.parquet` / `.dta`, `_WIDE.parquet`; YAML manifest + Excel codebook in `metadata/`.
 
 
-### PSID-SHELF-R 1968–2023 (2023 wave extension)
+### PSID-SHELF-R 1968–2023 (v1 2023 wave extension)
 
 The file now extends to **2023 (43 waves, 1968–2023)**. A full rebuild
 (`Rscript 00-run-all.R`) produces `PSID_SHELF_R_1968_2023_LONG.parquet` /
