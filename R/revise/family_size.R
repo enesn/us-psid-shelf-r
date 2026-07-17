@@ -11,7 +11,10 @@ if (!is.null(dc)) {
     fs <- psid_abridged[[paste0("fam_size_", y)]]
     old <- psid_abridged[[col]]
     new <- ifelse(is.na(old), NA_real_, old / sqrt(fs))
-    for (tc in dollar_topcodes(varcat, y)) new[old %in% tc] <- tc   # preserve sentinels
+    # preserve sentinels: the fixed era ladder plus this column's own raw
+    # top-code, which the ladder can miss (farm_grossrevenue tops out at 999998
+    # in 1990, not the 999999 the earn/finc ladder lists).
+    for (tc in union(dollar_topcodes(varcat, y), topcode_for(col))) new[old %in% tc] <- tc
     newcol <- sub("_nd", "_ndf", dc$stub[i])                       # earn_wage_nd_rp -> earn_wage_ndf_rp
     lab <- attr(old, "label"); lab <- if (is.null(lab)) col else sub(" \\(nominal USD\\)", " (nominal USD, fam size adj)", lab)
     psid_abridged[[paste0(newcol, "_", y)]] <- set_label(new, lab)

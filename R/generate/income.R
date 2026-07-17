@@ -5,14 +5,18 @@
 #   * income_topcoded_*  (data flag: 1 if ANY nominal income variable
 #     is at a PSID top-code for the person-wave).
 # The income collect scripts (earnings, family_income, labor_income,
-# capital_income, income) standardize each era's growing dollar top-code to
-# the 9999999 sentinel; the 2011+ family files carry no sentinel and instead
-# truncate amounts at 9999997 (see dollar_topcodes() in R/programs.R).
+# capital_income, income) keep each era's dollar top-code at its raw codebook
+# value and register it per variable-wave (`topcode` / topcode_for() in
+# R/programs.R); the ladder is not uniform across variables within a wave, so
+# this flag reads each column's own registered code via income_topcodes().
+# The 2011+ family files carry no top-code rule and instead truncate amounts
+# at 9999997, which income_topcodes() adds back.
 # 0 = income reported, none at a top-code; NA = no nonmissing income
 # variable that wave (incl. pre-1976 bracket-coded amounts, which cannot
-# carry a dollar top-code). Computed from the *_nd sources before revise:
-# the *_rd/*_rdf versions rescale the sentinel (mirroring the reference
-# build), so this flag is the only reliable top-code marker for them.
+# carry a dollar top-code). Computed from the *_nd sources before revise: the
+# *_rd/*_rdf versions rescale the top-code (mirroring the reference build) and
+# a rescaled raw code is indistinguishable from a real amount, so this flag is
+# the only reliable top-code marker for them.
 # =====================================================================
 
 # --- reference-couple (_rc) totals: RP + SP at the family-unit level ----
@@ -40,8 +44,12 @@ for (stub in rc_stubs) {
     sp <- psid_abridged[[paste0(stub, "_sp_", y)]]
     if (is.null(rp) || is.null(sp)) next
     out <- as.vector(rp) + as.vector(sp)
-    tc <- if (y >= 2011) 9999997 else 9999999
-    out[rp %in% tc | sp %in% tc] <- tc
+    tc <- union(income_topcodes(paste0(stub, "_rp_", y), y),
+                income_topcodes(paste0(stub, "_sp_", y), y))
+    if (length(tc)) {
+      out[rp %in% tc | sp %in% tc] <- max(tc)
+      register_topcode(paste0(stub, "_rc_", y), max(tc))
+    }
     psid_abridged[[paste0(stub, "_rc_", y)]] <-
       set_label(out, var_label(paste0(stub, "_rc"), y))
     n_rc <- n_rc + 1L
@@ -57,12 +65,11 @@ gen_tv("income_topcoded", function(y) {
   cols <- grep(paste0("_nd(_rp|_sp|_rc)?_", y, "$"), names(psid_abridged), value = TRUE)
   cols <- cols[substr(cols, 1, 4) %in% income_tc_varcats]
   if (!length(cols)) return(NULL)
-  tc <- c(9999999, if (y >= 2011) 9999997)
   any_tc  <- rep(FALSE, nrow(psid_abridged))
   any_val <- rep(FALSE, nrow(psid_abridged))
   for (col in cols) {
     x <- psid_abridged[[col]]
-    any_tc  <- any_tc  | x %in% tc
+    any_tc  <- any_tc  | x %in% income_topcodes(col, y)   # per-column raw code
     any_val <- any_val | !is.na(x)
   }
   ifelse(any_val, as.numeric(any_tc), NA_real_)

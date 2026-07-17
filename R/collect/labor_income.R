@@ -18,19 +18,19 @@
 psid_abridged <- collect_tv(psid_abridged, "labor_tot_income_nd_rp", function(x, y) {
   out <-
     if (y <= 1969)      recode(x, 1 %..% 99998 ~ keep,   0 ~ keep)
-    else if (y <= 1975) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep,       99999 ~ 9999999)
-    else if (y <= 1978) recode(x, 2 %..% 99998 ~ keep,   c(0, 1) ~ keep, 99999 ~ 9999999)
-    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep,       99999 ~ 9999999)
-    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep,       999999 ~ 9999999)
-    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep,       9999999 ~ 9999999)  # 1993
+    else if (y <= 1975) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep,       99999 ~ topcode)
+    else if (y <= 1978) recode(x, 2 %..% 99998 ~ keep,   c(0, 1) ~ keep, 99999 ~ topcode)
+    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep,       99999 ~ topcode)
+    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep,       999999 ~ topcode)
+    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep,       9999999 ~ topcode)  # 1993
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_tot_income_nd_sp", function(x, y) {
   out <-
     if (y <= 1969)      recode(x, 1 %..% 99998 ~ keep,   0 ~ keep)
-    else if (y <= 1983) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
-    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)  # 1993
+    else if (y <= 1983) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
+    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)  # 1993
   rc(out, is.na(x), NA)
 })
 
@@ -39,19 +39,19 @@ psid_abridged <- collect_tv(psid_abridged, "labor_tot_income_excbussfarm_nd_rp",
   out <-
     if (y <= 1995)      recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ NA)
     else if (y == 1996) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep)
-    else if (y == 1997) recode(x, 0 %..% 999998.99 ~ keep, 999999 ~ 9999999)  # reported with cents
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y == 1997) recode(x, 0 %..% 999998.99 ~ keep, 999999 ~ topcode)  # reported with cents
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_tot_income_excbussfarm_nd_sp", function(x, y) {
   out <-
-    if (y == 1993)      recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    if (y == 1993)      recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ NA)
     else if (y == 1996) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep)
     else if (y == 1997) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep)
-    else if (y == 1999) recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ 9999999)
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y == 1999) recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ topcode)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
@@ -61,15 +61,15 @@ psid_abridged <- collect_tv(psid_abridged, "labor_tot_income_excbussfarm_nd_sp",
 psid_abridged <- collect_tv(psid_abridged, "labor_wage_income_nd_rp", function(x, y, df) {
   out <-
     if (y <= 1969)      recode(x, 0 %..% 8 ~ keep, 9 ~ NA)
-    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
-    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else if (y == 1993) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
+    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else if (y == 1993) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else if (y <= 1995) { o <- recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep)
                           rc(o, x %in% 9999999 & df$sample %in% 3, NA) }
-    else if (y == 1996) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y == 1996) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else if (y == 1997) { o <- recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep)
                           rc(o, x %in% 9999999 & df$sample %in% 4, NA) }
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
@@ -81,49 +81,49 @@ psid_abridged <- collect_tv(psid_abridged, "labor_wage_income_nd_sp", function(x
 psid_abridged <- collect_tv(psid_abridged, "labor_business_income_nd_rp", function(x, y) {
   out <-
     if (y <= 1975)      recode(x, 0 %..% 8 ~ keep, 9 ~ NA)
-    else if (y <= 1992) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
-    else if (y == 1993) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 1992) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
+    else if (y == 1993) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
-    else if (y == 1996) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
+    else if (y == 1996) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
     else if (y == 1997) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
-    else if (y <= 2003) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2003) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_business_income_nd_sp", function(x, y) {
   out <-
-    if (y == 1993)      recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    if (y == 1993)      recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
-    else if (y == 1996) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
+    else if (y == 1996) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
     else if (y == 1997) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
-    else if (y <= 2003) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2003) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_farm_income_nd_rp", function(x, y) {
   out <-
     if (y <= 1975)      recode(x, 0 %..% 8 ~ keep, 9 ~ NA)
-    else if (y <= 1992) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
-    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)  # 1993
+    else if (y <= 1992) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
+    else                recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)  # 1993
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_farm_income_nd_sp", function(x, y) {  # 1993 only
-  rc(recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999), is.na(x), NA)
+  rc(recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode), is.na(x), NA)
 })
 
 # --- professional practice or trade (1993 reverts to a 5-digit code frame) ---
 psid_abridged <- collect_tv(psid_abridged, "labor_profes_income_nd_rp", function(x, y) {
   out <-
     if (y <= 1975)      recode(x, 0 %..% 8 ~ keep, 9 ~ NA)
-    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
-    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else if (y == 1993) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
+    else if (y <= 1982) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
+    else if (y <= 1992) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else if (y == 1993) recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ NA)
     else if (y == 1996) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep)
     else if (y == 1997) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ NA)
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
@@ -135,12 +135,12 @@ psid_abridged <- collect_tv(psid_abridged, "labor_profes_income_nd_sp", function
 # --- range incl. its loss top-code passes through, like finc_tot_nd) ---
 psid_abridged <- collect_tv(psid_abridged, "labor_garden_income_nd_rp", function(x, y) {
   out <-
-    if (y == 1993)      recode(x, -9999 %..% 99998 ~ keep, 99999 ~ 9999999)
+    if (y == 1993)      recode(x, -9999 %..% 99998 ~ keep, 99999 ~ topcode)
     else if (y == 1994) recode(x, -999999 %..% 9999998 ~ keep, 9999999 ~ NA)
     else if (y == 1995) recode(x, -99999 %..% 9999998 ~ keep, 9999999 ~ NA)
     else if (y == 1996) recode(x, -999999 %..% 9999998 ~ keep)
     else if (y == 1997) recode(x, -999999 %..% 9999998 ~ keep, 9999999 ~ NA)
-    else if (y <= 2009) recode(x, -999999 %..% 9999998 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2009) recode(x, -999999 %..% 9999998 ~ keep, 9999999 ~ topcode)
     else                recode(x, -999997 %..% 9999997 ~ keep)
   rc(out, is.na(x), NA)
 })
@@ -149,11 +149,11 @@ psid_abridged <- collect_tv(psid_abridged, "labor_garden_income_nd_rp", function
 # --- income: identical 6-digit code frames (rp 1993-2023, sp 2015-2023) ---
 labor_comp6_rp <- function(x, y) {
   out <-
-    if (y == 1993)      recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ 9999999)
+    if (y == 1993)      recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ NA)
     else if (y == 1996) recode(x, 1 %..% 999998 ~ keep, 0 ~ keep)
     else if (y == 1997) recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ NA)
-    else if (y <= 2009) recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ 9999999)
+    else if (y <= 2009) recode(x, 1 %..% 999998 ~ keep, 0 ~ keep, 999999 ~ topcode)
     else                recode(x, 1 %..% 999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 }
@@ -170,12 +170,12 @@ rm(labor_comp6_rp, labor_comp6_sp, .m)
 # --- extra / second jobs (5-digit frame in 1993, 7-digit from 2003) ---
 psid_abridged <- collect_tv(psid_abridged, "labor_extrawork_income_nd_rp", function(x, y) {
   out <-
-    if (y == 1993)      recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ 9999999)
+    if (y == 1993)      recode(x, 1 %..% 99998 ~ keep,   0 ~ keep, 99999 ~ topcode)
     else if (y <= 1995) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
     else if (y == 1996) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep)
     else if (y == 1997) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ NA)
-    else if (y <= 2001) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ 9999999)
-    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ 9999999)
+    else if (y <= 2001) recode(x, 1 %..% 999998 ~ keep,  0 ~ keep, 999999 ~ topcode)
+    else if (y <= 2009) recode(x, 1 %..% 9999998 ~ keep, 0 ~ keep, 9999999 ~ topcode)
     else                recode(x, 1 %..% 9999997 ~ keep, 0 ~ keep)
   rc(out, is.na(x), NA)
 })
@@ -185,12 +185,12 @@ psid_abridged <- collect_tv(psid_abridged, "labor_extrawork_income_nd_sp", funct
 
 # --- gig work (2021+; raw amount with DK/NA codes, unlike the assigned vars) ---
 psid_abridged <- collect_tv(psid_abridged, "labor_gig_income_nd_rp", function(x, y) {
-  out <- recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ 9999999,
+  out <- recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ topcode,
                 c(9999998, 9999999) ~ NA)
   rc(out, is.na(x), NA)
 })
 psid_abridged <- collect_tv(psid_abridged, "labor_gig_income_nd_sp", function(x, y) {
-  out <- recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ 9999999,
+  out <- recode(x, 1 %..% 9999996 ~ keep, 0 ~ keep, 9999997 ~ topcode,
                 c(9999998, 9999999) ~ NA)
   rc(out, is.na(x), NA)
 })

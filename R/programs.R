@@ -40,23 +40,74 @@ inlist  <- function(x, ...)    x %in% c(...)
 #          lo %..% hi -> closed interval lo..hi      (inrange(x, lo, hi))
 #          an NA among the codes also matches is.na(x); a bare NA == is.na(x)
 #   * RHS  scalar / NA -> assigned;  keep -> passthrough (out <- x)
+#          topcode -> passthrough, and record the code as this wave's top-code
 `%..%` <- function(lo, hi) structure(c(lo, hi), class = "psid_range")
 keep    <- structure(list(), class = "psid_keep")
+
+# `topcode`: RHS marker for a PSID era top-code ("$N or more"). Passes the raw
+# codebook value through like `keep`, and registers the code so collect_tv() can
+# record which value is the top-code for this variable-wave. The ladder is not
+# uniform across variables within a wave -- in 1990 earn_* top-codes at 99999
+# while farm_grossrevenue_* top-codes at 999998 (it reserves 999999 for NA) --
+# so downstream (income_topcoded) cannot re-derive it from the year alone.
+topcode <- structure(list(), class = "psid_topcode")
+
+# Top-code registry: "<newvar>_<year>" -> the raw top-code(s) for that wave.
+# $seen accumulates within one recode() call; collect_tv() drains it per column.
+.TC <- new.env(parent = emptyenv())
+.TC$seen <- numeric(0)
+.TC$reg  <- list()
+
 recode  <- function(x, ..., .default = -1) {
   out <- rep(.default, length(x))
   for (f in list(...)) {
     sel <- eval(f[[2L]], environment(f))            # LHS: codes or a %..% range
-    val <- eval(f[[3L]], environment(f))            # RHS: scalar / NA / keep
+    val <- eval(f[[3L]], environment(f))            # RHS: scalar / NA / keep / topcode
     cond <- if (inherits(sel, "psid_range")) x >= sel[1L] & x <= sel[2L]
             else (x %in% sel[!is.na(sel)]) | (anyNA(sel) & is.na(x))
-    out <- if (inherits(val, "psid_keep")) rc(out, cond, x) else rc(out, cond, val)
+    if (inherits(val, "psid_topcode")) {
+      .TC$seen <- c(.TC$seen, sel)                  # record before passthrough
+      out <- rc(out, cond, x)
+    } else if (inherits(val, "psid_keep")) {
+      out <- rc(out, cond, x)
+    } else {
+      out <- rc(out, cond, val)
+    }
   }
   out
 }
 
-# dollar block (used by the nominal-dollar economic domains): passthrough the
-# valid range [lo,hi] and any `pass` codes, then map the era top-code `tc` to
-# `tcout` (the standardized 9999999, or NA in the PSID "wild-code" years).
+# topcode_for(col): the raw top-code(s) recorded for a collected column
+# ("<newvar>_<year>"), or numeric(0) if that wave has no dollar top-code
+# (bracket-coded waves, wild-code waves mapped to NA, 2011+ truncated files).
+topcode_for <- function(col) {
+  tc <- .TC$reg[[col]]
+  if (is.null(tc)) numeric(0) else tc
+}
+
+# register_topcode(col, tc): record a top-code for a *derived* column (the
+# generate stage's _rc couple totals and earn_tot_nd), which never passes
+# through recode() and so is not registered automatically. No-op for tc of
+# length 0, so non-dollar measures can call it blindly.
+register_topcode <- function(col, tc) {
+  tc <- unique(tc[!is.na(tc)])
+  if (length(tc)) .TC$reg[[col]] <- tc
+  invisible(tc)
+}
+
+# income_topcodes(col, y): every value that means "top-coded" for a nominal
+# income column -- its registered raw code, plus the 9999997 at which the 2011+
+# family files truncate amounts (a top-code that is inside the kept range, so no
+# recode() rule marks it).
+income_topcodes <- function(col, y) {
+  tc <- topcode_for(col)
+  if (y >= 2011) tc <- union(tc, 9999997)
+  tc
+}
+
+# dollar block: passthrough the valid range [lo,hi] and any `pass` codes, then
+# map the era top-code `tc` to `tcout`. NOTE: currently unused -- the collect
+# domains write their era ladders as explicit recode() rules instead.
 blk <- function(out, x, lo, hi, pass = NULL, tc = NULL, tcout = 9999999) {
   out <- rc(out, inrange(x, lo, hi), x)
   if (length(pass)) out <- rc(out, x %in% pass, x)
@@ -92,7 +143,9 @@ collect_tv <- function(df, newvar, fn) {
     if (is.null(df[[iv]]))
       stop(sprintf("input var %s (for %s_%d) missing from data", iv, newvar, y))
     col <- paste0(newvar, "_", y)
+    .TC$seen <- numeric(0)
     df[[col]] <- if (use_df) fn(df[[iv]], y, df) else fn(df[[iv]], y)
+    if (length(.TC$seen)) .TC$reg[[col]] <- unique(.TC$seen)   # this wave's raw top-code
     df[[col]] <- set_value_labels(set_label(df[[col]], var_label(newvar, y)), newvar)
   }
   df
@@ -224,6 +277,11 @@ combine_rpsp <- function(measure) {
     out <- rep(NA_real_, nrow(psid_abridged))
     if (!is.null(rp)) out <- rc(out, inrange(rel, 100, 199) & rex %in% 0, rp)
     if (!is.null(sp)) out <- rc(out, inrange(rel, 200, 299) & rex %in% 0, sp)
+    # the RP/SP values pass through unchanged, so the combined column carries
+    # their top-code (no-op unless <measure> is a nominal-dollar variable)
+    register_topcode(paste0(measure, "_", y),
+                     union(topcode_for(paste0(measure, "_rp_", y)),
+                           topcode_for(paste0(measure, "_sp_", y))))
     .GlobalEnv$psid_abridged[[paste0(measure, "_", y)]] <- g_label(out, measure, y, set)
   }
 }
@@ -274,7 +332,8 @@ modal_recent <- function(measure) {
 dollar_topcodes <- function(varcat, y, stage = "fam") {
   tc <- numeric(0)
   # labo/capi/farm/busi/taxa: the labor_/capital_/income-domain *_nd vars share
-  # the earn/finc era top-code ladder (standardized to 9999999 at collect).
+  # the earn/finc era top-code ladder (kept at the raw codebook value at
+  # collect; 9999997/9999999 stay listed -- they are the raw code in 1993+).
   if (stage == "fam" && varcat %in% c("earn", "finc", "labo", "capi", "farm", "busi", "taxa")) {
     if (y >= 1968 && y <= 1982) tc <- c(tc, 99999)
     if (y >= 1983 && y <= 1992) tc <- c(tc, 999999)

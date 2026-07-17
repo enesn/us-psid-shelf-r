@@ -243,99 +243,99 @@ incval_general_negs,0,Zero dollars or negative income
 incval_general_ones,1,One dollar or zero dollars
 incval_general_ones_negs,1,"One dollar, zero dollars, or negative income"
 incval_tc99996,0,Zero dollars
-incval_tc99996,9999999,"99,996 dollars or more"
+incval_tc99996,99996,"99,996 dollars or more"
 incval_tc99997,0,Zero dollars
-incval_tc99997,9999999,"99,997 dollars or more"
+incval_tc99997,99997,"99,997 dollars or more"
 incval_tc99998,0,Zero dollars
-incval_tc99998,9999999,"99,998 dollars or more"
+incval_tc99998,99998,"99,998 dollars or more"
 incval_tc99999,0,Zero dollars
-incval_tc99999,9999999,"99,999 dollars or more"
+incval_tc99999,99999,"99,999 dollars or more"
 incval_tc99996_negs,0,Zero dollars or negative income
-incval_tc99996_negs,9999999,"99,996 dollars or more"
+incval_tc99996_negs,99996,"99,996 dollars or more"
 incval_tc99997_negs,0,Zero dollars or negative income
-incval_tc99997_negs,9999999,"99,997 dollars or more"
+incval_tc99997_negs,99997,"99,997 dollars or more"
 incval_tc99998_negs,0,Zero dollars or negative income
-incval_tc99998_negs,9999999,"99,998 dollars or more"
+incval_tc99998_negs,99998,"99,998 dollars or more"
 incval_tc99999_negs,0,Zero dollars or negative income
-incval_tc99999_negs,9999999,"99,999 dollars or more"
+incval_tc99999_negs,99999,"99,999 dollars or more"
 incval_tc99996_ones,1,One dollar or zero dollars
-incval_tc99996_ones,9999999,"99,996 dollars or more"
+incval_tc99996_ones,99996,"99,996 dollars or more"
 incval_tc99997_ones,1,One dollar or zero dollars
-incval_tc99997_ones,9999999,"99,997 dollars or more"
+incval_tc99997_ones,99997,"99,997 dollars or more"
 incval_tc99998_ones,1,One dollar or zero dollars
-incval_tc99998_ones,9999999,"99,998 dollars or more"
+incval_tc99998_ones,99998,"99,998 dollars or more"
 incval_tc99999_ones,1,One dollar or zero dollars
-incval_tc99999_ones,9999999,"99,999 dollars or more"
+incval_tc99999_ones,99999,"99,999 dollars or more"
 incval_tc99996_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc99996_ones_negs,9999999,"99,996 dollars or more"
+incval_tc99996_ones_negs,99996,"99,996 dollars or more"
 incval_tc99997_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc99997_ones_negs,9999999,"99,997 dollars or more"
+incval_tc99997_ones_negs,99997,"99,997 dollars or more"
 incval_tc99998_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc99998_ones_negs,9999999,"99,998 dollars or more"
+incval_tc99998_ones_negs,99998,"99,998 dollars or more"
 incval_tc99999_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc99999_ones_negs,9999999,"99,999 dollars or more"
+incval_tc99999_ones_negs,99999,"99,999 dollars or more"
 incval_tc999996,0,Zero dollars
-incval_tc999996,9999999,"999,996 dollars or more"
+incval_tc999996,999996,"999,996 dollars or more"
 incval_tc999997,0,Zero dollars
-incval_tc999997,9999999,"999,997 dollars or more"
+incval_tc999997,999997,"999,997 dollars or more"
 incval_tc999998,0,Zero dollars
-incval_tc999998,9999999,"999,998 dollars or more"
+incval_tc999998,999998,"999,998 dollars or more"
 incval_tc999999,0,Zero dollars
-incval_tc999999,9999999,"999,999 dollars or more"
+incval_tc999999,999999,"999,999 dollars or more"
 incval_tc999996_negs,0,Zero dollars or negative income
-incval_tc999996_negs,9999999,"999,996 dollars or more"
+incval_tc999996_negs,999996,"999,996 dollars or more"
 incval_tc999997_negs,0,Zero dollars or negative income
-incval_tc999997_negs,9999999,"999,997 dollars or more"
+incval_tc999997_negs,999997,"999,997 dollars or more"
 incval_tc999998_negs,0,Zero dollars or negative income
-incval_tc999998_negs,9999999,"999,998 dollars or more"
+incval_tc999998_negs,999998,"999,998 dollars or more"
 incval_tc999999_negs,0,Zero dollars or negative income
-incval_tc999999_negs,9999999,"999,999 dollars or more"
+incval_tc999999_negs,999999,"999,999 dollars or more"
 incval_tc999996_ones,1,One dollar or zero dollars
-incval_tc999996_ones,9999999,"999,996 dollars or more"
+incval_tc999996_ones,999996,"999,996 dollars or more"
 incval_tc999997_ones,1,One dollar or zero dollars
-incval_tc999997_ones,9999999,"999,997 dollars or more"
+incval_tc999997_ones,999997,"999,997 dollars or more"
 incval_tc999998_ones,1,One dollar or zero dollars
-incval_tc999998_ones,9999999,"999,998 dollars or more"
+incval_tc999998_ones,999998,"999,998 dollars or more"
 incval_tc999999_ones,1,One dollar or zero dollars
-incval_tc999999_ones,9999999,"999,999 dollars or more"
+incval_tc999999_ones,999999,"999,999 dollars or more"
 incval_tc999996_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc999996_ones_negs,9999999,"999,996 dollars or more"
+incval_tc999996_ones_negs,999996,"999,996 dollars or more"
 incval_tc999997_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc999997_ones_negs,9999999,"999,997 dollars or more"
+incval_tc999997_ones_negs,999997,"999,997 dollars or more"
 incval_tc999998_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc999998_ones_negs,9999999,"999,998 dollars or more"
+incval_tc999998_ones_negs,999998,"999,998 dollars or more"
 incval_tc999999_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc999999_ones_negs,9999999,"999,999 dollars or more"
+incval_tc999999_ones_negs,999999,"999,999 dollars or more"
 incval_tc9999996,0,Zero dollars
-incval_tc9999996,9999999,"9,999,996 dollars or more"
+incval_tc9999996,9999996,"9,999,996 dollars or more"
 incval_tc9999997,0,Zero dollars
-incval_tc9999997,9999999,"9,999,997 dollars or more"
+incval_tc9999997,9999997,"9,999,997 dollars or more"
 incval_tc9999998,0,Zero dollars
-incval_tc9999998,9999999,"9,999,998 dollars or more"
+incval_tc9999998,9999998,"9,999,998 dollars or more"
 incval_tc9999999,0,Zero dollars
 incval_tc9999999,9999999,"9,999,999 dollars or more"
 incval_tc9999996_negs,0,Zero dollars or negative income
-incval_tc9999996_negs,9999999,"9,999,996 dollars or more"
+incval_tc9999996_negs,9999996,"9,999,996 dollars or more"
 incval_tc9999997_negs,0,Zero dollars or negative income
-incval_tc9999997_negs,9999999,"9,999,997 dollars or more"
+incval_tc9999997_negs,9999997,"9,999,997 dollars or more"
 incval_tc9999998_negs,0,Zero dollars or negative income
-incval_tc9999998_negs,9999999,"9,999,998 dollars or more"
+incval_tc9999998_negs,9999998,"9,999,998 dollars or more"
 incval_tc9999999_negs,0,Zero dollars or negative income
 incval_tc9999999_negs,9999999,"9,999,999 dollars or more"
 incval_tc9999996_ones,1,One dollar or zero dollars
-incval_tc9999996_ones,9999999,"9,999,996 dollars or more"
+incval_tc9999996_ones,9999996,"9,999,996 dollars or more"
 incval_tc9999997_ones,1,One dollar or zero dollars
-incval_tc9999997_ones,9999999,"9,999,997 dollars or more"
+incval_tc9999997_ones,9999997,"9,999,997 dollars or more"
 incval_tc9999998_ones,1,One dollar or zero dollars
-incval_tc9999998_ones,9999999,"9,999,998 dollars or more"
+incval_tc9999998_ones,9999998,"9,999,998 dollars or more"
 incval_tc9999999_ones,1,One dollar or zero dollars
 incval_tc9999999_ones,9999999,"9,999,999 dollars or more"
 incval_tc9999996_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc9999996_ones_negs,9999999,"9,999,996 dollars or more"
+incval_tc9999996_ones_negs,9999996,"9,999,996 dollars or more"
 incval_tc9999997_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc9999997_ones_negs,9999999,"9,999,997 dollars or more"
+incval_tc9999997_ones_negs,9999997,"9,999,997 dollars or more"
 incval_tc9999998_ones_negs,1,"One dollar, zero dollars, or negative income"
-incval_tc9999998_ones_negs,9999999,"9,999,998 dollars or more"
+incval_tc9999998_ones_negs,9999998,"9,999,998 dollars or more"
 incval_tc9999999_ones_negs,1,"One dollar, zero dollars, or negative income"
 incval_tc9999999_ones_negs,9999999,"9,999,999 dollars or more"
 eaco_ranges_9cat,0,No earnings

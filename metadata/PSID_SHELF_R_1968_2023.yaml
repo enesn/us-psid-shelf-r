@@ -2,7 +2,7 @@ dataset:
   name: psid-shelf-r
   version: PSID_SHELF_R_1968_2023
   previous_version: ''
-  release_date: '2026-07-16'
+  release_date: '2026-07-17'
   created_by: enesn
 provenance:
   source_release: ~
@@ -33,7 +33,7 @@ provenance:
   pipeline:
     repo: github.com/enesn/us-psid
     branch: add-income-vars
-    commit: 3e547421d2c89aac1acc2c266e28e56f396bff07
+    commit: afc560895f8c8cd11e87da82e0f46edb112d78ed
     entry_point: 00-run-all.R
     scripts_executed:
     - 01-ingest.R
@@ -43,8 +43,8 @@ provenance:
     - 06-revise-variables.R
     - 07-publish.R
     outputs_sha256:
-      PSID_SHELF_R_1968_2023_LONG.parquet: b90900da7794c7d0ad85cb83c1ede109a7cc37167a7dd94af93fefd9248c0549
-      PSID_SHELF_R_1968_2023_WIDE.parquet: 243d989e1eb9440136fecc1ed5952115ff4e30a917cb6d7eb136a3ecaf070006
+      PSID_SHELF_R_1968_2023_LONG.parquet: 787b5f18459837fd10cabe041ae4c1763ff31166637f8876a63ca47c8ed2ec21
+      PSID_SHELF_R_1968_2023_WIDE.parquet: 49cc2c6b379c28145c26bbac933ad729d02c435b9990ae900637345a8a16a36a
     runtime:
       R: 4.5.3
       packages:
