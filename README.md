@@ -134,5 +134,10 @@ values in nominal-dollar variables match the reference release exactly.
 
 ---
 
+### PSID-SHELF-R 1968–2023 (v2 - variable extension + improvements)
+- This inclues more variables
+- Contrary the original PSID-SHELF, top code sentinels are now kept as in the original PSID. Interpret validation accordingly.  
+
+
 ## EconOps Call
 This repository follows the [EconOps](https://github.com/enesn/EconOps) workflow. If you have the required authentication credentials, use [this script](https://github.com/enesn/EconOps/blob/main/implementation/step6.md#user-script-to-read-data) to query the dataset.
