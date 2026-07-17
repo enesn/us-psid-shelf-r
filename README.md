@@ -136,7 +136,8 @@ values in nominal-dollar variables match the reference release exactly.
 
 ### PSID-SHELF-R 1968–2023 (v2 - variable extension + improvements)
 - This inclues more variables
-- Contrary the original PSID-SHELF, top code sentinels are now kept as in the original PSID. Interpret validation accordingly.  
+- Contrary the original PSID-SHELF, top code sentinels are now kept as in the original PSID. Interpret validation accordingly. 
+-   A rescaled 9999999 was obviously sentinel-like; a rescaled 99999 looks like an ordinary dollar amount. So in the real-dollar variables the top-code is now only discoverable via INCOME_TOPCODED.
 
 
 ## EconOps Call
